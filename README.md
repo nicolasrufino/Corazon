@@ -1,4 +1,4 @@
-# Corazon — Hispanic at Heart
+# Corazón — Hispanic at Heart
 
 **Corazón** is a bilingual (Spanish/English) AI-powered resource platform for Latino communities in the U.S. It helps users find trusted local organizations, understand official documents, and get guidance — in their language, for their situation.
 

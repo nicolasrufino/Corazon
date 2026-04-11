@@ -1,13 +1,22 @@
-import { AlertCircle, ChartNoAxesCombined, Compass, Filter, MapPin, Search, ShieldCheck, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ResourceCard } from '@/components/ResourceCard';
-import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/context/AppContext';
-import { resourceCategories } from '@/data/mockData';
-import { fetchResources } from '@/lib/mockApi';
-import { cn } from '@/lib/utils';
-import type { Resource, ResourceCategory } from '@/types/app';
+import {
+  AlertCircle,
+  ChartNoAxesCombined,
+  Compass,
+  Filter,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ResourceCard } from '@/components/ResourceCard'
+import { Button } from '@/components/ui/button'
+import { useAppContext } from '@/context/AppContext'
+import { resourceCategories } from '@/data/mockData'
+import { fetchResources } from '@/lib/mockApi'
+import { cn } from '@/lib/utils'
+import type { Resource, ResourceCategory } from '@/types/app'
 
 const categoryIcons: Record<ResourceCategory, typeof ShieldCheck> = {
   legal: ShieldCheck,
@@ -19,39 +28,39 @@ const categoryIcons: Record<ResourceCategory, typeof ShieldCheck> = {
   financial_aid: AlertCircle,
   language_learning: ChartNoAxesCombined,
   business: Sparkles,
-};
+}
 
 export const DashboardPage = () => {
-  const { language, savedResourceIds, user } = useAppContext();
-  const navigate = useNavigate();
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState<ResourceCategory | 'all'>('all');
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { language, savedResourceIds, user } = useAppContext()
+  const navigate = useNavigate()
+  const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState<ResourceCategory | 'all'>('all')
+  const [resources, setResources] = useState<Resource[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
 
     const loadResources = async () => {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
-        const result = await fetchResources({ search, category: activeCategory });
+        const result = await fetchResources({ search, category: activeCategory })
         if (isMounted) {
-          setResources(result);
+          setResources(result)
         }
       } finally {
         if (isMounted) {
-          setIsLoading(false);
+          setIsLoading(false)
         }
       }
-    };
+    }
 
-    void loadResources();
+    void loadResources()
 
     return () => {
-      isMounted = false;
-    };
-  }, [search, activeCategory]);
+      isMounted = false
+    }
+  }, [search, activeCategory])
 
   const metrics = useMemo(
     () => [
@@ -61,15 +70,15 @@ export const DashboardPage = () => {
       },
       {
         label: language === 'es' ? 'Organizaciones verificadas' : 'Verified organizations',
-        value: resources.filter((resource) => resource.verified).length,
+        value: resources.filter(resource => resource.verified).length,
       },
       {
         label: language === 'es' ? 'Abiertos ahora' : 'Open now',
-        value: resources.filter((resource) => resource.openNow).length,
+        value: resources.filter(resource => resource.openNow).length,
       },
     ],
-    [language, resources, savedResourceIds.length, user],
-  );
+    [language, resources, savedResourceIds.length, user]
+  )
 
   return (
     <div className="space-y-8">
@@ -89,7 +98,7 @@ export const DashboardPage = () => {
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {metrics.map((metric) => (
+          {metrics.map(metric => (
             <article
               key={metric.label}
               className="rounded-2xl border border-border/50 bg-background/80 p-4 transition-colors duration-200 hover:border-primary/40"
@@ -112,7 +121,7 @@ export const DashboardPage = () => {
               id="resource-search"
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={event => setSearch(event.target.value)}
               placeholder={
                 language === 'es'
                   ? 'Busca por clínica, ayuda legal, clases de inglés...'
@@ -142,14 +151,14 @@ export const DashboardPage = () => {
                 'h-11 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors duration-200',
                 activeCategory === 'all'
                   ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-card hover:bg-primary/15',
+                  : 'border-border bg-card hover:bg-primary/15'
               )}
             >
               {language === 'es' ? 'Todos' : 'All'}
             </button>
 
-            {resourceCategories.map((category) => {
-              const Icon = categoryIcons[category.key];
+            {resourceCategories.map(category => {
+              const Icon = categoryIcons[category.key]
               return (
                 <button
                   key={category.key}
@@ -159,13 +168,13 @@ export const DashboardPage = () => {
                     'inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors duration-200',
                     activeCategory === category.key
                       ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-card hover:bg-primary/15',
+                      : 'border-border bg-card hover:bg-primary/15'
                   )}
                 >
                   <Icon className="size-4" aria-hidden="true" />
                   {language === 'es' ? category.labelEs : category.labelEn}
                 </button>
-              );
+              )
             })}
           </div>
         </div>
@@ -205,7 +214,10 @@ export const DashboardPage = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={`skeleton-${index}`} className="h-[420px] animate-pulse rounded-2xl bg-muted/60" />
+              <div
+                key={`skeleton-${index}`}
+                className="h-[420px] animate-pulse rounded-2xl bg-muted/60"
+              />
             ))}
           </div>
         ) : resources.length === 0 ? (
@@ -217,7 +229,7 @@ export const DashboardPage = () => {
         ) : (
           <div className="-mx-1 overflow-x-auto pb-2">
             <div className="flex min-w-full gap-4 px-1">
-              {resources.map((resource) => (
+              {resources.map(resource => (
                 <div key={resource.id} className="w-full min-w-[290px] flex-1 md:min-w-[360px]">
                   <ResourceCard resource={resource} onRequestAuth={() => navigate('/auth')} />
                 </div>
@@ -227,5 +239,5 @@ export const DashboardPage = () => {
         )}
       </section>
     </div>
-  );
-};
+  )
+}

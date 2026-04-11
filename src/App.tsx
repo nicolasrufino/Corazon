@@ -1,42 +1,42 @@
-import type { ReactNode } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { LayoutShell } from '@/components/LayoutShell';
-import { VoiceAssistant } from '@/components/VoiceAssistant';
-import { useAppContext } from '@/context/AppContext';
-import { AuthPage } from '@/pages/AuthPage';
-import { CommunityPage } from '@/pages/CommunityPage';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage';
-import { OnboardingPage } from '@/pages/OnboardingPage';
+import type { ReactNode } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { LayoutShell } from '@/components/LayoutShell'
+import { VoiceAssistant } from '@/components/VoiceAssistant'
+import { useAppContext } from '@/context/AppContext'
+import { AuthPage } from '@/pages/AuthPage'
+import { CommunityPage } from '@/pages/CommunityPage'
+import { DashboardPage } from '@/pages/DashboardPage'
+import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
+import { OnboardingPage } from '@/pages/OnboardingPage'
 
 const ProtectedOnboardingRoute = ({ children }: { children: ReactNode }) => {
-  const { user } = useAppContext();
+  const { user } = useAppContext()
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" replace />
   }
 
-  return children;
-};
+  return children
+}
 
 const AuthGuardRoute = ({ children }: { children: ReactNode }) => {
-  const { user } = useAppContext();
+  const { user } = useAppContext()
 
   if (!user) {
-    return children;
+    return children
   }
 
   if (!user.onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/onboarding" replace />
   }
 
-  return <Navigate to="/" replace />;
-};
+  return <Navigate to="/" replace />
+}
 
 const AppFrame = () => {
-  const { user } = useAppContext();
-  const location = useLocation();
-  const isAuthScreen = location.pathname === '/auth' || location.pathname === '/onboarding';
+  const { user } = useAppContext()
+  const location = useLocation()
+  const isAuthScreen = location.pathname === '/auth' || location.pathname === '/onboarding'
 
   if (isAuthScreen) {
     return (
@@ -65,11 +65,11 @@ const AppFrame = () => {
           <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
       </div>
-    );
+    )
   }
 
   if (user && !user.onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/onboarding" replace />
   }
 
   return (
@@ -82,11 +82,11 @@ const AppFrame = () => {
       </Routes>
       <VoiceAssistant />
     </LayoutShell>
-  );
-};
-
-function App() {
-  return <AppFrame />;
+  )
 }
 
-export default App;
+function App() {
+  return <AppFrame />
+}
+
+export default App

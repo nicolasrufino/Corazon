@@ -1,37 +1,33 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/context/AppContext';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { useAppContext } from '@/context/AppContext'
 
 export const AuthPage = () => {
-  const { language, signIn, startSignUp } = useAppContext();
-  const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [preferredAppLanguage, setPreferredAppLanguage] = useState<'es' | 'en'>(language);
-  const [error, setError] = useState('');
+  const { language, signIn, startSignUp } = useAppContext()
+  const navigate = useNavigate()
+  const [isSignUp, setIsSignUp] = useState(true)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [preferredAppLanguage, setPreferredAppLanguage] = useState<'es' | 'en'>(language)
+  const [error, setError] = useState('')
 
   const submit = () => {
-    setError('');
+    setError('')
 
     if (!email.trim() || !password.trim()) {
       setError(
         language === 'es'
           ? 'Por favor completa correo y contraseña.'
-          : 'Please complete email and password.',
-      );
-      return;
+          : 'Please complete email and password.'
+      )
+      return
     }
 
     if (isSignUp && password !== confirmPassword) {
-      setError(
-        language === 'es'
-          ? 'Las contraseñas no coinciden.'
-          : 'Passwords do not match.',
-      );
-      return;
+      setError(language === 'es' ? 'Las contraseñas no coinciden.' : 'Passwords do not match.')
+      return
     }
 
     if (isSignUp) {
@@ -39,14 +35,14 @@ export const AuthPage = () => {
         email,
         password,
         preferredAppLanguage,
-      });
-      navigate('/onboarding');
-      return;
+      })
+      navigate('/onboarding')
+      return
     }
 
-    signIn(email, preferredAppLanguage);
-    navigate('/');
-  };
+    signIn(email, preferredAppLanguage)
+    navigate('/')
+  }
 
   return (
     <div className="mx-auto grid min-h-[70vh] w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-border/60 bg-card/80 shadow-2xl shadow-black/30 lg:grid-cols-2">
@@ -56,14 +52,23 @@ export const AuthPage = () => {
         </div>
 
         <div className="relative z-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary/90">Brújula</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary/90">
+            Brújula
+          </p>
           <h1 className="mt-4 text-3xl sm:text-4xl">
             {language === 'es' ? 'Tu red de apoyo confiable' : 'Your trusted support network'}
           </h1>
           <ul className="mt-6 space-y-3 text-sm text-foreground/90">
-            <li>• {language === 'es' ? 'Directorio bilingüe verificado' : 'Verified bilingual directory'}</li>
+            <li>
+              •{' '}
+              {language === 'es'
+                ? 'Directorio bilingüe verificado'
+                : 'Verified bilingual directory'}
+            </li>
             <li>• {language === 'es' ? 'Analizador de documentos' : 'Document analyzer'}</li>
-            <li>• {language === 'es' ? 'Asistente de voz comunitario' : 'Community voice assistant'}</li>
+            <li>
+              • {language === 'es' ? 'Asistente de voz comunitario' : 'Community voice assistant'}
+            </li>
           </ul>
         </div>
       </section>
@@ -99,7 +104,7 @@ export const AuthPage = () => {
               id="auth-email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={event => setEmail(event.target.value)}
               className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
               placeholder="maria@email.com"
             />
@@ -113,7 +118,7 @@ export const AuthPage = () => {
               id="auth-password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={event => setPassword(event.target.value)}
               className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
@@ -127,7 +132,7 @@ export const AuthPage = () => {
                 id="auth-confirm"
                 type="password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
+                onChange={event => setConfirmPassword(event.target.value)}
                 className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
@@ -140,7 +145,7 @@ export const AuthPage = () => {
             <select
               id="auth-language"
               value={preferredAppLanguage}
-              onChange={(event) => setPreferredAppLanguage(event.target.value as 'es' | 'en')}
+              onChange={event => setPreferredAppLanguage(event.target.value as 'es' | 'en')}
               className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="es">Español</option>
@@ -166,5 +171,5 @@ export const AuthPage = () => {
         </div>
       </section>
     </div>
-  );
-};
+  )
+}

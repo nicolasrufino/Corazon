@@ -1,4 +1,4 @@
-import type { CommunityOrganization, Resource } from '@/types/app';
+import type { CommunityOrganization, Resource } from '@/types/app'
 
 export const resourceCategories = [
   { key: 'legal', labelEs: 'Legal', labelEn: 'Legal Aid' },
@@ -10,7 +10,7 @@ export const resourceCategories = [
   { key: 'financial_aid', labelEs: 'Ayuda financiera', labelEn: 'Financial Aid' },
   { key: 'language_learning', labelEs: 'Aprender inglés', labelEn: 'Language Learning' },
   { key: 'business', labelEs: 'Negocios', labelEn: 'Business' },
-] as const;
+] as const
 
 export const mockResources: Resource[] = [
   {
@@ -108,7 +108,7 @@ export const mockResources: Resource[] = [
       'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80',
     lastUpdated: '2026-01-29',
   },
-];
+]
 
 export const mockCommunityOrganizations: CommunityOrganization[] = [
   {
@@ -171,4 +171,4 @@ export const mockCommunityOrganizations: CommunityOrganization[] = [
     summary:
       'Apoyo para emprendedores latinos: licencias, microcréditos y asesoría de crecimiento.',
   },
-];
+]

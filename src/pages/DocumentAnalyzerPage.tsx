@@ -1,34 +1,34 @@
-import { FileWarning, LockKeyhole, UploadCloud } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/context/AppContext';
-import { analyzeDocument } from '@/lib/mockApi';
-import type { AppLanguage } from '@/types/app';
+import { FileWarning, LockKeyhole, UploadCloud } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { useAppContext } from '@/context/AppContext'
+import { analyzeDocument } from '@/lib/mockApi'
+import type { AppLanguage } from '@/types/app'
 
 export const DocumentAnalyzerPage = () => {
-  const { addAnalyzerRecord, analyzerHistory, language, user } = useAppContext();
-  const navigate = useNavigate();
-  const [selectedFileName, setSelectedFileName] = useState('');
-  const [outputLanguage, setOutputLanguage] = useState<AppLanguage>(language);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { addAnalyzerRecord, analyzerHistory, language, user } = useAppContext()
+  const navigate = useNavigate()
+  const [selectedFileName, setSelectedFileName] = useState('')
+  const [outputLanguage, setOutputLanguage] = useState<AppLanguage>(language)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const canUseAnalyzer = Boolean(user);
+  const canUseAnalyzer = Boolean(user)
 
   const submitForAnalysis = async () => {
     if (!selectedFileName || !canUseAnalyzer) {
-      return;
+      return
     }
 
-    setIsProcessing(true);
+    setIsProcessing(true)
     try {
-      const result = await analyzeDocument(selectedFileName, outputLanguage);
-      addAnalyzerRecord(result);
-      setSelectedFileName('');
+      const result = await analyzeDocument(selectedFileName, outputLanguage)
+      addAnalyzerRecord(result)
+      setSelectedFileName('')
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -47,7 +47,9 @@ export const DocumentAnalyzerPage = () => {
         <section className="rounded-2xl border border-amber-300/30 bg-amber-400/10 p-5">
           <p className="inline-flex items-center gap-2 font-heading text-lg">
             <LockKeyhole className="size-5" aria-hidden="true" />
-            {language === 'es' ? 'Función para usuarios registrados' : 'Feature for signed-in users'}
+            {language === 'es'
+              ? 'Función para usuarios registrados'
+              : 'Feature for signed-in users'}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             {language === 'es'
@@ -93,10 +95,10 @@ export const DocumentAnalyzerPage = () => {
               type="file"
               className="sr-only"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(event) => {
-                const selected = event.target.files?.[0];
+              onChange={event => {
+                const selected = event.target.files?.[0]
                 if (selected) {
-                  setSelectedFileName(selected.name);
+                  setSelectedFileName(selected.name)
                 }
               }}
             />
@@ -109,7 +111,7 @@ export const DocumentAnalyzerPage = () => {
                 <select
                   id="output-language"
                   value={outputLanguage}
-                  onChange={(event) => setOutputLanguage(event.target.value as AppLanguage)}
+                  onChange={event => setOutputLanguage(event.target.value as AppLanguage)}
                   className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="es">Español</option>
@@ -120,7 +122,7 @@ export const DocumentAnalyzerPage = () => {
               <Button
                 type="button"
                 onClick={() => {
-                  void submitForAnalysis();
+                  void submitForAnalysis()
                 }}
                 disabled={!selectedFileName || isProcessing}
                 className="h-11 cursor-pointer bg-primary hover:bg-primary/85"
@@ -151,17 +153,18 @@ export const DocumentAnalyzerPage = () => {
             <div className="mt-3 space-y-3">
               {analyzerHistory.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  {language === 'es'
-                    ? 'Aún no hay análisis guardados.'
-                    : 'No analyses saved yet.'}
+                  {language === 'es' ? 'Aún no hay análisis guardados.' : 'No analyses saved yet.'}
                 </p>
               ) : (
-                analyzerHistory.map((record) => (
-                  <article key={record.id} className="rounded-xl border border-border/70 bg-background/60 p-3">
+                analyzerHistory.map(record => (
+                  <article
+                    key={record.id}
+                    className="rounded-xl border border-border/70 bg-background/60 p-3"
+                  >
                     <p className="text-sm font-semibold">{record.fileName}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{record.summary}</p>
                     <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                      {record.nextSteps.map((step) => (
+                      {record.nextSteps.map(step => (
                         <li key={step}>• {step}</li>
                       ))}
                     </ul>
@@ -173,5 +176,5 @@ export const DocumentAnalyzerPage = () => {
         </section>
       )}
     </div>
-  );
-};
+  )
+}

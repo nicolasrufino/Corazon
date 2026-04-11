@@ -1,14 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
+@config "./tailwind.config.js";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Brand design system */
+  --color-brand-emerald: #0B4A31;
+  --color-brand-teal: #8BC9C0;
+  --color-brand-terracotta: #C85A3A;
+  --color-brand-offwhite: #FAF8F4;
+  --color-brand-dark: #1A1A1A;
+
+  /* Font */
+  --font-sans: 'Belgrano', serif;
+
+  /* Radii */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Semantic color mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -117,19 +130,13 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    font-family: 'Open Sans', sans-serif;
-    @apply bg-background text-foreground antialiased;
+  html {
+    font-family: 'Belgrano', serif;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  .font-heading {
-    font-family: 'Poppins', sans-serif;
+  body {
+    font-family: 'Belgrano', serif;
+    @apply bg-background text-foreground antialiased;
   }
 
   button,

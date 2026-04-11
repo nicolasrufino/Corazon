@@ -1,69 +1,82 @@
-# React + TypeScript + Vite
+# Corazon — Brújula
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A bilingual (Spanish/English) community platform for Hispanic immigrants. Provides a resource directory, AI-powered document analysis, a community forum, and an onboarding guide — all accessible in the user's preferred language.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS v4
+- **Backend**: FastAPI (Python), deployed on Railway
+- **Database**: Supabase (auth + relational data), MongoDB Atlas (resources/documents)
+- **AI**: OpenRouter API
+- **Hosting**: Vercel (frontend), Railway (backend)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Running locally
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Frontend
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Runs at `http://localhost:5173`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Backend
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
+
+Runs at `http://localhost:8000`
+
+---
+
+## Environment variables
+
+Copy the example files and fill in your values:
+
+```bash
+cp .env.example .env.local            # frontend
+cp backend/.env.example backend/.env  # backend
+```
+
+### Frontend (`.env.local`)
+
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `VITE_API_URL` | Backend URL (`http://localhost:8000` locally) |
+
+### Backend (`backend/.env`)
+
+| Variable | Description |
+|---|---|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key (server-side only) |
+| `MONGODB_URI` | MongoDB Atlas connection string |
+| `OPENROUTER_API_KEY` | OpenRouter API key for AI features |
+| `FRONTEND_URL` | Frontend origin for CORS |
+
+---
+
+## Deploy
+
+### Frontend — Vercel
+
+1. Push to GitHub
+2. Import the repo in Vercel
+3. Set the environment variables from the Frontend table above in Vercel's project settings
+4. Deploy — Vercel auto-detects Vite
+
+### Backend — Railway
+
+1. Create a new Railway project and connect this repo
+2. Set root directory to `/backend`
+3. Set start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+4. Add all backend environment variables in Railway's variable settings
+5. Deploy — Railway runs the `Procfile` automatically

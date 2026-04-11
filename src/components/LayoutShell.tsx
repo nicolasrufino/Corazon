@@ -1,24 +1,24 @@
-import type { ReactNode } from 'react';
-import { Compass, FileText, Home, LogOut, MapPinned, Menu, UserRound } from 'lucide-react';
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { LanguageToggle } from '@/components/LanguageToggle';
-import { useAppContext } from '@/context/AppContext';
-import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react'
+import { Compass, FileText, Home, LogOut, MapPinned, Menu, UserRound } from 'lucide-react'
+import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
+import { LanguageToggle } from '@/components/LanguageToggle'
+import { useAppContext } from '@/context/AppContext'
+import { cn } from '@/lib/utils'
 
 interface LayoutShellProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 const navigation = [
   { to: '/', icon: Home, labelEs: 'Recursos', labelEn: 'Resources' },
   { to: '/community', icon: MapPinned, labelEs: 'Comunidad', labelEn: 'Community' },
   { to: '/analyzer', icon: FileText, labelEs: 'Analizador', labelEn: 'Analyzer' },
-];
+]
 
 export const LayoutShell = ({ children }: LayoutShellProps) => {
-  const { language, user, signOut } = useAppContext();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { language, user, signOut } = useAppContext()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <div className="relative min-h-screen w-full bg-background text-foreground">
@@ -43,7 +43,7 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
           <button
             type="button"
             className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-card text-foreground transition-colors duration-200 hover:bg-primary/10 lg:hidden"
-            onClick={() => setIsMenuOpen((current) => !current)}
+            onClick={() => setIsMenuOpen(current => !current)}
             aria-label={language === 'es' ? 'Abrir menú' : 'Open menu'}
           >
             <Menu className="size-5" aria-hidden="true" />
@@ -78,14 +78,16 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
               <LanguageToggle />
             </div>
             <div className="flex flex-col gap-2">
-              {navigation.map((item) => (
+              {navigation.map(item => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
                       'inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors duration-200',
-                      isActive ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-primary/10',
+                      isActive
+                        ? 'bg-primary/20 text-primary'
+                        : 'text-foreground hover:bg-primary/10'
                     )
                   }
                   onClick={() => setIsMenuOpen(false)}
@@ -127,7 +129,7 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
             </p>
 
             <nav className="space-y-1">
-              {navigation.map((item) => (
+              {navigation.map(item => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -136,7 +138,7 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
                       'inline-flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium transition-all duration-200',
                       isActive
                         ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'text-foreground hover:bg-primary/15',
+                        : 'text-foreground hover:bg-primary/15'
                     )
                   }
                 >
@@ -162,5 +164,5 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-2 lg:py-8">{children}</main>
       </div>
     </div>
-  );
-};
+  )
+}

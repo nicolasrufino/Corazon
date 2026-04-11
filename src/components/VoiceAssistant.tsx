@@ -1,28 +1,28 @@
-import { Mic, SendHorizontal, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
-import { sendVoiceChatMessage } from '@/lib/mockApi';
-import { cn } from '@/lib/utils';
-import type { ChatMessage } from '@/types/app';
+import { Mic, SendHorizontal, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useAppContext } from '@/context/AppContext'
+import { sendVoiceChatMessage } from '@/lib/mockApi'
+import { cn } from '@/lib/utils'
+import type { ChatMessage } from '@/types/app'
 
 export const VoiceAssistant = () => {
-  const { addChatMessage, chatHistory, language, user } = useAppContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isResponding, setIsResponding] = useState(false);
+  const { addChatMessage, chatHistory, language, user } = useAppContext()
+  const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState('')
+  const [isResponding, setIsResponding] = useState(false)
 
   const visibleHistory = useMemo(() => {
     if (!user) {
-      return chatHistory.slice(-4);
+      return chatHistory.slice(-4)
     }
-    return chatHistory;
-  }, [chatHistory, user]);
+    return chatHistory
+  }, [chatHistory, user])
 
   const sendMessage = async () => {
-    const trimmed = message.trim();
+    const trimmed = message.trim()
 
     if (!trimmed || isResponding) {
-      return;
+      return
     }
 
     const userMessage: ChatMessage = {
@@ -30,19 +30,19 @@ export const VoiceAssistant = () => {
       role: 'user',
       content: trimmed,
       createdAt: new Date().toISOString(),
-    };
+    }
 
-    addChatMessage(userMessage);
-    setMessage('');
-    setIsResponding(true);
+    addChatMessage(userMessage)
+    setMessage('')
+    setIsResponding(true)
 
     try {
-      const response = await sendVoiceChatMessage(trimmed, language);
-      addChatMessage(response);
+      const response = await sendVoiceChatMessage(trimmed, language)
+      addChatMessage(response)
     } finally {
-      setIsResponding(false);
+      setIsResponding(false)
     }
-  };
+  }
 
   return (
     <>
@@ -58,7 +58,7 @@ export const VoiceAssistant = () => {
       <div
         className={cn(
           'fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-2xl transform rounded-t-3xl border border-border bg-card p-4 shadow-2xl shadow-black/40 transition-transform duration-300 sm:inset-x-4 sm:bottom-4 sm:rounded-3xl',
-          isOpen ? 'translate-y-0' : 'translate-y-[110%]',
+          isOpen ? 'translate-y-0' : 'translate-y-[110%]'
         )}
         role="dialog"
         aria-modal="true"
@@ -93,7 +93,7 @@ export const VoiceAssistant = () => {
                 : 'Ask about resources, next steps, or how to prepare for an appointment.'}
             </p>
           ) : (
-            visibleHistory.map((entry) => (
+            visibleHistory.map(entry => (
               <div
                 key={entry.id}
                 className={cn('max-w-[90%] rounded-2xl px-3 py-2 text-sm leading-relaxed', {
@@ -107,7 +107,10 @@ export const VoiceAssistant = () => {
           )}
 
           {isResponding ? (
-            <div className="inline-flex items-center gap-1 rounded-2xl bg-muted px-3 py-2" aria-live="polite">
+            <div
+              className="inline-flex items-center gap-1 rounded-2xl bg-muted px-3 py-2"
+              aria-live="polite"
+            >
               <span className="typing-dot" />
               <span className="typing-dot" />
               <span className="typing-dot" />
@@ -131,22 +134,24 @@ export const VoiceAssistant = () => {
             id="voice-message"
             type="text"
             value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            onKeyDown={(event) => {
+            onChange={event => setMessage(event.target.value)}
+            onKeyDown={event => {
               if (event.key === 'Enter') {
-                event.preventDefault();
-                void sendMessage();
+                event.preventDefault()
+                void sendMessage()
               }
             }}
             placeholder={
-              language === 'es' ? 'Ej. ¿Qué necesito para una consulta legal?' : 'e.g. What do I need for a legal consult?'
+              language === 'es'
+                ? 'Ej. ¿Qué necesito para una consulta legal?'
+                : 'e.g. What do I need for a legal consult?'
             }
             className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
           />
           <button
             type="button"
             onClick={() => {
-              void sendMessage();
+              void sendMessage()
             }}
             disabled={!message.trim() || isResponding}
             className="inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl bg-primary px-3 text-primary-foreground transition-colors duration-200 hover:bg-primary/85 disabled:cursor-not-allowed disabled:opacity-60"
@@ -157,5 +162,5 @@ export const VoiceAssistant = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}

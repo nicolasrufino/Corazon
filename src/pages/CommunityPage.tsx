@@ -1,41 +1,41 @@
-import { CheckCircle2, Clock3, Languages, Phone, ShieldAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
-import { resourceCategories } from '@/data/mockData';
-import { fetchCommunityOrganizations } from '@/lib/mockApi';
-import { cn } from '@/lib/utils';
-import type { CommunityOrganization, ResourceCategory } from '@/types/app';
+import { CheckCircle2, Clock3, Languages, Phone, ShieldAlert } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useAppContext } from '@/context/AppContext'
+import { resourceCategories } from '@/data/mockData'
+import { fetchCommunityOrganizations } from '@/lib/mockApi'
+import { cn } from '@/lib/utils'
+import type { CommunityOrganization, ResourceCategory } from '@/types/app'
 
 export const CommunityPage = () => {
-  const { language } = useAppContext();
-  const [category, setCategory] = useState<ResourceCategory | 'all'>('all');
-  const [languageFilter, setLanguageFilter] = useState<'all' | 'Español' | 'English'>('all');
-  const [organizations, setOrganizations] = useState<CommunityOrganization[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { language } = useAppContext()
+  const [category, setCategory] = useState<ResourceCategory | 'all'>('all')
+  const [languageFilter, setLanguageFilter] = useState<'all' | 'Español' | 'English'>('all')
+  const [organizations, setOrganizations] = useState<CommunityOrganization[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
 
     const loadOrganizations = async () => {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
-        const result = await fetchCommunityOrganizations(category, languageFilter);
+        const result = await fetchCommunityOrganizations(category, languageFilter)
         if (isMounted) {
-          setOrganizations(result);
+          setOrganizations(result)
         }
       } finally {
         if (isMounted) {
-          setIsLoading(false);
+          setIsLoading(false)
         }
       }
-    };
+    }
 
-    void loadOrganizations();
+    void loadOrganizations()
 
     return () => {
-      isMounted = false;
-    };
-  }, [category, languageFilter]);
+      isMounted = false
+    }
+  }, [category, languageFilter])
 
   return (
     <div className="space-y-6">
@@ -62,12 +62,14 @@ export const CommunityPage = () => {
               onClick={() => setCategory('all')}
               className={cn(
                 'h-11 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors duration-200',
-                category === 'all' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-primary/15',
+                category === 'all'
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border hover:bg-primary/15'
               )}
             >
               {language === 'es' ? 'Todas las categorías' : 'All categories'}
             </button>
-            {resourceCategories.map((item) => (
+            {resourceCategories.map(item => (
               <button
                 key={item.key}
                 type="button"
@@ -76,7 +78,7 @@ export const CommunityPage = () => {
                   'h-11 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors duration-200',
                   category === item.key
                     ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border hover:bg-primary/15',
+                    : 'border-border hover:bg-primary/15'
                 )}
               >
                 {language === 'es' ? item.labelEs : item.labelEn}
@@ -86,7 +88,7 @@ export const CommunityPage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {(['all', 'Español', 'English'] as const).map((option) => (
+          {(['all', 'Español', 'English'] as const).map(option => (
             <button
               key={option}
               type="button"
@@ -95,7 +97,7 @@ export const CommunityPage = () => {
                 'h-11 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors duration-200',
                 languageFilter === option
                   ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border hover:bg-primary/15',
+                  : 'border-border hover:bg-primary/15'
               )}
             >
               {option === 'all'
@@ -112,12 +114,15 @@ export const CommunityPage = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={`org-skeleton-${index}`} className="h-56 animate-pulse rounded-2xl bg-muted/60" />
+              <div
+                key={`org-skeleton-${index}`}
+                className="h-56 animate-pulse rounded-2xl bg-muted/60"
+              />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {organizations.map((organization) => (
+            {organizations.map(organization => (
               <article
                 key={organization.id}
                 className="flex h-full flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 p-4 transition-colors duration-200 hover:border-primary/45"
@@ -127,7 +132,9 @@ export const CommunityPage = () => {
                   <span
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
-                      organization.verified ? 'bg-primary/20 text-primary' : 'bg-amber-500/20 text-amber-200',
+                      organization.verified
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-amber-500/20 text-amber-200'
                     )}
                   >
                     {organization.verified ? (
@@ -173,5 +180,5 @@ export const CommunityPage = () => {
         )}
       </section>
     </div>
-  );
-};
+  )
+}

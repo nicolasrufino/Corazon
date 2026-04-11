@@ -1,16 +1,16 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 @config "./tailwind.config.js";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   /* Brand design system */
-  --color-brand-emerald: #0B4A31;
-  --color-brand-teal: #8BC9C0;
-  --color-brand-terracotta: #C85A3A;
-  --color-brand-offwhite: #FAF8F4;
-  --color-brand-dark: #1A1A1A;
+  --color-brand-emerald: #0b4a31;
+  --color-brand-teal: #8bc9c0;
+  --color-brand-terracotta: #c85a3a;
+  --color-brand-offwhite: #faf8f4;
+  --color-brand-dark: #1a1a1a;
 
   /* Font */
   --font-sans: 'Belgrano', serif;

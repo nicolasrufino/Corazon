@@ -1,26 +1,35 @@
-import { Bookmark, CheckCircle2, Clock3, Globe2, MapPin, PhoneCall, ShieldAlert, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/context/AppContext';
-import { cn } from '@/lib/utils';
-import type { Resource } from '@/types/app';
+import {
+  Bookmark,
+  CheckCircle2,
+  Clock3,
+  Globe2,
+  MapPin,
+  PhoneCall,
+  ShieldAlert,
+  Star,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useAppContext } from '@/context/AppContext'
+import { cn } from '@/lib/utils'
+import type { Resource } from '@/types/app'
 
 interface ResourceCardProps {
-  resource: Resource;
-  onRequestAuth: () => void;
+  resource: Resource
+  onRequestAuth: () => void
 }
 
 export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => {
-  const { language, user, hasSavedResource, toggleSavedResource } = useAppContext();
+  const { language, user, hasSavedResource, toggleSavedResource } = useAppContext()
 
-  const isSaved = hasSavedResource(resource.id);
+  const isSaved = hasSavedResource(resource.id)
 
   const handleSave = () => {
     if (!user) {
-      onRequestAuth();
-      return;
+      onRequestAuth()
+      return
     }
-    toggleSavedResource(resource);
-  };
+    toggleSavedResource(resource)
+  }
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-lg shadow-black/15 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/45">
@@ -34,7 +43,9 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
         <span
           className={cn(
             'absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold',
-            resource.openNow ? 'bg-emerald-500/20 text-emerald-200' : 'bg-muted/90 text-muted-foreground',
+            resource.openNow
+              ? 'bg-emerald-500/20 text-emerald-200'
+              : 'bg-muted/90 text-muted-foreground'
           )}
         >
           <Clock3 className="size-3" aria-hidden="true" />
@@ -54,7 +65,7 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
           <span
             className={cn(
               'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
-              resource.verified ? 'bg-primary/20 text-primary' : 'bg-amber-500/20 text-amber-200',
+              resource.verified ? 'bg-primary/20 text-primary' : 'bg-amber-500/20 text-amber-200'
             )}
           >
             {resource.verified ? (
@@ -75,7 +86,7 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
         <p className="text-sm leading-relaxed text-muted-foreground">{resource.description}</p>
 
         <div className="flex flex-wrap gap-2">
-          {resource.tags.map((tag) => (
+          {resource.tags.map(tag => (
             <span
               key={tag}
               className="rounded-full border border-border/80 bg-background/60 px-2.5 py-1 text-xs text-foreground/90"
@@ -132,5 +143,5 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
         </div>
       </div>
     </article>
-  );
-};
+  )
+}

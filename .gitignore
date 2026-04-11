@@ -59,9 +59,11 @@ yarn-error.*
 
 # IDE
 .idea/
-.vscode/
 *.swp
 *.swo
+# VS Code — track settings.json and extensions.json (project-level),
+# ignore personal workspace files
+.vscode/*.code-workspace
 
 # Credentials — never commit
 *.pem

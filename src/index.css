@@ -27,7 +27,7 @@
   --font-sans: 'Belgrano', serif;
   --font-display: 'Playfair Display', serif;
   --font-body: 'Belgrano', serif;
-  --font-brand: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --font-brand: 'Belgrano', Georgia, serif;
 
   /* Radii */
   --radius-sm: calc(var(--radius) - 4px);

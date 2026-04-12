@@ -7,7 +7,6 @@ const founders = [
     bio: 'A first-generation Colombian-American, Nicolas brings a decade of experience in community organizing and product strategy. His vision for Corazon is rooted in the belief that technology can be a force for cultural preservation and empowerment.',
     gradient: 'from-emerald to-aquamarine',
     borderColor: '#0b4a31',
-    glowColor: 'rgba(11,74,49,0.3)',
   },
   {
     name: 'Eddie',
@@ -15,7 +14,6 @@ const founders = [
     bio: 'Eddie is a Mexican-American engineer with a passion for building accessible, inclusive technology. With experience at leading tech companies, he ensures Corazon is built on a foundation that scales while keeping the community at its core.',
     gradient: 'from-sapphire to-citrine',
     borderColor: '#334ab5',
-    glowColor: 'rgba(51,74,181,0.3)',
   },
   {
     name: 'Diego',
@@ -23,7 +21,6 @@ const founders = [
     bio: 'Diego is a Dominican-American designer who believes beautiful design is a form of respect. He crafts every pixel of Corazon with intention, ensuring the platform feels like home for every member of our diverse community.',
     gradient: 'from-coral to-amber',
     borderColor: '#f94e4f',
-    glowColor: 'rgba(249,78,79,0.3)',
   },
 ]
 
@@ -95,16 +92,6 @@ export default function Founders() {
                 border: '1px solid rgba(255,255,255,0.06)',
               }}
             >
-              {/* Hover glow */}
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{
-                  boxShadow: `0 8px 40px ${founder.glowColor}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                  border: `1px solid ${founder.borderColor}40`,
-                }}
-                aria-hidden="true"
-              />
-
               {/* Avatar placeholder */}
               <div
                 className={`mx-auto w-24 h-24 rounded-full bg-gradient-to-br ${founder.gradient} mb-6 flex items-center justify-center text-3xl font-bold text-white/90 select-none font-display`}

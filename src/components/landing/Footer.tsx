@@ -84,16 +84,16 @@ export default function Footer() {
               className="inline-flex items-center text-white hover:opacity-80 transition-opacity"
               style={{
                 fontFamily: 'var(--font-brand)',
-                fontWeight: 900,
+                fontWeight: 400,
                 fontSize: '1.75rem',
-                letterSpacing: '-0.03em',
+                letterSpacing: '-0.01em',
               }}
               aria-label="Corazon home"
             >
-              C
+              c
               <OrnateHeart
                 size="0.85em"
-                color="#f94e4f"
+                color="#ff4560"
                 style={{ margin: '0 0.04em', transform: 'translateY(0.02em)' }}
               />
               razon

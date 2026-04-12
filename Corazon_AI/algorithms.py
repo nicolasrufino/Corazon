@@ -95,6 +95,22 @@ _LANGUAGE_NAV_PENALTY = {
     "en": 0.0,
 }
 
+# Hours saved per interaction type — includes community events.
+# "community_event" is used by discovery_algorithms.py isolation impact
+# calculations to credit event attendance against isolation_hours_yr.
+SAVINGS_MAP = {
+    "job": 3.0,
+    "internship": 2.5,
+    "scholarship": 3.5,
+    "food_bank": 2.0,
+    "health": 4.0,
+    "mental_health": 3.0,
+    "legal": 6.0,
+    "housing": 5.0,
+    "language": 2.5,
+    "community_event": 2.0,
+}
+
 # Base hours saved per interaction by category (before multipliers)
 _BASE_TIME_SAVED = {
     "job": 3.0,
@@ -173,6 +189,8 @@ def build_simple_archetype(
         "preferred_language": preferred_language,
         "occupation": occupation,
         "nav_hours_yr": nav_hours_yr,
+        # isolation_hours_yr is computed separately by
+        # discovery_algorithms.calculate_isolation_impact()
         "time_saved_rate": time_saved_rate,
     }
 

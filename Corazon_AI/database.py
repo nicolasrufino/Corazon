@@ -66,6 +66,20 @@ def get_resources_by_neighborhood(neighborhood: str) -> list:
         return []
 
 
+def get_events() -> list:
+    try:
+        response = (
+            supabase.table(RESOURCES_TABLE)
+            .select("*")
+            .eq("category", "events")
+            .execute()
+        )
+        return response.data
+    except Exception as e:
+        print(f"[get_events] error: {e}")
+        return []
+
+
 _TRANSLATION_MAP = {
     "comida": ["food", "grocery", "nutrition", "meal", "snap"],
     "alimentos": ["food", "grocery", "nutrition", "meal"],
@@ -111,3 +125,8 @@ if __name__ == "__main__":
     print(f"Total resources: {len(resources)}")
     if resources:
         print(f"First resource title: {resources[0].get('title', '(no title field)')}")
+
+    events = get_events()
+    print(f"Total events: {len(events)}")
+    if events:
+        print(f"First event title: {events[0].get('title', '(no title field)')}")

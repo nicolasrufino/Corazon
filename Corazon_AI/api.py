@@ -17,6 +17,13 @@ from algorithms import (
     get_top_resources,
     estimate_impact,
 )
+from discovery_algorithms import (
+    build_discovery_archetype,
+    update_discovery_archetype,
+    should_update_discovery,
+    get_top_events,
+    calculate_isolation_impact,
+)
 
 app = FastAPI(title="Corazon AI Algorithms Service", version="1.0.0")
 
@@ -55,6 +62,31 @@ class GetTopResourcesRequest(BaseModel):
 
 
 class EstimateImpactRequest(BaseModel):
+    simple_archetype: dict[str, Any]
+
+
+class BuildDiscoveryArchetypeRequest(BaseModel):
+    simple_archetype: dict[str, Any]
+    event_interactions: list[str]
+    age: int | None = None
+
+
+class UpdateDiscoveryArchetypeRequest(BaseModel):
+    discovery_archetype: dict[str, Any]
+    new_event_interactions: list[str]
+
+
+class ShouldUpdateDiscoveryRequest(BaseModel):
+    discovery_archetype: dict[str, Any]
+
+
+class GetTopEventsRequest(BaseModel):
+    discovery_archetype: dict[str, Any]
+    events: list[dict[str, Any]]
+    n: int = 5
+
+
+class IsolationImpactRequest(BaseModel):
     simple_archetype: dict[str, Any]
 
 
@@ -140,6 +172,64 @@ def api_get_top_resources(body: GetTopResourcesRequest):
 def api_estimate_impact(body: EstimateImpactRequest):
     try:
         result = estimate_impact(body.simple_archetype)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+# ── DISCOVERY ENDPOINTS ───────────────────────────────────────────────────────
+
+@app.post("/build-discovery-archetype")
+def api_build_discovery_archetype(body: BuildDiscoveryArchetypeRequest):
+    try:
+        result = build_discovery_archetype(
+            simple_archetype=body.simple_archetype,
+            event_interactions=body.event_interactions,
+            age=body.age,
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/update-discovery-archetype")
+def api_update_discovery_archetype(body: UpdateDiscoveryArchetypeRequest):
+    try:
+        result = update_discovery_archetype(
+            discovery_archetype=body.discovery_archetype,
+            new_event_interactions=body.new_event_interactions,
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/should-update-discovery")
+def api_should_update_discovery(body: ShouldUpdateDiscoveryRequest):
+    try:
+        result = should_update_discovery(body.discovery_archetype)
+        return {"should_update": result}
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/get-top-events")
+def api_get_top_events(body: GetTopEventsRequest):
+    try:
+        result = get_top_events(
+            discovery_archetype=body.discovery_archetype,
+            all_events=body.events,
+            n=body.n,
+        )
+        return {"events": result}
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/isolation-impact")
+def api_isolation_impact(body: IsolationImpactRequest):
+    try:
+        result = calculate_isolation_impact(body.simple_archetype)
         return result
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))

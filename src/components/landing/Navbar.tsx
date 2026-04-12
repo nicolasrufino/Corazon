@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import OrnateHeart from './OrnateHeart'
 
 const navLinks = [
   { label: 'About', href: '#about' },
@@ -29,6 +30,34 @@ export default function Navbar() {
     }
   }, [mobileOpen])
 
+  const JoinButton = ({ large = false }: { large?: boolean }) => (
+    <motion.button
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      className={`relative overflow-hidden rounded-full font-body font-semibold tracking-wide text-white cursor-pointer ${
+        large ? 'px-7 py-3 text-base' : 'px-5 py-2 text-sm'
+      }`}
+      style={{
+        background: 'linear-gradient(135deg, #ff6c8a 0%, #f94e4f 40%, #ff6c00 100%)',
+        boxShadow:
+          '0 4px 14px rgba(249,78,79,0.45), 0 0 0 1px rgba(255,255,255,0.08) inset, 0 1px 0 rgba(255,255,255,0.25) inset',
+      }}
+      aria-label="Join Corazon"
+    >
+      {/* Shimmer overlay */}
+      <span
+        className="pointer-events-none absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500"
+        style={{
+          background:
+            'linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%)',
+        }}
+        aria-hidden="true"
+      />
+      <span className="relative z-10">Join</span>
+    </motion.button>
+  )
+
   return (
     <>
       <motion.nav
@@ -36,20 +65,35 @@ export default function Navbar() {
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-onyx/85 backdrop-blur-xl shadow-lg shadow-black/20'
-            : 'bg-onyx/60 backdrop-blur-md'
+          scrolled ? 'backdrop-blur-xl shadow-lg shadow-black/40' : 'backdrop-blur-md'
         }`}
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{
+          background: scrolled
+            ? 'linear-gradient(180deg, rgba(48,50,58,0.92) 0%, rgba(28,30,36,0.88) 50%, rgba(14,16,20,0.85) 100%)'
+            : 'linear-gradient(180deg, rgba(58,60,68,0.75) 0%, rgba(34,36,42,0.65) 50%, rgba(18,20,24,0.55) 100%)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+        }}
       >
         <div className="mx-auto max-w-7xl px-5 sm:px-8 flex items-center justify-between h-16 sm:h-18">
           {/* Logo */}
           <a
             href="#"
-            className="font-body text-white text-xl sm:text-2xl tracking-tight hover:opacity-80 transition-opacity"
+            className="flex items-center text-white hover:opacity-80 transition-opacity"
+            style={{
+              fontFamily: 'var(--font-brand)',
+              fontWeight: 900,
+              fontSize: 'clamp(1.25rem, 2vw, 1.6rem)',
+              letterSpacing: '-0.03em',
+            }}
             aria-label="Corazon home"
           >
-            C<span className="text-coral">&#10084;&#65039;</span>razon
+            C
+            <OrnateHeart
+              size="0.85em"
+              color="#f94e4f"
+              style={{ margin: '0 0.04em', transform: 'translateY(0.02em)' }}
+            />
+            razon
           </a>
 
           {/* Desktop center links */}
@@ -94,25 +138,7 @@ export default function Navbar() {
               </span>
             </button>
 
-            <button
-              className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 border border-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-              aria-label="User profile"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-pearl"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </button>
+            <JoinButton />
           </div>
 
           {/* Mobile hamburger */}
@@ -158,7 +184,11 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 bottom-0 z-40 w-72 bg-onyx/95 backdrop-blur-xl border-l border-white/10 md:hidden flex flex-col pt-24 px-8"
+              className="fixed top-0 right-0 bottom-0 z-40 w-72 backdrop-blur-xl border-l border-white/10 md:hidden flex flex-col pt-24 px-8"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(48,50,58,0.95) 0%, rgba(20,22,28,0.95) 100%)',
+              }}
             >
               <nav className="flex flex-col gap-6">
                 {navLinks.map((link, i) => (
@@ -207,26 +237,10 @@ export default function Navbar() {
                     ES
                   </span>
                 </button>
+              </div>
 
-                <button
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 border border-white/10 cursor-pointer"
-                  aria-label="User profile"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-pearl"
-                  >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                </button>
+              <div className="mt-8">
+                <JoinButton large />
               </div>
             </motion.div>
           </>

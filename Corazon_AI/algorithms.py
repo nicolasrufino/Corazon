@@ -37,7 +37,6 @@
 #     → nav_hours, poverty_hours, total_hours_yr, lifetime_days, etc.
 
 import joblib
-import numpy as np
 import pandas as pd
 from datetime import datetime, timezone, timedelta
 
@@ -46,12 +45,12 @@ from datetime import datetime, timezone, timedelta
 
 _time_bundle = joblib.load("models/time_model.pkl")
 
-_nav_model      = _time_bundle["nav_model"]
-_poverty_model  = _time_bundle["poverty_model"]
-_total_model    = _time_bundle["total_model"]
+_nav_model = _time_bundle["nav_model"]
+_poverty_model = _time_bundle["poverty_model"]
+_total_model = _time_bundle["total_model"]
 _lifetime_model = _time_bundle["lifetime_model"]
 _status_encoder = _time_bundle["status_encoder"]
-_lang_encoder   = _time_bundle["language_encoder"]
+_lang_encoder = _time_bundle["language_encoder"]
 
 # BLS Q2 2024: Hispanic median weekly earnings $903 ÷ 40hrs = $22.58/hr
 # Used to convert dollar-denominated poverty premium back into hours.
@@ -60,27 +59,34 @@ HISPANIC_MEDIAN_HOURLY = 22.58
 
 # All 9 resource categories — mirrors the scraper taxonomy
 CATEGORIES = [
-    "job", "internship", "scholarship", "food_bank",
-    "health", "mental_health", "legal", "housing", "language"
+    "job",
+    "internship",
+    "scholarship",
+    "food_bank",
+    "health",
+    "mental_health",
+    "legal",
+    "housing",
+    "language",
 ]
 
 # Base nav hours by occupation
 # unemployed: most time available but most barriers navigating systems
 # without employer support or student resources
 _OCCUPATION_BASE_HOURS = {
-    "unemployed":        60.0,
-    "student":           45.0,
-    "student_employed":  38.0,
-    "employed":          32.0,
+    "unemployed": 60.0,
+    "student": 45.0,
+    "student_employed": 38.0,
+    "employed": 32.0,
 }
 
 # Immigration status multiplier applied to nav_hours_yr
 # Source: CAP (2022) bureaucratic burden scaling by status
 _STATUS_NAV_MULTIPLIER = {
-    "undocumented":      2.4,
-    "DACA":              1.8,
+    "undocumented": 2.4,
+    "DACA": 1.8,
     "permanent_resident": 1.3,
-    "citizen":           1.0,
+    "citizen": 1.0,
 }
 
 # Language penalty added after multiplier (absolute hours)
@@ -91,24 +97,24 @@ _LANGUAGE_NAV_PENALTY = {
 
 # Base hours saved per interaction by category (before multipliers)
 _BASE_TIME_SAVED = {
-    "job":          3.0,
-    "internship":   2.5,
-    "scholarship":  3.5,
-    "food_bank":    2.0,
-    "health":       4.0,
+    "job": 3.0,
+    "internship": 2.5,
+    "scholarship": 3.5,
+    "food_bank": 2.0,
+    "health": 4.0,
     "mental_health": 3.0,
-    "legal":        6.0,
-    "housing":      5.0,
-    "language":     2.5,
+    "legal": 6.0,
+    "housing": 5.0,
+    "language": 2.5,
 }
 
 # Immigration multiplier for time_saved_rate:
 # harder-to-navigate populations save more time per interaction
 _STATUS_SAVED_MULTIPLIER = {
-    "undocumented":      1.8,
-    "DACA":              1.5,
+    "undocumented": 1.8,
+    "DACA": 1.5,
     "permanent_resident": 1.2,
-    "citizen":           1.0,
+    "citizen": 1.0,
 }
 
 # Language multiplier for time_saved_rate
@@ -119,10 +125,10 @@ _LANGUAGE_SAVED_MULTIPLIER = {
 
 # Occupation → num_goals proxy for the ML time model
 _OCCUPATION_NUM_GOALS = {
-    "unemployed":       5,
-    "student":          3,
+    "unemployed": 5,
+    "student": 3,
     "student_employed": 4,
-    "employed":         2,
+    "employed": 2,
 }
 
 # Fixed average goal difficulty — no longer collected during onboarding
@@ -130,6 +136,7 @@ _AVG_GOAL_DIFFICULTY = 11.0
 
 
 # ── ALGORITHM 1: Simple Archetype Builder ────────────────────────────────────
+
 
 def build_simple_archetype(
     immigration_status: str,
@@ -164,13 +171,14 @@ def build_simple_archetype(
     return {
         "immigration_status": immigration_status,
         "preferred_language": preferred_language,
-        "occupation":         occupation,
-        "nav_hours_yr":       nav_hours_yr,
-        "time_saved_rate":    time_saved_rate,
+        "occupation": occupation,
+        "nav_hours_yr": nav_hours_yr,
+        "time_saved_rate": time_saved_rate,
     }
 
 
 # ── ALGORITHM 2: Time Saved Calculator ───────────────────────────────────────
+
 
 def calculate_time_saved(simple_archetype: dict, interactions_log: list) -> dict:
     """
@@ -196,13 +204,14 @@ def calculate_time_saved(simple_archetype: dict, interactions_log: list) -> dict
     total = round(sum(breakdown.values()), 2)
 
     return {
-        "total_saved_hrs":    total,
-        "breakdown":          breakdown,
+        "total_saved_hrs": total,
+        "breakdown": breakdown,
         "interactions_count": len(interactions_log),
     }
 
 
 # ── ALGORITHM 3: Complex Archetype Builder and Updater ───────────────────────
+
 
 def _compute_weights(interactions_log: list) -> dict:
     """
@@ -243,12 +252,14 @@ def build_complex_archetype(simple_archetype: dict, interactions_log: list) -> d
     dominant = sorted(weights, key=lambda c: weights[c], reverse=True)[:3]
 
     archetype = dict(simple_archetype)
-    archetype.update({
-        "category_weights":    weights,
-        "last_updated":        datetime.now(timezone.utc).isoformat(),
-        "interaction_count":   len(interactions_log),
-        "dominant_categories": dominant,
-    })
+    archetype.update(
+        {
+            "category_weights": weights,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "interaction_count": len(interactions_log),
+            "dominant_categories": dominant,
+        }
+    )
     return archetype
 
 
@@ -279,7 +290,9 @@ def update_complex_archetype(
     # Reconstruct full interaction history by reverse-engineering existing
     # weights back to a count isn't lossless, so we track cumulative count
     # and treat new_interactions as additive deltas on current weights.
-    existing_weights = complex_archetype.get("category_weights", {cat: 1.0 for cat in CATEGORIES})
+    existing_weights = complex_archetype.get(
+        "category_weights", {cat: 1.0 for cat in CATEGORIES}
+    )
     existing_count = complex_archetype.get("interaction_count", 0)
 
     # Rebuild raw (un-normalized) weights from current normalized weights,
@@ -294,21 +307,28 @@ def update_complex_archetype(
             updated_weights[interaction] = min(updated_weights[interaction] + 0.3, 3.0)
 
     total = sum(updated_weights.values())
-    updated_weights = {cat: round(w / total * 9.0, 4) for cat, w in updated_weights.items()}
+    updated_weights = {
+        cat: round(w / total * 9.0, 4) for cat, w in updated_weights.items()
+    }
 
-    dominant = sorted(updated_weights, key=lambda c: updated_weights[c], reverse=True)[:3]
+    dominant = sorted(updated_weights, key=lambda c: updated_weights[c], reverse=True)[
+        :3
+    ]
 
     updated = dict(complex_archetype)
-    updated.update({
-        "category_weights":    updated_weights,
-        "last_updated":        datetime.now(timezone.utc).isoformat(),
-        "interaction_count":   existing_count + len(new_interactions),
-        "dominant_categories": dominant,
-    })
+    updated.update(
+        {
+            "category_weights": updated_weights,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "interaction_count": existing_count + len(new_interactions),
+            "dominant_categories": dominant,
+        }
+    )
     return updated
 
 
 # ── PERSONALIZATION: Resource Scorer ─────────────────────────────────────────
+
 
 def get_top_resources(
     complex_archetype: dict,
@@ -348,6 +368,7 @@ def get_top_resources(
 
 # ── IMPACT ESTIMATE (ML models) ───────────────────────────────────────────────
 
+
 def estimate_impact(simple_archetype: dict) -> dict:
     """
     Runs the trained time model to estimate hours of life lost.
@@ -373,42 +394,56 @@ def estimate_impact(simple_archetype: dict) -> dict:
         occupation = simple_archetype["occupation"]
 
         s = _status_encoder.transform([immigration_status])[0]
-        l = _lang_encoder.transform([preferred_language])[0]
+        lang_enc = _lang_encoder.transform([preferred_language])[0]
         num_goals = _OCCUPATION_NUM_GOALS.get(occupation, 3)
 
         features = pd.DataFrame(
-            [[s, num_goals, l, _AVG_GOAL_DIFFICULTY]],
-            columns=["status_encoded", "num_goals",
-                     "language_encoded", "avg_goal_difficulty"],
+            [[s, num_goals, lang_enc, _AVG_GOAL_DIFFICULTY]],
+            columns=[
+                "status_encoded",
+                "num_goals",
+                "language_encoded",
+                "avg_goal_difficulty",
+            ],
         )
 
-        nav      = round(float(_nav_model.predict(features)[0]), 1)
-        poverty  = round(float(_poverty_model.predict(features)[0]), 1)
-        total    = round(float(_total_model.predict(features)[0]), 1)
+        nav = round(float(_nav_model.predict(features)[0]), 1)
+        poverty = round(float(_poverty_model.predict(features)[0]), 1)
+        total = round(float(_total_model.predict(features)[0]), 1)
         lifetime = round(float(_lifetime_model.predict(features)[0]), 1)
 
         return {
-            "nav_hours":       nav,
-            "poverty_hours":   poverty,
-            "total_hours_yr":  total,
-            "lifetime_days":   lifetime,
+            "nav_hours": nav,
+            "poverty_hours": poverty,
+            "total_hours_yr": total,
+            "lifetime_days": lifetime,
             "conversion_rate": HISPANIC_MEDIAN_HOURLY,
-            "source":          "BLS Usual Weekly Earnings Q2 2024",
+            "source": "BLS Usual Weekly Earnings Q2 2024",
         }
 
     except Exception as e:
         print(f"[estimate_impact fallback] {e}")
         # hardcoded fallback so the app never crashes
-        nav     = {"undocumented": 78, "DACA": 49, "permanent_resident": 28, "citizen": 12}.get(immigration_status, 30)
-        poverty = {"undocumented": 390, "DACA": 265, "permanent_resident": 181, "citizen": 129}.get(immigration_status, 200)
-        total   = nav + poverty
+        nav = {
+            "undocumented": 78,
+            "DACA": 49,
+            "permanent_resident": 28,
+            "citizen": 12,
+        }.get(immigration_status, 30)
+        poverty = {
+            "undocumented": 390,
+            "DACA": 265,
+            "permanent_resident": 181,
+            "citizen": 129,
+        }.get(immigration_status, 200)
+        total = nav + poverty
         return {
-            "nav_hours":       nav,
-            "poverty_hours":   poverty,
-            "total_hours_yr":  total,
-            "lifetime_days":   round(total * 20 / 8, 1),
+            "nav_hours": nav,
+            "poverty_hours": poverty,
+            "total_hours_yr": total,
+            "lifetime_days": round(total * 20 / 8, 1),
             "conversion_rate": HISPANIC_MEDIAN_HOURLY,
-            "source":          "BLS Usual Weekly Earnings Q2 2024",
+            "source": "BLS Usual Weekly Earnings Q2 2024",
         }
 
 
@@ -441,7 +476,7 @@ if __name__ == "__main__":
         print(f"  {k}: {v}")
 
     # 6. should_update (should be False — just created)
-    print(f"\n=== should_update ===")
+    print("\n=== should_update ===")
     print(f"  {should_update(complex_arch)}")
 
     # 7. calculate_time_saved

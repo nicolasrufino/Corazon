@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { generateUsername } from '@/lib/username'
 import type {
   AnalyzerRecord,
   AppLanguage,
@@ -40,17 +41,25 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | undefined>(undefined)
 
-async function fetchProfile(userId: string): Promise<OnboardingProfile | null> {
+interface ProfileData {
+  profile: OnboardingProfile
+  username: string
+}
+
+async function fetchProfile(userId: string): Promise<ProfileData | null> {
   const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
   if (!data) return null
   return {
-    countryOfOrigin: data.country_of_origin || undefined,
-    immigrationStatus: data.immigration_status || undefined,
-    preferredLanguage: data.language_preference || 'spanish',
-    occupations: data.occupation
-      ? ((data.occupation as string).split(',').filter(Boolean) as Occupation[])
-      : [],
-    goals: data.goals || [],
+    username: data.username || '',
+    profile: {
+      countryOfOrigin: data.country_of_origin || undefined,
+      immigrationStatus: data.immigration_status || undefined,
+      preferredLanguage: data.language_preference || 'spanish',
+      occupations: data.occupation
+        ? ((data.occupation as string).split(',').filter(Boolean) as Occupation[])
+        : [],
+      goals: data.goals || [],
+    },
   }
 }
 
@@ -67,13 +76,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         const u = session.user
-        fetchProfile(u.id).then(profile => {
+        fetchProfile(u.id).then(result => {
           setUser({
             id: u.id,
             email: u.email || '',
+            username: result?.username || '',
             preferredAppLanguage: language,
-            onboardingCompleted: !!profile,
-            profile: profile || undefined,
+            onboardingCompleted: !!result,
+            profile: result?.profile || undefined,
           })
           setAuthLoading(false)
         })
@@ -90,13 +100,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return
       }
       const u = session.user
-      fetchProfile(u.id).then(profile => {
+      fetchProfile(u.id).then(result => {
         setUser({
           id: u.id,
           email: u.email || '',
+          username: result?.username || '',
           preferredAppLanguage: language,
-          onboardingCompleted: !!profile,
-          profile: profile || undefined,
+          onboardingCompleted: !!result,
+          profile: result?.profile || undefined,
         })
       })
     })
@@ -137,9 +148,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (data.user) {
+      const username = generateUsername()
+      // Create the profile row with the generated username immediately
+      await supabase.from('profiles').upsert({
+        id: data.user.id,
+        email: data.user.email || email,
+        username,
+        onboarding_completed: false,
+      })
       setUser({
         id: data.user.id,
         email: data.user.email || email,
+        username,
         preferredAppLanguage,
         onboardingCompleted: false,
       })

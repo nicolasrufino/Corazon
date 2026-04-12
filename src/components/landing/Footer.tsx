@@ -132,6 +132,10 @@ export default function Footer() {
           </motion.div>
         </div>
       </div>
+
+      <p className="mt-8 text-center text-xs text-pearl/40">
+        Hecho con amor en Chicago. De latinos para latinos.
+      </p>
     </footer>
   )
 }

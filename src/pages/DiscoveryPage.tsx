@@ -1,9 +1,12 @@
-import { Heart, MessageCircle, Plus, Send, User as UserIcon, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Heart, ImagePlus, MessageCircle, Plus, Send, User as UserIcon, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
+import { uploadImage } from '@/lib/cloudinary'
 import { createPost, fetchPosts, toggleLike, type Post, type PostCategory } from '@/lib/postsApi'
 import { cn } from '@/lib/utils'
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5 MB
 
 const CATEGORIES: Array<{ value: PostCategory | 'all'; labelEs: string; labelEn: string }> = [
   { value: 'all', labelEs: 'Todo', labelEn: 'All' },
@@ -44,6 +47,43 @@ export const DiscoveryPage = () => {
   const [newContent, setNewContent] = useState('')
   const [newCategory, setNewCategory] = useState<PostCategory>('general')
   const [submitting, setSubmitting] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const resetCompose = () => {
+    setNewContent('')
+    setComposing(false)
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImageFile(null)
+    setImagePreview(null)
+    setImageError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    setImageError(null)
+    if (!file) return
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError(isEs ? 'La imagen debe ser menor a 5MB.' : 'Image must be smaller than 5MB.')
+      event.target.value = ''
+      return
+    }
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const removeImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImageFile(null)
+    setImagePreview(null)
+    setImageError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   const loadPosts = async () => {
     setLoading(true)
@@ -60,11 +100,29 @@ export const DiscoveryPage = () => {
   const handleSubmit = async () => {
     if (!newContent.trim()) return
     setSubmitting(true)
-    const post = await createPost(newContent.trim(), newCategory)
+    setImageError(null)
+
+    let imageUrl: string | undefined
+    if (imageFile) {
+      setUploading(true)
+      const url = await uploadImage(imageFile)
+      setUploading(false)
+      if (!url) {
+        setImageError(
+          isEs
+            ? 'No se pudo subir la imagen. Intenta de nuevo.'
+            : 'Could not upload image. Try again.'
+        )
+        setSubmitting(false)
+        return
+      }
+      imageUrl = url
+    }
+
+    const post = await createPost(newContent.trim(), newCategory, imageUrl)
     if (post) {
       setPosts(prev => [post, ...prev])
-      setNewContent('')
-      setComposing(false)
+      resetCompose()
     }
     setSubmitting(false)
   }
@@ -136,7 +194,7 @@ export const DiscoveryPage = () => {
             </div>
             <button
               type="button"
-              onClick={() => setComposing(false)}
+              onClick={resetCompose}
               className="cursor-pointer text-muted-foreground hover:text-foreground"
             >
               <X className="size-5" />
@@ -154,8 +212,48 @@ export const DiscoveryPage = () => {
             }
           />
 
+          {/* Image preview */}
+          {imagePreview && (
+            <div className="relative mt-3 overflow-hidden rounded-xl border border-border/60">
+              <img
+                src={imagePreview}
+                alt={isEs ? 'Vista previa' : 'Preview'}
+                className="max-h-80 w-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm transition-colors hover:bg-black/90"
+                aria-label={isEs ? 'Quitar imagen' : 'Remove image'}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+
+          {imageError && <p className="mt-2 text-xs text-destructive">{imageError}</p>}
+
+          {/* Hidden file input — triggered by the ImagePlus button below */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={submitting}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={isEs ? 'Agregar imagen' : 'Add image'}
+              >
+                <ImagePlus className="size-3.5" />
+                {isEs ? 'Imagen' : 'Image'}
+              </button>
               {POST_CATEGORIES.map(cat => (
                 <button
                   key={cat.value}
@@ -183,7 +281,17 @@ export const DiscoveryPage = () => {
                 disabled={submitting || !newContent.trim()}
               >
                 <Send className="size-3.5" />
-                {submitting ? (isEs ? 'Publicando...' : 'Posting...') : isEs ? 'Publicar' : 'Post'}
+                {uploading
+                  ? isEs
+                    ? 'Subiendo imagen...'
+                    : 'Uploading image...'
+                  : submitting
+                    ? isEs
+                      ? 'Publicando...'
+                      : 'Posting...'
+                    : isEs
+                      ? 'Publicar'
+                      : 'Post'}
               </Button>
             </div>
           </div>

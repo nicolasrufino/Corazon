@@ -9,7 +9,7 @@ import tseslint from 'typescript-eslint'
 import { globalIgnores } from 'eslint/config'
 
 export default tseslint.config([
-  globalIgnores(['dist', 'node_modules', 'public', 'backend']),
+  globalIgnores(['dist', 'node_modules', 'public', 'backend', 'corazon']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

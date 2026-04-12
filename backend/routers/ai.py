@@ -1,5 +1,4 @@
 import os
-import json
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -27,13 +26,6 @@ class ChatRequest(BaseModel):
     profile: Optional[dict] = None
 
 
-class RecommendRequest(BaseModel):
-    language: str = "en"
-    goals: List[str] = []
-    immigration_status: Optional[str] = None
-    occupation: Optional[str] = None
-
-
 @router.post("/chat")
 async def chat(req: ChatRequest):
     system = SYSTEM_PROMPT_ES if req.language == "es" else SYSTEM_PROMPT_EN
@@ -59,28 +51,6 @@ async def chat(req: ChatRequest):
                 yield delta
 
     return StreamingResponse(generate(), media_type="text/plain")
-
-
-@router.post("/recommend")
-async def recommend(req: RecommendRequest):
-    system = SYSTEM_PROMPT_ES if req.language == "es" else SYSTEM_PROMPT_EN
-    prompt = f'Based on this profile — goals: {req.goals}, occupation: {req.occupation}, immigration status: {req.immigration_status} — what are the 3 most important resource categories this person needs in Chicago? Respond with ONLY a JSON object like this: {{"categories": ["legal", "health", "food_bank"], "message": "Here are your top resources"}}'
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=200,
-    )
-
-    try:
-        content = response.choices[0].message.content
-        result = json.loads(content)
-        return result
-    except Exception:
-        return {"categories": req.goals[:3], "message": "Here are resources based on your profile"}
 
 
 @router.get("/health")

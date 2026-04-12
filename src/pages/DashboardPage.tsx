@@ -14,7 +14,7 @@ import { ResourceCard } from '@/components/ResourceCard'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 import { resourceCategories } from '@/data/mockData'
-import { fetchResources } from '@/lib/mockApi'
+import { fetchResources } from '@/lib/supabaseApi'
 import { cn } from '@/lib/utils'
 import type { Resource, ResourceCategory } from '@/types/app'
 
@@ -93,8 +93,8 @@ export const DashboardPage = () => {
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           {language === 'es'
-            ? 'Brújula reúne recursos comunitarios, legales y de salud en un espacio claro, bilingüe y pensado para tu tranquilidad.'
-            : 'Brújula brings legal, healthcare, and community resources together in one bilingual space designed for clarity and trust.'}
+            ? 'Corazón reúne recursos comunitarios, legales y de salud en un espacio claro, bilingüe y pensado para tu tranquilidad.'
+            : 'Corazón brings legal, healthcare, and community resources together in one bilingual space designed for clarity and trust.'}
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -97,7 +97,10 @@ test_cases = [
 for case in test_cases:
     s = status_encoder.transform([case["status"]])[0]
     l = language_encoder.transform([case["language"]])[0]
-    f = [[s, case["num_goals"], l, case["avg_diff"]]]
+    f = pd.DataFrame(
+        [[s, case["num_goals"], l, case["avg_diff"]]],
+        columns=["status_encoded", "num_goals", "language_encoded", "avg_goal_difficulty"],
+    )
     nav  = nav_model.predict(f)[0]
     pov  = poverty_model.predict(f)[0]
     tot  = total_model.predict(f)[0]
@@ -165,7 +168,11 @@ sanity_cases = [
     ([3, 1, 0, 1], "good overlap, lang+zip but no elig → expect ~0.50-0.70"),
 ]
 for features, description in sanity_cases:
-    prob = pers_model.predict_proba([features])[0][1]
+    f = pd.DataFrame(
+        [features],
+        columns=["goal_overlap", "language_match", "eligibility_match", "zip_match"],
+    )
+    prob = pers_model.predict_proba(f)[0][1]
     print(f"  {prob:.2f}  {description}")
 
 joblib.dump(pers_model, "models/personalization_model.pkl")

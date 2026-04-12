@@ -43,7 +43,7 @@ print("Generating time/impact training data...")
 
 STATUS_VALUES   = ["undocumented", "DACA", "permanent_resident", "citizen"]
 LANGUAGE_VALUES = ["es", "en"]
-GOAL_COUNTS     = [1, 2, 3, 4, 5]
+GOAL_COUNTS     = [1, 1, 2, 2, 3, 3, 4, 5]
 
 # BASE HOURS PER GOAL — anchored to real research:
 #
@@ -180,7 +180,7 @@ for status in STATUS_VALUES:
         for num_goals in GOAL_COUNTS:
 
             goal_combinations = []
-            for _ in range(8):
+            for _ in range(50):
                 sampled = random.sample(ALL_GOALS, num_goals)
                 goal_combinations.append(sampled)
 
@@ -189,8 +189,10 @@ for status in STATUS_VALUES:
                 avg_base = sum(GOAL_BASE_HOURS[g] for g in goals) / len(goals)
                 multiplied = avg_base * STATUS_MULTIPLIERS[status]
                 nav_hours = multiplied + LANGUAGE_PENALTY[language]
-                noise_h = np.random.normal(0, 1.2)
-                nav_hours = max(1.0, round(nav_hours + noise_h, 1))
+                base_noise = np.random.normal(0, 2.5)
+                outlier = np.random.choice([0, 0, 0, 0, 1]) * np.random.normal(0, 8)
+                total_noise = base_noise + outlier
+                nav_hours = max(1.0, round(nav_hours + total_noise, 1))
 
                 # poverty premium in dollars then converted to hours
                 base_money = sum(POVERTY_PREMIUM_BASE.values())
@@ -199,8 +201,10 @@ for status in STATUS_VALUES:
                     * MONEY_STATUS_MULTIPLIER[status]
                     * MONEY_LANGUAGE_MULTIPLIER[language]
                 )
-                noise_m = np.random.normal(0, 200)
-                money_lost = max(0, money_lost + noise_m)
+                money_noise = np.random.normal(0, 350)
+                money_outlier = np.random.choice([0, 0, 0, 1]) * np.random.normal(0, 1200)
+                total_money_noise = money_noise + money_outlier
+                money_lost = max(0, money_lost + total_money_noise)
 
                 # key conversion: dollars → hours of life at BLS wage
                 poverty_hours = round(money_lost / HISPANIC_MEDIAN_HOURLY, 1)
@@ -226,11 +230,66 @@ for status in STATUS_VALUES:
                     "lifetime_days":       lifetime_days
                 })
 
+# ── EDGE CASE INJECTION ─────────────────────────────────────────────────────
+# Hardcoded extreme-but-real scenarios. 20 noisy copies each to anchor the
+# model on the tails of the distribution.
+
+EDGE_CASES = [
+    # max burden — undocumented Spanish-speaker with 5 goals
+    {"status": "undocumented",       "language": "es", "num_goals": 5},
+    # min burden — citizen English-speaker with 1 goal
+    {"status": "citizen",            "language": "en", "num_goals": 1},
+    # most common profile — DACA Spanish-speaker with 3 goals
+    {"status": "DACA",               "language": "es", "num_goals": 3},
+    # 2nd-gen — undocumented but English-speaking, 2 goals
+    {"status": "undocumented",       "language": "en", "num_goals": 2},
+]
+
+for edge in EDGE_CASES:
+    status = edge["status"]
+    language = edge["language"]
+    num_goals = edge["num_goals"]
+
+    for _ in range(20):
+        goals = random.sample(ALL_GOALS, num_goals)
+        avg_base = sum(GOAL_BASE_HOURS[g] for g in goals) / len(goals)
+
+        multiplied = avg_base * STATUS_MULTIPLIERS[status]
+        nav_hours = multiplied + LANGUAGE_PENALTY[language]
+        nav_hours = max(1.0, round(nav_hours + np.random.normal(0, 1.5), 1))
+
+        base_money = sum(POVERTY_PREMIUM_BASE.values())
+        money_lost = (
+            base_money
+            * MONEY_STATUS_MULTIPLIER[status]
+            * MONEY_LANGUAGE_MULTIPLIER[language]
+        )
+        money_lost = max(0, money_lost + np.random.normal(0, 1.5))
+
+        poverty_hours = round(money_lost / HISPANIC_MEDIAN_HOURLY, 1)
+        total_hours_lost = round(nav_hours + poverty_hours, 1)
+        lifetime_hours = round(total_hours_lost * 20, 0)
+        lifetime_days = round(lifetime_hours / 8, 1)
+
+        rows.append({
+            "status_bucket":       status,
+            "num_goals":           num_goals,
+            "language":            language,
+            "avg_goal_difficulty": round(avg_base, 2),
+            "nav_hours":           nav_hours,
+            "poverty_hours":       poverty_hours,
+            "total_hours_lost":    total_hours_lost,
+            "lifetime_hours":      lifetime_hours,
+            "lifetime_days":       lifetime_days
+        })
+
+
 df_time = pd.DataFrame(rows)
 df_time = df_time.sample(frac=1, random_state=42).reset_index(drop=True)
 
 df_time.to_csv("data/time_training_data.csv", index=False)
 print(f"  Saved {len(df_time)} rows → data/time_training_data.csv")
+print(f"  (50 samples per combination + 20 rows × {len(EDGE_CASES)} edge cases)")
 print(f"  Total hours range: {df_time['total_hours_lost'].min()} – {df_time['total_hours_lost'].max()}")
 print(f"  Lifetime days range: {df_time['lifetime_days'].min()} – {df_time['lifetime_days'].max()}")
 print(f"  Sample:\n{df_time.head(3).to_string()}\n")
@@ -297,8 +356,8 @@ for goal_overlap in range(0, 6):
                     else:
                         label = 0
 
-                for _ in range(12):
-                    noise = np.random.choice([-1, 0, 0, 0, 1])
+                for _ in range(60):
+                    noise = np.random.choice([-1, 0, 0, 0, 0, 0, 1])
                     noisy_overlap = max(0, min(5, goal_overlap + noise))
 
                     final_label = label
@@ -318,6 +377,7 @@ df_pers = df_pers.sample(frac=1, random_state=42).reset_index(drop=True)
 
 df_pers.to_csv("data/personalization_training_data.csv", index=False)
 print(f"  Saved {len(df_pers)} rows → data/personalization_training_data.csv")
+print(f"  (60 samples per feature combination)")
 print(f"  Class balance: {df_pers['relevant'].value_counts().to_dict()}")
 print(f"  Sample:\n{df_pers.head(3).to_string()}\n")
 

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import AppNavbar from '@/components/AppNavbar'
 import { LayoutShell } from '@/components/LayoutShell'
 import { VoiceAssistant } from '@/components/VoiceAssistant'
 import { useAppContext } from '@/context/AppContext'
@@ -87,58 +86,36 @@ const AppFrame = () => {
     )
   }
 
-  // Auth + onboarding — minimal chrome with AppNavbar
+  // Auth + onboarding — full-screen split layout, pages own their chrome
   if (isAuthScreen) {
-    const isAuthOrForgot = location.pathname === '/auth' || location.pathname === '/forgot-password'
-
     return (
-      <div
-        className="theme-auth relative min-h-screen w-full text-foreground"
-        style={{ backgroundColor: '#050608' }}
-      >
-        {/* signup_photo.png behind auth + forgot-password; onboarding handles its own */}
-        {isAuthOrForgot && (
-          <>
-            <div
-              className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: 'url(/signup_photo.png)',
-                filter: 'grayscale(1) brightness(0.3)',
-                zIndex: 0,
-              }}
-            />
-            <div className="fixed inset-0 bg-black/40" style={{ zIndex: 0 }} />
-          </>
-        )}
-        <AppNavbar />
-        <div className="relative z-10 flex min-h-screen w-full items-center justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8">
-          <Routes>
-            <Route
-              path="/auth"
-              element={
-                <AuthGuardRoute>
-                  <AuthPage />
-                </AuthGuardRoute>
-              }
-            />
-            <Route
-              path="/forgot-password"
-              element={
-                <AuthGuardRoute>
-                  <ForgotPasswordPage />
-                </AuthGuardRoute>
-              }
-            />
-            <Route
-              path="/onboarding"
-              element={
-                <OnboardingRoute>
-                  <OnboardingPage />
-                </OnboardingRoute>
-              }
-            />
-          </Routes>
-        </div>
+      <div className="theme-auth h-screen w-full overflow-hidden text-foreground">
+        <Routes>
+          <Route
+            path="/auth"
+            element={
+              <AuthGuardRoute>
+                <AuthPage />
+              </AuthGuardRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <AuthGuardRoute>
+                <ForgotPasswordPage />
+              </AuthGuardRoute>
+            }
+          />
+          <Route
+            path="/onboarding"
+            element={
+              <OnboardingRoute>
+                <OnboardingPage />
+              </OnboardingRoute>
+            }
+          />
+        </Routes>
       </div>
     )
   }

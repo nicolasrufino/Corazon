@@ -15,7 +15,12 @@ import { ResourceCard } from '@/components/ResourceCard'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 import { resourceCategories } from '@/data/mockData'
-import { buildAiProfile, recommendResources, type RecommendedResource } from '@/lib/aiApi'
+import {
+  buildAiProfile,
+  normalizeInteractionsLog,
+  recommendResources,
+  type RecommendedResource,
+} from '@/lib/aiApi'
 import { fetchResources, type SortOption } from '@/lib/supabaseApi'
 import { cn } from '@/lib/utils'
 import type { Resource, ResourceCategory } from '@/types/app'
@@ -33,7 +38,7 @@ const categoryIcons: Record<ResourceCategory, typeof ShieldCheck> = {
 }
 
 export const DashboardPage = () => {
-  const { language, savedResourceIds, user } = useAppContext()
+  const { language, savedResourceIds, user, interactionsLog } = useAppContext()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -45,30 +50,60 @@ export const DashboardPage = () => {
   const [recommendLoading, setRecommendLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // AI-powered "Recommended for you" — fetched once when the user lands
-  // on the page. Uses the user's onboarding goals as a stand-in
-  // interactions log so the recommend endpoint has signal to score
-  // against. Silently no-ops for guests.
+  // Snapshot the stable identity of the user's profile — re-runs of
+  // the recommend effect should only happen when the data behind the
+  // profile actually changes, not on every AppContext re-render (the
+  // `user` object gets a fresh reference on every auth refresh). Keyed
+  // off user id + the exact profile fields we feed into buildAiProfile.
+  const userId = user?.id
+  const profileGoals = user?.profile?.goals
+  const profileImmigration = user?.profile?.immigrationStatus
+  const profileLanguage = user?.profile?.preferredLanguage
+  const profileOccupation = user?.profile?.occupations?.[0]
+
+  // Merge onboarding goals (seed signal) with the live interactionsLog
+  // (real saves + visits) into a single category-vocabulary list the
+  // backend's _compute_weights can score against. Goals stop mattering
+  // once enough real interactions accumulate — they're just a cold-start
+  // bootstrap so the recommend strip isn't empty on day one.
+  const recommendLog = useMemo(() => {
+    const seed = normalizeInteractionsLog(profileGoals ?? [])
+    return [...seed, ...interactionsLog]
+  }, [profileGoals, interactionsLog])
+
+  // AI-powered "Recommended for you" — re-fetches whenever the
+  // interaction log grows, so saving or visiting a resource updates
+  // the recs within 600ms. Silently no-ops for guests / pre-onboarding.
   useEffect(() => {
-    if (!user?.profile) return
+    if (!userId || !profileImmigration) return
     let cancelled = false
-    setRecommendLoading(true)
-    const aiProfile = buildAiProfile(user.profile)
-    recommendResources(aiProfile, user.profile.goals as string[], 5)
-      .then(res => {
-        if (!cancelled) setRecommended(res.resources || [])
+    // Debounce so rapid saves (user tapping through 3 cards in a row)
+    // don't fire the endpoint 3 times — we only need the final state.
+    const timeout = setTimeout(() => {
+      if (cancelled) return
+      setRecommendLoading(true)
+      const aiProfile = buildAiProfile({
+        immigrationStatus: profileImmigration,
+        preferredLanguage: profileLanguage,
+        occupations: profileOccupation ? [profileOccupation] : [],
       })
-      .catch(err => {
-        console.warn('recommendResources failed:', err)
-        if (!cancelled) setRecommended([])
-      })
-      .finally(() => {
-        if (!cancelled) setRecommendLoading(false)
-      })
+      recommendResources(aiProfile, recommendLog, 5)
+        .then(res => {
+          if (!cancelled) setRecommended(res.resources || [])
+        })
+        .catch(err => {
+          console.warn('recommendResources failed:', err)
+          if (!cancelled) setRecommended([])
+        })
+        .finally(() => {
+          if (!cancelled) setRecommendLoading(false)
+        })
+    }, 600)
     return () => {
       cancelled = true
+      clearTimeout(timeout)
     }
-  }, [user])
+  }, [userId, profileImmigration, profileLanguage, profileOccupation, recommendLog])
 
   // Debounce search input — 300ms
   useEffect(() => {

@@ -53,6 +53,11 @@ export interface Resource {
   id: string
   name: string
   category: ResourceCategory
+  // Raw Supabase opportunities.category — preserved so the recommend
+  // algorithm can score interactions against its own 9-category
+  // vocabulary (which only partially overlaps ResourceCategory). See
+  // `toBackendCategory` in src/lib/aiApi.ts.
+  rawCategory?: string
   description: string
   tags: string[]
   rating: number

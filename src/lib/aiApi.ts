@@ -37,8 +37,20 @@ export interface RecommendedResource {
   tags?: string[]
 }
 
+export interface ComplexArchetype {
+  immigration_status: string
+  preferred_language: string
+  occupation: string
+  nav_hours_yr: number
+  time_saved_rate: Record<string, number>
+  category_weights: Record<string, number>
+  last_updated: string
+  interaction_count: number
+  dominant_categories: string[]
+}
+
 export interface RecommendResponse {
-  archetype: Record<string, unknown>
+  archetype: ComplexArchetype
   resources: RecommendedResource[]
   count: number
 }
@@ -138,4 +150,81 @@ export function buildAiProfile(profile: AppProfileLike | undefined): AiProfile {
     preferred_language: preferred,
     occupation,
   }
+}
+
+/* ───────── category taxonomy bridge ─────────
+ *
+ * The algorithm in backend/ai/algorithms.py uses a different 9-category
+ * vocabulary than the frontend's ResourceCategory type. An interaction
+ * tagged with a frontend category (e.g. "healthcare") gets silently
+ * dropped by _compute_weights() because it's not in CATEGORIES.
+ *
+ * This mapper normalizes BOTH the frontend ResourceCategory values AND
+ * the raw Supabase `opportunities.category` values into the algorithm's
+ * vocabulary. Returns null for inputs that have no good equivalent
+ * (e.g. "social_life" has no backend analogue) — callers filter nulls
+ * before sending the log to /api/ai/recommend.
+ */
+
+export type BackendResourceCategory =
+  | 'job'
+  | 'internship'
+  | 'scholarship'
+  | 'food_bank'
+  | 'health'
+  | 'mental_health'
+  | 'legal'
+  | 'housing'
+  | 'language'
+
+const BACKEND_CATEGORIES: ReadonlySet<BackendResourceCategory> = new Set([
+  'job',
+  'internship',
+  'scholarship',
+  'food_bank',
+  'health',
+  'mental_health',
+  'legal',
+  'housing',
+  'language',
+])
+
+// Frontend ResourceCategory → BackendResourceCategory
+// Some frontend buckets fan in (healthcare = health + mental_health); we
+// pick the most common primary. "social_life" has no analogue so it maps
+// to null and gets filtered out before sending to the algorithm.
+const FRONTEND_TO_BACKEND: Record<string, BackendResourceCategory | null> = {
+  legal: 'legal',
+  healthcare: 'health',
+  immigration: 'legal',
+  education: 'scholarship',
+  community: 'food_bank',
+  social_life: null,
+  financial_aid: 'scholarship',
+  language_learning: 'language',
+  business: 'job',
+  // Supabase raw values that don't match algorithm CATEGORIES 1:1
+  event: null,
+}
+
+export function toBackendCategory(raw: string | null | undefined): BackendResourceCategory | null {
+  if (!raw) return null
+  if (BACKEND_CATEGORIES.has(raw as BackendResourceCategory)) {
+    return raw as BackendResourceCategory
+  }
+  return FRONTEND_TO_BACKEND[raw] ?? null
+}
+
+/**
+ * Convert an array of mixed-taxonomy category strings into a clean
+ * backend-vocabulary interaction log, dropping anything that doesn't
+ * map. Safe to pass straight to recommendResources / calculateTimeSaved.
+ */
+export function normalizeInteractionsLog(log: Array<string | null | undefined>): string[] {
+  const out: string[] = []
+  for (const entry of log) {
+    const mapped = toBackendCategory(entry)
+    if (mapped) out.push(mapped)
+  }
+  return out
 }

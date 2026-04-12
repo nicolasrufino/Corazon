@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { toBackendCategory } from '@/lib/aiApi'
 import { supabase } from '@/lib/supabase'
 import { generateUsername } from '@/lib/username'
 import type {
@@ -12,6 +13,34 @@ import type {
   User,
 } from '@/types/app'
 
+// localStorage key for the resource interaction log — shared across
+// guest + signed-in sessions so if someone explores-then-signs-up we
+// don't lose the archetype signal they built up before creating an
+// account. Capped at MAX_INTERACTIONS so the log can't grow unbounded.
+const INTERACTIONS_STORAGE_KEY = 'corazon:interactions_log:v1'
+const MAX_INTERACTIONS = 200
+
+function loadInteractionsLog(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(INTERACTIONS_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function saveInteractionsLog(log: string[]) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(INTERACTIONS_STORAGE_KEY, JSON.stringify(log))
+  } catch {
+    // Ignore quota errors — the log is advisory, not critical
+  }
+}
+
 interface AppContextValue {
   language: AppLanguage
   setLanguage: (language: AppLanguage) => void
@@ -20,6 +49,7 @@ interface AppContextValue {
   savedResourceIds: string[]
   analyzerHistory: AnalyzerRecord[]
   chatHistory: ChatMessage[]
+  interactionsLog: string[]
   signIn: (
     email: string,
     password: string,
@@ -37,6 +67,7 @@ interface AppContextValue {
   hasSavedResource: (resourceId: string) => boolean
   addChatMessage: (message: ChatMessage) => void
   addAnalyzerRecord: (record: AnalyzerRecord) => void
+  logResourceInteraction: (resource: Resource) => void
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined)
@@ -73,6 +104,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [savedResourceIds, setSavedResourceIds] = useState<string[]>([])
   const [analyzerHistory, setAnalyzerHistory] = useState<AnalyzerRecord[]>([])
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
+  const [interactionsLog, setInteractionsLog] = useState<string[]>(() => loadInteractionsLog())
+
+  // Persist interaction log to localStorage on every change so the
+  // archetype signal survives refreshes. Runs on every log mutation
+  // including the initial hydration (no-op on first mount since the
+  // value matches what's already in storage).
+  useEffect(() => {
+    saveInteractionsLog(interactionsLog)
+  }, [interactionsLog])
 
   // Restore session on mount + subscribe to auth changes
   useEffect(() => {
@@ -221,13 +261,43 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setSavedResourceIds([])
     setAnalyzerHistory([])
     setChatHistory([])
+    // Clear interaction log + localStorage so the next user on a
+    // shared browser doesn't inherit the previous user's archetype.
+    // Without this, User B's dashboard "Recommended for you" strip
+    // would be seeded with User A's saves and visits.
+    setInteractionsLog([])
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(INTERACTIONS_STORAGE_KEY)
+      } catch {
+        // Ignore — non-critical
+      }
+    }
+  }
+
+  const logResourceInteraction = (resource: Resource) => {
+    // Map the resource's raw Supabase category (or the frontend one as
+    // a fallback) into the backend algorithm's 9-category vocabulary.
+    // Categories that don't map (event, social_life) return null and we
+    // skip logging them — recording a signal the algorithm can't use is
+    // worse than recording nothing.
+    const mapped = toBackendCategory(resource.rawCategory) || toBackendCategory(resource.category)
+    if (!mapped) return
+    setInteractionsLog(current => {
+      const next = [...current, mapped]
+      return next.length > MAX_INTERACTIONS ? next.slice(-MAX_INTERACTIONS) : next
+    })
   }
 
   const toggleSavedResource = (resource: Resource) => {
     setSavedResourceIds(current => {
-      if (current.includes(resource.id)) {
+      const alreadySaved = current.includes(resource.id)
+      if (alreadySaved) {
         return current.filter(id => id !== resource.id)
       }
+      // Only log on save (positive signal), not on unsave — unsaving
+      // shouldn't erode the archetype weight the user already earned.
+      logResourceInteraction(resource)
       return [...current, resource.id]
     })
   }
@@ -251,6 +321,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       savedResourceIds,
       analyzerHistory,
       chatHistory,
+      interactionsLog,
       signIn,
       startSignUp,
       resetPassword,
@@ -260,9 +331,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       hasSavedResource,
       addChatMessage,
       addAnalyzerRecord,
+      logResourceInteraction,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, user, authLoading, savedResourceIds, analyzerHistory, chatHistory]
+    [language, user, authLoading, savedResourceIds, analyzerHistory, chatHistory, interactionsLog]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

@@ -7,11 +7,13 @@ import {
   calculateTimeSaved,
   estimateImpact,
   isolationImpact,
+  normalizeInteractionsLog,
+  recommendResources,
+  type ComplexArchetype,
   type ImpactResponse,
   type IsolationResponse,
   type TimeSavedResponse,
 } from '@/lib/aiApi'
-import type { ResourceCategory } from '@/types/app'
 
 /**
  * /impact route — accessed via the LayoutShell sidebar "Impact" button.
@@ -40,6 +42,20 @@ const PILL_COLORS = {
   isolation: '#ffb5e2', // pink — isolation
 }
 
+// Display labels for the backend algorithm's 9-category vocabulary.
+// Used to render the archetype's dominant_categories in plain language.
+const CATEGORY_LABELS: Record<string, { es: string; en: string }> = {
+  job: { es: 'Empleos', en: 'Jobs' },
+  internship: { es: 'Pasantías', en: 'Internships' },
+  scholarship: { es: 'Becas y ayuda', en: 'Scholarships & aid' },
+  food_bank: { es: 'Alimentos', en: 'Food assistance' },
+  health: { es: 'Salud', en: 'Health' },
+  mental_health: { es: 'Salud mental', en: 'Mental health' },
+  legal: { es: 'Legal', en: 'Legal' },
+  housing: { es: 'Vivienda', en: 'Housing' },
+  language: { es: 'Idiomas', en: 'Language' },
+}
+
 interface BarSpec {
   key: keyof typeof PILL_COLORS
   labelEs: string
@@ -50,39 +66,60 @@ interface BarSpec {
 }
 
 export const ImpactPage = () => {
-  const { language, user } = useAppContext()
+  const { language, user, interactionsLog: liveInteractions } = useAppContext()
   const isEs = language === 'es'
 
   const [impact, setImpact] = useState<ImpactResponse | null>(null)
   const [timeSaved, setTimeSaved] = useState<TimeSavedResponse | null>(null)
   const [isolation, setIsolation] = useState<IsolationResponse | null>(null)
+  const [archetype, setArchetype] = useState<ComplexArchetype | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Use the user's onboarding goals as a stand-in interactions_log so
-  // the demo shows non-zero "time saved" before any saved-resources
-  // tracking is wired up. Each goal counts as one interaction.
-  const interactionsLog = useMemo<ResourceCategory[]>(() => user?.profile?.goals ?? [], [user])
+  // Snapshot stable profile fields so the effect doesn't re-run on
+  // every AppContext re-render (the `user` object gets a fresh
+  // reference on every auth refresh). ImpactPage fires 4 AI calls per
+  // effect run, so avoiding spurious re-runs matters.
+  const userId = user?.id
+  const profileGoals = user?.profile?.goals
+  const profileImmigration = user?.profile?.immigrationStatus
+  const profileLanguage = user?.profile?.preferredLanguage
+  const profileOccupation = user?.profile?.occupations?.[0]
+
+  // Merge onboarding goals (seed signal) with the user's live
+  // interaction log from AppContext. Every save + visit accumulates
+  // here and feeds the algorithm's archetype + time-saved calculation,
+  // so the Impact page grows more personal over time.
+  const interactionsLog = useMemo(() => {
+    const seed = normalizeInteractionsLog(profileGoals ?? [])
+    return [...seed, ...liveInteractions]
+  }, [profileGoals, liveInteractions])
 
   useEffect(() => {
-    if (!user?.profile) return
+    if (!userId || !profileImmigration) return
     let cancelled = false
 
-    const aiProfile = buildAiProfile(user.profile)
+    const aiProfile = buildAiProfile({
+      immigrationStatus: profileImmigration,
+      preferredLanguage: profileLanguage,
+      occupations: profileOccupation ? [profileOccupation] : [],
+    })
 
     setLoading(true)
     setError(null)
 
     Promise.all([
       estimateImpact(aiProfile),
-      calculateTimeSaved(aiProfile, interactionsLog as string[]),
+      calculateTimeSaved(aiProfile, interactionsLog),
       isolationImpact(aiProfile),
+      recommendResources(aiProfile, interactionsLog, 1),
     ])
-      .then(([imp, saved, iso]) => {
+      .then(([imp, saved, iso, rec]) => {
         if (cancelled) return
         setImpact(imp)
         setTimeSaved(saved)
         setIsolation(iso)
+        setArchetype(rec.archetype)
       })
       .catch(err => {
         if (cancelled) return
@@ -100,7 +137,7 @@ export const ImpactPage = () => {
     return () => {
       cancelled = true
     }
-  }, [user, interactionsLog, isEs])
+  }, [userId, profileImmigration, profileLanguage, profileOccupation, interactionsLog, isEs])
 
   if (!user) return null
   if (!user.profile) {
@@ -175,6 +212,56 @@ export const ImpactPage = () => {
           </span>
         </div>
       </section>
+
+      {/* Archetype — the profile we've built from the user's real
+         resource interactions. Gated on interaction_count > 0 because
+         the backend's _compute_weights returns bogus top-3 categories
+         (the first 3 in CATEGORIES, by tie-order) when the log is
+         empty. Showing that would lie to a brand-new user. */}
+      {archetype && archetype.interaction_count > 0 ? (
+        <section className="rounded-3xl border border-primary/30 bg-primary/5 p-5 sm:p-7">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/90">
+                {isEs ? 'Tu perfil, construido por ti' : 'Your profile, built by you'}
+              </p>
+              <h2 className="mt-2 text-xl sm:text-2xl">
+                {isEs ? 'Lo que nos has enseñado hasta ahora' : "What you've shown us so far"}
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                {isEs
+                  ? 'Cada recurso que guardas o visitas nos ayuda a entender mejor lo que necesitas. Esto es lo que más te importa, basado en lo que has explorado.'
+                  : "Each resource you save or visit helps us understand what you need. Here's what matters to you most, based on what you've explored."}
+              </p>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              {archetype.interaction_count}{' '}
+              {isEs
+                ? archetype.interaction_count === 1
+                  ? 'interacción'
+                  : 'interacciones'
+                : archetype.interaction_count === 1
+                  ? 'interaction'
+                  : 'interactions'}
+            </span>
+          </div>
+          <ul className="mt-5 flex flex-wrap gap-2">
+            {archetype.dominant_categories.map((cat, i) => {
+              const label = CATEGORY_LABELS[cat]
+              const display = label ? (isEs ? label.es : label.en) : cat
+              return (
+                <li
+                  key={cat}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/70 px-3.5 py-1.5 text-sm font-medium"
+                >
+                  <span className="font-display text-xs text-primary">#{i + 1}</span>
+                  {display}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Bars */}
       <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">

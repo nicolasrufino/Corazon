@@ -155,6 +155,7 @@ function rowToResource(row: OpportunityRow): Resource {
     id: row.id,
     name: cleanName(row.organization, row.title),
     category: mapCategory(row.category),
+    rawCategory: row.category,
     description: buildDescription(row),
     tags: displayTags.slice(0, 4),
     rating: 0,

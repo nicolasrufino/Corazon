@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 import type {
   AnalyzerRecord,
   AppLanguage,
@@ -9,24 +10,26 @@ import type {
   User,
 } from '@/types/app'
 
-interface AuthDraft {
-  email: string
-  password: string
-  preferredAppLanguage: AppLanguage
-}
-
 interface AppContextValue {
   language: AppLanguage
   setLanguage: (language: AppLanguage) => void
   user: User | null
-  authDraft: AuthDraft | null
+  authLoading: boolean
   savedResourceIds: string[]
   analyzerHistory: AnalyzerRecord[]
   chatHistory: ChatMessage[]
-  signIn: (email: string, preferredAppLanguage: AppLanguage) => void
-  startSignUp: (draft: AuthDraft) => void
-  completeOnboarding: (profile: OnboardingProfile) => void
-  signOut: () => void
+  signIn: (
+    email: string,
+    password: string,
+    preferredAppLanguage: AppLanguage
+  ) => Promise<string | null>
+  startSignUp: (
+    email: string,
+    password: string,
+    preferredAppLanguage: AppLanguage
+  ) => Promise<string | null>
+  completeOnboarding: (profile: OnboardingProfile) => Promise<void>
+  signOut: () => Promise<void>
   toggleSavedResource: (resource: Resource) => void
   hasSavedResource: (resourceId: string) => boolean
   addChatMessage: (message: ChatMessage) => void
@@ -35,56 +38,137 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | undefined>(undefined)
 
+async function fetchProfile(userId: string): Promise<OnboardingProfile | null> {
+  const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
+  if (!data) return null
+  return {
+    countryOfOrigin: data.country_of_origin || undefined,
+    immigrationStatus: data.immigration_status || undefined,
+    preferredLanguage: data.language_preference || 'both',
+    occupation: data.occupation || undefined,
+    goals: data.goals || [],
+  }
+}
+
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<AppLanguage>('es')
   const [user, setUser] = useState<User | null>(null)
-  const [authDraft, setAuthDraft] = useState<AuthDraft | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [savedResourceIds, setSavedResourceIds] = useState<string[]>([])
   const [analyzerHistory, setAnalyzerHistory] = useState<AnalyzerRecord[]>([])
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
 
-  const signIn = (email: string, preferredAppLanguage: AppLanguage) => {
-    setUser({
-      id: `user-${Date.now()}`,
-      email,
-      preferredAppLanguage,
-      onboardingCompleted: true,
+  // Restore session on mount + subscribe to auth changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const u = session.user
+        fetchProfile(u.id).then(profile => {
+          setUser({
+            id: u.id,
+            email: u.email || '',
+            preferredAppLanguage: language,
+            onboardingCompleted: !!profile,
+            profile: profile || undefined,
+          })
+          setAuthLoading(false)
+        })
+      } else {
+        setAuthLoading(false)
+      }
     })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setUser(null)
+        return
+      }
+      const u = session.user
+      fetchProfile(u.id).then(profile => {
+        setUser({
+          id: u.id,
+          email: u.email || '',
+          preferredAppLanguage: language,
+          onboardingCompleted: !!profile,
+          profile: profile || undefined,
+        })
+      })
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const signIn = async (
+    email: string,
+    password: string,
+    preferredAppLanguage: AppLanguage
+  ): Promise<string | null> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return error.message
     setLanguage(preferredAppLanguage)
+    return null
   }
 
-  const startSignUp = (draft: AuthDraft) => {
-    setAuthDraft(draft)
-    setLanguage(draft.preferredAppLanguage)
-    setUser({
-      id: `pending-${Date.now()}`,
-      email: draft.email,
-      preferredAppLanguage: draft.preferredAppLanguage,
-      onboardingCompleted: false,
+  const startSignUp = async (
+    email: string,
+    password: string,
+    preferredAppLanguage: AppLanguage
+  ): Promise<string | null> => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: undefined, data: {} },
+    })
+    if (error) return error.message
+    setLanguage(preferredAppLanguage)
+
+    // If email confirmation is required, session will be null
+    if (!data.session) {
+      return '__confirm_email__'
+    }
+
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email || email,
+        preferredAppLanguage,
+        onboardingCompleted: false,
+      })
+    }
+    return null
+  }
+
+  const completeOnboarding = async (profile: OnboardingProfile) => {
+    if (!user) return
+
+    await supabase.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      country_of_origin: profile.countryOfOrigin || null,
+      immigration_status: profile.immigrationStatus || null,
+      language_preference: profile.preferredLanguage,
+      occupation: profile.occupation || null,
+      goals: profile.goals,
+      onboarding_completed: true,
+    })
+
+    setUser(prev => {
+      if (!prev) return null
+      return { ...prev, onboardingCompleted: true, profile }
     })
   }
 
-  const completeOnboarding = (profile: OnboardingProfile) => {
-    setUser(currentUser => {
-      if (!currentUser) {
-        return null
-      }
-
-      return {
-        ...currentUser,
-        onboardingCompleted: true,
-        profile,
-      }
-    })
-    setAuthDraft(null)
-  }
-
-  const signOut = () => {
+  const signOut = async () => {
+    await supabase.auth.signOut()
     setUser(null)
     setSavedResourceIds([])
     setAnalyzerHistory([])
     setChatHistory([])
-    setAuthDraft(null)
   }
 
   const toggleSavedResource = (resource: Resource) => {
@@ -111,7 +195,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       language,
       setLanguage,
       user,
-      authDraft,
+      authLoading,
       savedResourceIds,
       analyzerHistory,
       chatHistory,
@@ -125,7 +209,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       addAnalyzerRecord,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, user, authDraft, savedResourceIds, analyzerHistory, chatHistory]
+    [language, user, authLoading, savedResourceIds, analyzerHistory, chatHistory]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

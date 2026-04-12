@@ -12,9 +12,12 @@ export const AuthPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [preferredAppLanguage, setPreferredAppLanguage] = useState<'es' | 'en'>(language)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const submit = () => {
+  const submit = async () => {
     setError('')
+    setInfo('')
 
     if (!email.trim() || !password.trim()) {
       setError(
@@ -30,17 +33,56 @@ export const AuthPage = () => {
       return
     }
 
+    if (password.length < 6) {
+      setError(
+        language === 'es'
+          ? 'La contraseña debe tener al menos 6 caracteres.'
+          : 'Password must be at least 6 characters.'
+      )
+      return
+    }
+
+    setLoading(true)
+
     if (isSignUp) {
-      startSignUp({
-        email,
-        password,
-        preferredAppLanguage,
-      })
+      const result = await startSignUp(email, password, preferredAppLanguage)
+      setLoading(false)
+      if (result === '__confirm_email__') {
+        setInfo(
+          language === 'es'
+            ? 'Revisa tu correo para confirmar tu cuenta, luego inicia sesión.'
+            : 'Check your email to confirm your account, then sign in.'
+        )
+        return
+      }
+      if (result) {
+        if (result.includes('already registered') || result.includes('already been registered')) {
+          setError(
+            language === 'es'
+              ? 'Este correo ya tiene una cuenta. Intenta iniciar sesión.'
+              : 'This email already has an account. Try signing in.'
+          )
+        } else {
+          setError(result)
+        }
+        return
+      }
       navigate('/onboarding')
       return
     }
 
-    signIn(email, preferredAppLanguage)
+    const err = await signIn(email, password, preferredAppLanguage)
+    setLoading(false)
+    if (err) {
+      if (err.includes('Invalid login')) {
+        setError(
+          language === 'es' ? 'Correo o contraseña incorrectos.' : 'Incorrect email or password.'
+        )
+      } else {
+        setError(err)
+      }
+      return
+    }
     navigate('/')
   }
 
@@ -53,7 +95,7 @@ export const AuthPage = () => {
 
         <div className="relative z-10">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary/90">
-            Brújula
+            Corazón
           </p>
           <h1 className="mt-4 text-3xl sm:text-4xl">
             {language === 'es' ? 'Tu red de apoyo confiable' : 'Your trusted support network'}
@@ -153,20 +195,35 @@ export const AuthPage = () => {
             </select>
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          ) : null}
+
+          {info ? (
+            <div className="rounded-lg border border-blue-400/30 bg-blue-500/10 p-3">
+              <p className="text-sm text-blue-200">{info}</p>
+            </div>
+          ) : null}
 
           <Button
             type="button"
             onClick={submit}
-            className="h-11 w-full cursor-pointer bg-[var(--cta)] text-background hover:bg-[var(--cta)]/85"
+            disabled={loading}
+            className="h-11 w-full cursor-pointer bg-[var(--cta)] text-background hover:bg-[var(--cta)]/85 disabled:opacity-50"
           >
-            {isSignUp
+            {loading
               ? language === 'es'
-                ? 'Continuar a onboarding'
-                : 'Continue to onboarding'
-              : language === 'es'
-                ? 'Entrar a Brújula'
-                : 'Enter Brújula'}
+                ? 'Cargando...'
+                : 'Loading...'
+              : isSignUp
+                ? language === 'es'
+                  ? 'Continuar a onboarding'
+                  : 'Continue to onboarding'
+                : language === 'es'
+                  ? 'Entrar a Corazón'
+                  : 'Enter Corazón'}
           </Button>
         </div>
       </section>

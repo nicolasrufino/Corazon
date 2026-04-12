@@ -12,6 +12,7 @@ import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { LandingPage } from '@/pages/LandingPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 
 /*──────────────────────────────────────────────
   Flow:
@@ -159,6 +160,14 @@ const AppFrame = () => {
           element={
             <ProtectedRoute>
               <DocumentAnalyzerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

@@ -11,7 +11,6 @@ export const AuthPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [preferredAppLanguage, setPreferredAppLanguage] = useState<'es' | 'en'>(language)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
@@ -46,7 +45,7 @@ export const AuthPage = () => {
     setLoading(true)
 
     if (isSignUp) {
-      const result = await startSignUp(email, password, preferredAppLanguage)
+      const result = await startSignUp(email, password, language)
       setLoading(false)
       if (result === '__confirm_email__') {
         setInfo(
@@ -72,7 +71,7 @@ export const AuthPage = () => {
       return
     }
 
-    const err = await signIn(email, password, preferredAppLanguage)
+    const err = await signIn(email, password, language)
     setLoading(false)
     if (err) {
       if (err.includes('Invalid login')) {
@@ -88,10 +87,16 @@ export const AuthPage = () => {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-border/60 bg-card/80 lg:grid-cols-2">
+    <div className="flex h-screen w-full overflow-hidden">
       <AuthSidePanel />
 
-      <section className="p-6 sm:p-8">
+      <section className="flex w-full flex-col justify-center overflow-y-auto bg-background px-8 py-12 lg:w-1/2">
+        <p
+          className="mb-6 text-xs font-semibold uppercase tracking-[0.25em] text-primary lg:hidden"
+          style={{ fontFamily: 'var(--font-brand)' }}
+        >
+          Corazón
+        </p>
         <div className="flex gap-2 rounded-full bg-background p-1">
           <button
             type="button"
@@ -155,21 +160,6 @@ export const AuthPage = () => {
               />
             </div>
           ) : null}
-
-          <div>
-            <label htmlFor="auth-language" className="mb-2 block text-sm font-medium">
-              {language === 'es' ? 'Idioma de la cuenta' : 'Account language'}
-            </label>
-            <select
-              id="auth-language"
-              value={preferredAppLanguage}
-              onChange={event => setPreferredAppLanguage(event.target.value as 'es' | 'en')}
-              className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option value="es">Español</option>
-              <option value="en">English</option>
-            </select>
-          </div>
 
           {error ? (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">

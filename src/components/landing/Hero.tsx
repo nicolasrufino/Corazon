@@ -6,13 +6,13 @@ import { useLang } from './i18n'
 type Letter = { type: 'char'; char: string; color: string } | { type: 'heart'; color: string }
 
 const letters: Letter[] = [
-  { type: 'char', char: 'c', color: '#0b4a31' },
+  { type: 'char', char: 'c', color: '#ff8100' },
   { type: 'heart', color: '#dc2626' },
-  { type: 'char', char: 'r', color: '#334ab5' },
-  { type: 'char', char: 'a', color: '#ff6c00' },
-  { type: 'char', char: 'z', color: '#ffab0d' },
-  { type: 'char', char: 'o', color: '#70b0a6' },
-  { type: 'char', char: 'n', color: '#34d399' },
+  { type: 'char', char: 'r', color: '#00aa63' },
+  { type: 'char', char: 'a', color: '#1777d7' },
+  { type: 'char', char: 'z', color: '#ffd300' },
+  { type: 'char', char: 'o', color: '#ffb5e2' },
+  { type: 'char', char: 'n', color: '#f82d1a' },
 ]
 
 export default function Hero() {

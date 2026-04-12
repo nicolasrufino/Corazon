@@ -121,7 +121,7 @@ export default function AppNavbar() {
               fontSize: 'clamp(1.25rem, 2vw, 1.6rem)',
               letterSpacing: '-0.01em',
             }}
-            aria-label={lang === 'ES' ? 'Inicio de Corazón' : 'Corazon home'}
+            aria-label={lang === 'ES' ? 'Inicio de Corazón' : 'Coraz\u00f3n home'}
           >
             c
             <OrnateHeart

@@ -12,7 +12,7 @@ const dictionaries: Record<Lang, Dict> = {
     'nav.faq': 'FAQ',
     'nav.resources': 'The Team',
     'nav.join': 'Join',
-    'nav.joinAria': 'Join Corazon',
+    'nav.joinAria': 'Join Coraz\u00f3n',
 
     // Hero
     'hero.subtitle': 'For Latinos, by Latinos.',
@@ -81,7 +81,7 @@ const dictionaries: Record<Lang, Dict> = {
     // Aria
     'aria.switchLang.toES': 'Switch language to Spanish',
     'aria.switchLang.toEN': 'Switch language to English',
-    'aria.logoHome': 'Corazon home',
+    'aria.logoHome': 'Coraz\u00f3n home',
   },
 
   ES: {

@@ -19,7 +19,10 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
   const { language } = useAppContext()
 
   return (
-    <div className="relative min-h-screen w-full text-foreground" style={{ background: '#050608' }}>
+    <div
+      className="theme-app relative min-h-screen w-full text-foreground"
+      style={{ background: '#050608' }}
+    >
       <AppNavbar />
 
       <div className="flex w-full gap-0 pt-16 sm:pt-18 lg:gap-6">

@@ -1,6 +1,11 @@
 import { supabase } from '@/lib/supabase'
 import type { CommunityOrganization, Resource, ResourceCategory } from '@/types/app'
 
+// Sanitize search input for PostgREST .or() filter to prevent injection
+function sanitizeSearch(input: string): string {
+  return input.replace(/[%(),.*\\]/g, ' ').trim()
+}
+
 // Map Supabase opportunity_category enum → frontend ResourceCategory
 const CATEGORY_MAP: Record<string, ResourceCategory> = {
   health: 'healthcare',
@@ -235,8 +240,10 @@ export async function fetchResources(query: ResourceQuery): Promise<Resource[]> 
   }
 
   if (query.search?.trim()) {
-    const s = query.search.trim()
-    q = q.or(`title.ilike.%${s}%,organization.ilike.%${s}%,description.ilike.%${s}%`)
+    const s = sanitizeSearch(query.search)
+    if (s) {
+      q = q.or(`title.ilike.%${s}%,organization.ilike.%${s}%,description.ilike.%${s}%`)
+    }
   }
 
   const { data, error } = await q.order('title').limit(50)

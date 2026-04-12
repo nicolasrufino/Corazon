@@ -16,10 +16,22 @@ export const VoiceAssistant = () => {
   const [ttsEnabled, setTtsEnabled] = useState(true)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
-  // Stop any in-flight TTS audio when the dialog is closed.
+  // Stop any in-flight TTS audio AND stop the speech recognizer when
+  // the dialog is closed. Without the STT cleanup, the browser keeps
+  // listening (and the mic permission indicator stays on) until the
+  // recognizer times out, which is creepy.
   useEffect(() => {
     if (!isOpen) {
       stopSpeaking()
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop()
+        } catch {
+          /* noop */
+        }
+        recognitionRef.current = null
+        setIsListening(false)
+      }
     }
   }, [isOpen])
 
@@ -266,6 +278,7 @@ export const VoiceAssistant = () => {
             id="voice-message"
             type="text"
             value={message}
+            maxLength={1000}
             onChange={event => setMessage(event.target.value)}
             onKeyDown={event => {
               if (event.key === 'Enter') {

@@ -45,15 +45,14 @@ export const AuthPage = () => {
   }
 
   return (
-    <div className="mx-auto grid min-h-[70vh] w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-border/60 bg-card/80 shadow-2xl shadow-black/30 lg:grid-cols-2">
-      <section className="relative flex flex-col justify-between gap-6 bg-primary/20 p-6 sm:p-8">
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(139,92,246,0.25),rgba(167,139,250,0.08))]" />
-        </div>
-
+    <div className="mx-auto grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-border/60 bg-card/80 lg:grid-cols-2">
+      <section className="relative flex flex-col justify-between gap-6 bg-primary/15 p-6 sm:p-8">
         <div className="relative z-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary/90">
-            Brújula
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+            style={{ fontFamily: 'var(--font-brand)' }}
+          >
+            Corazón
           </p>
           <h1 className="mt-4 text-3xl sm:text-4xl">
             {language === 'es' ? 'Tu red de apoyo confiable' : 'Your trusted support network'}
@@ -165,8 +164,8 @@ export const AuthPage = () => {
                 ? 'Continuar a onboarding'
                 : 'Continue to onboarding'
               : language === 'es'
-                ? 'Entrar a Brújula'
-                : 'Enter Brújula'}
+                ? 'Entrar a Corazón'
+                : 'Enter Corazón'}
           </Button>
         </div>
       </section>

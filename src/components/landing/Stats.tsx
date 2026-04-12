@@ -1,41 +1,30 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useLang } from './i18n'
 
 const LABEL_COLOR = 'rgba(247,242,232,0.85)' // pearl, soft on dark
 
-const stats = [
+const statKeys = [
+  { valueKey: 'stats.1.value', labelKey: 'stats.1.label', valueColor: '#5a78ff' },
+  { valueKey: 'stats.2.value', labelKey: 'stats.2.label', valueColor: '#34d399' },
+  { valueKey: 'stats.3.value', labelKey: 'stats.3.label', valueColor: '#ff8a1f' },
   {
-    value: '77%',
-    valueColor: '#5a78ff', // sapphire
-    label: 'of undocumented immigrants in the U.S. are Latino.',
-  },
-  {
-    value: 'only 9%',
-    valueColor: '#b8c94d', // jade
-    label: 'of international students in the U.S. come from Latin America.',
-  },
-  {
-    value: '8%',
-    valueColor: '#ff8a1f', // amber
-    label: 'of U.S. STEM workers are Latino, despite being 19% of the population.',
-  },
-  {
-    value: 'only 4%',
-    valueColor: '#ff4560', // coral
-    label: 'of Fortune 500 CEOs are Hispanic.',
-    emphasis: 'We plan to change that.',
+    valueKey: 'stats.4.value',
+    labelKey: 'stats.4.label',
+    valueColor: '#ff4560',
+    emphasisKey: 'stats.4.emphasis',
     emphasisColor: '#ff4560',
   },
 ]
 
 export default function Stats() {
+  const { t } = useLang()
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   })
 
-  // Fade in as it enters, fade out as it leaves
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
   const y = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [60, 0, 0, -60])
 
@@ -58,7 +47,7 @@ export default function Stats() {
       <motion.div style={{ opacity, y }} className="mx-auto max-w-6xl">
         {/* 2x2 grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {stats.map((stat, i) => (
+          {statKeys.map((stat, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 40, scale: 0.96 }}
@@ -84,7 +73,7 @@ export default function Stats() {
                     fontSize: 'clamp(3.25rem, 7vw, 5.5rem)',
                   }}
                 >
-                  {stat.value}
+                  {t(stat.valueKey)}
                 </div>
                 <p
                   className="font-body leading-snug"
@@ -93,9 +82,9 @@ export default function Stats() {
                     fontSize: 'clamp(1.05rem, 1.3vw, 1.25rem)',
                   }}
                 >
-                  {stat.label}
+                  {t(stat.labelKey)}
                 </p>
-                {stat.emphasis && (
+                {stat.emphasisKey && (
                   <p
                     className="font-body leading-snug mt-1.5"
                     style={{
@@ -103,7 +92,7 @@ export default function Stats() {
                       fontSize: 'clamp(1.05rem, 1.3vw, 1.25rem)',
                     }}
                   >
-                    {stat.emphasis}
+                    {t(stat.emphasisKey)}
                   </p>
                 )}
               </div>

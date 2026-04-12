@@ -1,46 +1,25 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLang } from './i18n'
 
-const faqs = [
-  {
-    question: 'What is Corazon?',
-    answer:
-      'Corazon is a community-driven platform designed specifically for the Latino community. We provide a space to connect with others, access resources, find mentorship, and celebrate our shared cultural heritage — all in a bilingual, culturally-rooted environment.',
-  },
-  {
-    question: 'Is Corazon free to use?',
-    answer:
-      'Yes! Corazon is completely free for all community members. We believe access to community and resources should never be gated by cost. Our platform is sustained through partnerships with organizations that share our mission of uplifting Latino communities.',
-  },
-  {
-    question: 'Is the app available in Spanish?',
-    answer:
-      "Absolutely. Corazon is bilingual by design — fully available in both English and Spanish. You can switch between languages at any time using the toggle in the navigation bar. We're also working on supporting additional languages spoken across Latin America.",
-  },
-  {
-    question: 'How can I get involved or contribute?',
-    answer:
-      'There are many ways to get involved! You can volunteer as a mentor, contribute to our open-source codebase, organize local community events, or simply spread the word. Reach out through our contact page or join one of our community channels to get started.',
-  },
-  {
-    question: 'Who is behind Corazon?',
-    answer:
-      'Corazon was founded by Nicolas, Eddie, and Diego — three friends united by a shared vision of empowering Latino communities through technology. Our growing team includes designers, engineers, and community organizers from across the Americas.',
-  },
-  {
-    question: 'What resources does Corazon offer?',
-    answer:
-      'We offer a wide range of resources including mentorship matching, scholarship databases, small business tools, immigration resource guides, job boards with bilingual opportunities, community events calendars, and culturally-relevant wellness content.',
-  },
+const faqKeys = [
+  { q: 'faq.1.q', a: 'faq.1.a' },
+  { q: 'faq.2.q', a: 'faq.2.a' },
+  { q: 'faq.3.q', a: 'faq.3.a' },
+  { q: 'faq.4.q', a: 'faq.4.a' },
+  { q: 'faq.5.q', a: 'faq.5.a' },
+  { q: 'faq.6.q', a: 'faq.6.a' },
 ]
 
 function FAQItem({
-  item,
+  question,
+  answer,
   index,
   isOpen,
   onToggle,
 }: {
-  item: (typeof faqs)[0]
+  question: string
+  answer: string
   index: number
   isOpen: boolean
   onToggle: () => void
@@ -71,7 +50,7 @@ function FAQItem({
           }`}
           style={{ fontSize: 'clamp(1.05rem, 1.3vw, 1.2rem)' }}
         >
-          {item.question}
+          {question}
         </span>
         <motion.span
           animate={{ rotate: isOpen ? 45 : 0 }}
@@ -107,7 +86,7 @@ function FAQItem({
             }}
             className="overflow-hidden"
           >
-            <p className="pb-6 text-pearl/60 leading-relaxed pr-12">{item.answer}</p>
+            <p className="pb-6 text-pearl/60 leading-relaxed pr-12">{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -116,6 +95,7 @@ function FAQItem({
 }
 
 export default function FAQ() {
+  const { t } = useLang()
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
@@ -141,7 +121,7 @@ export default function FAQ() {
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
           className="inline-block text-amber text-sm tracking-[0.2em] uppercase mb-4"
         >
-          FAQ
+          {t('faq.overline')}
         </motion.span>
 
         <motion.h2
@@ -152,14 +132,15 @@ export default function FAQ() {
           className="font-display font-bold text-pearl mb-12"
           style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
         >
-          Common <span className="text-citrine">Questions</span>
+          {t('faq.heading.pre')} <span className="text-citrine">{t('faq.heading.accent')}</span>
         </motion.h2>
 
         <div>
-          {faqs.map((item, i) => (
+          {faqKeys.map((entry, i) => (
             <FAQItem
               key={i}
-              item={item}
+              question={t(entry.q)}
+              answer={t(entry.a)}
               index={i}
               isOpen={openIndex === i}
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}

@@ -17,7 +17,7 @@ interface OrnateHeartProps {
  */
 export default function OrnateHeart({
   size = '1em',
-  color = '#ff2e50',
+  color = '#dc2626',
   className,
   style,
 }: OrnateHeartProps) {
@@ -50,18 +50,18 @@ export default function OrnateHeart({
       aria-hidden="true"
     >
       <defs>
-        {/* Main heart gradient — hot pink at top → coral mid → orange bottom */}
+        {/* Main heart gradient — all red variants, light at top, darker at bottom */}
         <linearGradient id={gradId} x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor="#ff4d8a" />
+          <stop offset="0%" stopColor="#ef3346" />
           <stop offset="45%" stopColor={color} />
-          <stop offset="100%" stopColor="#ff6a1a" />
+          <stop offset="100%" stopColor="#991b1b" />
         </linearGradient>
 
-        {/* Ray gradient — fades outward for soft radial burst */}
+        {/* Ray gradient — red sunburst */}
         <radialGradient id={rayGradId} cx="50%" cy="58%" r="50%">
-          <stop offset="0%" stopColor="#ffb347" stopOpacity="1" />
+          <stop offset="0%" stopColor="#ff5a5a" stopOpacity="1" />
           <stop offset="60%" stopColor={color} stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#ff6a1a" stopOpacity="0.7" />
+          <stop offset="100%" stopColor="#7f1d1d" stopOpacity="0.7" />
         </radialGradient>
       </defs>
 

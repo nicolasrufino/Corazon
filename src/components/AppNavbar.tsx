@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import OrnateHeart from './OrnateHeart'
-import { useLang } from './i18n'
+import OrnateHeart from '@/components/landing/OrnateHeart'
+import { useAppContext } from '@/context/AppContext'
 
-const navLinks = [
-  { key: 'nav.about', href: '#about' },
-  { key: 'nav.faq', href: '#faq' },
-  { key: 'nav.resources', href: '#founders' },
-]
-
-export default function Navbar() {
+/**
+ * Shared Corazón navbar used across auth, onboarding, and the authenticated
+ * app. Mirrors the landing-page navbar visually, but pulls its language state
+ * from AppContext and changes its behavior based on whether a user is signed
+ * in (logo destination, Join vs. Sign out).
+ */
+export default function AppNavbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { lang, toggle, t } = useLang()
+  const { language, setLanguage, user, signOut } = useAppContext()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -33,24 +33,64 @@ export default function Navbar() {
     }
   }, [mobileOpen])
 
-  const handleJoin = () => {
+  const lang: 'EN' | 'ES' = language === 'es' ? 'ES' : 'EN'
+  const toggleLang = () => setLanguage(language === 'es' ? 'en' : 'es')
+
+  // When signed in, the logo returns to the authenticated dashboard. When
+  // signed out, it returns to the public landing page.
+  const logoHref = user?.onboardingCompleted ? '/' : '/landing'
+
+  const handlePrimary = () => {
     setMobileOpen(false)
-    navigate('/auth')
+    if (user?.onboardingCompleted) {
+      signOut()
+      navigate('/landing')
+    } else {
+      navigate('/auth')
+    }
   }
 
-  const JoinButton = ({ large = false }: { large?: boolean }) => (
+  const primaryLabel = user?.onboardingCompleted
+    ? lang === 'ES'
+      ? 'Salir'
+      : 'Sign out'
+    : lang === 'ES'
+      ? 'Únete'
+      : 'Join'
+
+  const primaryAria = user?.onboardingCompleted
+    ? lang === 'ES'
+      ? 'Cerrar sesión'
+      : 'Sign out'
+    : lang === 'ES'
+      ? 'Únete a Corazón'
+      : 'Join Corazon'
+
+  const navLinks = user?.onboardingCompleted
+    ? [
+        { en: 'Resources', es: 'Recursos', href: '/' },
+        { en: 'Community', es: 'Comunidad', href: '/community' },
+        { en: 'Analyzer', es: 'Analizador', href: '/analyzer' },
+      ]
+    : [
+        { en: 'About', es: 'Nosotros', href: '/landing#about' },
+        { en: 'FAQ', es: 'Preguntas', href: '/landing#faq' },
+        { en: 'The Team', es: 'El Equipo', href: '/landing#founders' },
+      ]
+
+  const PrimaryButton = ({ large = false }: { large?: boolean }) => (
     <motion.button
-      onClick={handleJoin}
+      onClick={handlePrimary}
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className={`relative overflow-hidden rounded-full font-body font-semibold tracking-wide text-white cursor-pointer ${
+      className={`relative rounded-full font-body font-semibold tracking-wide text-white cursor-pointer ${
         large ? 'px-7 py-3 text-base' : 'px-5 py-2 text-sm'
       }`}
       style={{ background: '#dc2626' }}
-      aria-label={t('nav.joinAria')}
+      aria-label={primaryAria}
     >
-      <span className="relative z-10">{t('nav.join')}</span>
+      <span className="relative z-10">{primaryLabel}</span>
     </motion.button>
   )
 
@@ -67,9 +107,8 @@ export default function Navbar() {
         }}
       >
         <div className="mx-auto max-w-7xl px-5 sm:px-8 flex items-center justify-between h-16 sm:h-18">
-          {/* Logo */}
           <Link
-            to="/landing"
+            to={logoHref}
             className="flex items-center text-white hover:opacity-80 transition-opacity"
             style={{
               fontFamily: 'var(--font-brand)',
@@ -77,7 +116,7 @@ export default function Navbar() {
               fontSize: 'clamp(1.25rem, 2vw, 1.6rem)',
               letterSpacing: '-0.01em',
             }}
-            aria-label={t('aria.logoHome')}
+            aria-label={lang === 'ES' ? 'Inicio de Corazón' : 'Corazon home'}
           >
             c
             <OrnateHeart
@@ -88,52 +127,50 @@ export default function Navbar() {
             razon
           </Link>
 
-          {/* Desktop center links */}
           <div className="hidden md:flex items-center gap-10">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
-                className="group relative text-pearl/80 hover:text-white text-sm tracking-wide transition-colors duration-200"
+                className="group relative text-white/80 hover:text-white text-sm tracking-wide transition-colors duration-200"
               >
-                {t(link.key)}
-                <span className="absolute -bottom-1 left-0 h-[2px] w-0 bg-coral transition-all duration-300 ease-out group-hover:w-full" />
+                {lang === 'ES' ? link.es : link.en}
+                <span className="absolute -bottom-1 left-0 h-[2px] w-0 bg-[#dc2626] transition-all duration-300 ease-out group-hover:w-full" />
               </a>
             ))}
           </div>
 
-          {/* Desktop right */}
           <div className="hidden md:flex items-center gap-4">
             <button
-              onClick={toggle}
+              onClick={toggleLang}
               className="relative flex items-center h-8 w-16 rounded-full bg-white/10 border border-white/10 transition-colors hover:bg-white/15 cursor-pointer"
-              aria-label={t(lang === 'EN' ? 'aria.switchLang.toES' : 'aria.switchLang.toEN')}
+              aria-label={lang === 'EN' ? 'Switch language to Spanish' : 'Cambiar idioma a inglés'}
             >
               <motion.div
-                className="absolute top-0.5 h-7 w-8 rounded-full bg-emerald"
+                className="absolute top-0.5 h-7 w-8 rounded-full"
+                style={{ background: '#0b4a31' }}
                 animate={{ left: lang === 'EN' ? 1 : 29 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
               <span
                 className={`relative z-10 flex-1 text-center text-xs font-medium ${
-                  lang === 'EN' ? 'text-white' : 'text-pearl/60'
+                  lang === 'EN' ? 'text-white' : 'text-white/60'
                 }`}
               >
                 EN
               </span>
               <span
                 className={`relative z-10 flex-1 text-center text-xs font-medium ${
-                  lang === 'ES' ? 'text-white' : 'text-pearl/60'
+                  lang === 'ES' ? 'text-white' : 'text-white/60'
                 }`}
               >
                 ES
               </span>
             </button>
 
-            <JoinButton />
+            <PrimaryButton />
           </div>
 
-          {/* Mobile hamburger */}
           <button
             className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5 cursor-pointer"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -141,17 +178,17 @@ export default function Navbar() {
             aria-expanded={mobileOpen}
           >
             <motion.span
-              className="block w-6 h-[2px] bg-pearl rounded-full"
+              className="block w-6 h-[2px] bg-white rounded-full"
               animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             />
             <motion.span
-              className="block w-6 h-[2px] bg-pearl rounded-full"
+              className="block w-6 h-[2px] bg-white rounded-full"
               animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
               transition={{ duration: 0.15 }}
             />
             <motion.span
-              className="block w-6 h-[2px] bg-pearl rounded-full"
+              className="block w-6 h-[2px] bg-white rounded-full"
               animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             />
@@ -159,7 +196,6 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -193,34 +229,37 @@ export default function Navbar() {
                       stiffness: 300,
                       damping: 25,
                     }}
-                    className="text-pearl text-lg tracking-wide hover:text-coral transition-colors"
+                    className="text-white text-lg tracking-wide hover:text-[#dc2626] transition-colors"
                   >
-                    {t(link.key)}
+                    {lang === 'ES' ? link.es : link.en}
                   </motion.a>
                 ))}
               </nav>
 
-              <div className="mt-10 flex items-center gap-4">
+              <div className="mt-10">
                 <button
-                  onClick={toggle}
+                  onClick={toggleLang}
                   className="relative flex items-center h-9 w-20 rounded-full bg-white/10 border border-white/10 cursor-pointer"
-                  aria-label={t(lang === 'EN' ? 'aria.switchLang.toES' : 'aria.switchLang.toEN')}
+                  aria-label={
+                    lang === 'EN' ? 'Switch language to Spanish' : 'Cambiar idioma a inglés'
+                  }
                 >
                   <motion.div
-                    className="absolute top-0.5 h-8 w-10 rounded-full bg-emerald"
+                    className="absolute top-0.5 h-8 w-10 rounded-full"
+                    style={{ background: '#0b4a31' }}
                     animate={{ left: lang === 'EN' ? 1 : 37 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                   <span
                     className={`relative z-10 flex-1 text-center text-sm ${
-                      lang === 'EN' ? 'text-white font-medium' : 'text-pearl/60'
+                      lang === 'EN' ? 'text-white font-medium' : 'text-white/60'
                     }`}
                   >
                     EN
                   </span>
                   <span
                     className={`relative z-10 flex-1 text-center text-sm ${
-                      lang === 'ES' ? 'text-white font-medium' : 'text-pearl/60'
+                      lang === 'ES' ? 'text-white font-medium' : 'text-white/60'
                     }`}
                   >
                     ES
@@ -229,7 +268,7 @@ export default function Navbar() {
               </div>
 
               <div className="mt-8">
-                <JoinButton large />
+                <PrimaryButton large />
               </div>
             </motion.div>
           </>

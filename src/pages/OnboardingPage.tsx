@@ -249,10 +249,15 @@ export const OnboardingPage = () => {
   }
 
   const finishOnboarding = async () => {
+    // Don't write "Not specified" sentinels — store undefined so
+    // downstream code (Impact page, recommend algorithm, profile
+    // display) can tell missing data from intentional data. AppContext
+    // .completeOnboarding coerces undefined → null for the Supabase
+    // upsert, so the DB row still has clean NULL columns.
     const profile: OnboardingProfile = {
-      countryOfOrigin: countryOfOrigin || 'Not specified',
+      countryOfOrigin: countryOfOrigin || undefined,
       immigrationStatus: immigrationStatus || 'prefer_not_to_say',
-      visaType: immigrationStatus === 'visa_holder' ? visaType || 'Not specified' : undefined,
+      visaType: immigrationStatus === 'visa_holder' ? visaType || undefined : undefined,
       preferredLanguage: language === 'es' ? 'spanish' : 'english',
       occupations: occupation ? [occupation] : ['other'],
       goals: goals.length > 0 ? goals : ['health'],

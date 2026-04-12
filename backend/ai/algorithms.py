@@ -117,30 +117,41 @@ _LANGUAGE_NAV_PENALTY = {
 # Hours saved per interaction type — includes community events.
 # "community_event" is used by discovery_algorithms.py isolation impact
 # calculations to credit event attendance against isolation_hours_yr.
+#
+# These values are deliberately conservative: a single resource visit
+# represents "time you didn't have to spend researching and navigating
+# this on your own." Legal at 2.0 means visiting a legal aid site saves
+# you ~2 hours of searching/calling offices/deciphering forms. After
+# status + language multipliers (max 1.8 × 1.4 = 2.52x), an
+# undocumented Spanish speaker's legal interaction maxes at ~5 hours —
+# which still feels honest rather than inflated.
 SAVINGS_MAP = {
-    "job": 3.0,
-    "internship": 2.5,
-    "scholarship": 3.5,
-    "food_bank": 2.0,
-    "health": 4.0,
-    "mental_health": 3.0,
-    "legal": 6.0,
-    "housing": 5.0,
-    "language": 2.5,
-    "community_event": 2.0,
+    "job": 1.0,
+    "internship": 0.75,
+    "scholarship": 1.25,
+    "food_bank": 0.5,
+    "health": 1.25,
+    "mental_health": 1.0,
+    "legal": 2.0,
+    "housing": 1.75,
+    "language": 0.75,
+    "community_event": 0.75,
 }
 
-# Base hours saved per interaction by category (before multipliers)
+# Base hours saved per interaction by category (before multipliers).
+# Mirrors SAVINGS_MAP minus community_event — kept in sync so the
+# Impact page and discovery calculations agree. See SAVINGS_MAP comment
+# above for the reasoning behind these values.
 _BASE_TIME_SAVED = {
-    "job": 3.0,
-    "internship": 2.5,
-    "scholarship": 3.5,
-    "food_bank": 2.0,
-    "health": 4.0,
-    "mental_health": 3.0,
-    "legal": 6.0,
-    "housing": 5.0,
-    "language": 2.5,
+    "job": 1.0,
+    "internship": 0.75,
+    "scholarship": 1.25,
+    "food_bank": 0.5,
+    "health": 1.25,
+    "mental_health": 1.0,
+    "legal": 2.0,
+    "housing": 1.75,
+    "language": 0.75,
 }
 
 # Immigration multiplier for time_saved_rate:

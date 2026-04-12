@@ -44,6 +44,22 @@ def map_category(raw: str) -> str:
     return "health"
 
 
+LATINO_KEYWORDS = [
+    "latino", "latina", "latinx", "hispanic", "chicano", "chicana",
+    "mexican", "puerto rican", "hacu", "lucha", "enlace", "casa central",
+    "maldef", "lulac", "mecha", "latin fraternity", "latin sorority",
+    "alpfa", "shpe", "sacnas", "nahj",
+]
+
+
+def classify_latino(org: str, title: str) -> str:
+    """Return 'latino-specific' if the org/title matches known Latino keywords."""
+    combined = f"{org} {title}".lower()
+    if any(kw in combined for kw in LATINO_KEYWORDS):
+        return "latino-specific"
+    return "general"
+
+
 def push_to_supabase(records: list[dict]) -> None:
     for record in records:
         try:
@@ -151,6 +167,7 @@ def scrape_chicago_city_data() -> list[dict]:
             if not organization:
                 continue
 
+            focus = classify_latino(organization, title)
             records.append(
                 {
                     "id": make_id(organization, address),
@@ -163,6 +180,7 @@ def scrape_chicago_city_data() -> list[dict]:
                     "category": category,
                     "language_support": lang_support,
                     "source_url": url.split("?")[0],
+                    "tags": [focus],
                 }
             )
 
@@ -221,6 +239,7 @@ def scrape_extra_city_data() -> list[dict]:
             if not organization:
                 continue
 
+            focus = classify_latino(organization, title)
             records.append(
                 {
                     "id": make_id(organization, address),
@@ -232,6 +251,7 @@ def scrape_extra_city_data() -> list[dict]:
                     "category": default_category,
                     "language_support": "Spanish / Bilingual",
                     "source_url": url.split("?")[0],
+                    "tags": [focus],
                 }
             )
 
@@ -550,6 +570,86 @@ def scrape_hsi_directory() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# Scraper 6 — Vocational / trade / workforce programs (College Scorecard)
+# ---------------------------------------------------------------------------
+
+def scrape_vocational_programs() -> list[dict]:
+    """Pull vocational/trade schools in Chicago area from College Scorecard.
+    school.institutional_characteristics.level = 3 means less-than-2-year (trade/vocational)
+    school.degrees_awarded.predominant = 1 means predominantly certificate programs
+    """
+    records = []
+    for query_params in [
+        # Trade/vocational schools in IL
+        "school.degrees_awarded.predominant=1&school.state=IL&per_page=100",
+        # 2-year schools (community colleges not already covered as HSIs)
+        "school.institutional_characteristics.level=2&school.state=IL&school.minority_serving.hispanic=0&per_page=50",
+    ]:
+        url = (
+            f"https://api.data.gov/ed/collegescorecard/v1/schools.json"
+            f"?fields=school.name,school.city,school.state,school.school_url,"
+            f"latest.student.size,latest.student.demographics.race_ethnicity.hispanic"
+            f"&{query_params}"
+            f"&api_key=DEMO_KEY"
+        )
+        print(f"  Fetching vocational/trade data ...")
+        try:
+            response = requests.get(url, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+        except Exception as e:
+            print(f"  Error: {e}")
+            time.sleep(1)
+            continue
+
+        results = data.get("results", [])
+        for school in results:
+            name = (school.get("school.name") or "").strip()
+            city = (school.get("school.city") or "").strip()
+            website = school.get("school.school_url", "")
+            if website and not website.startswith("http"):
+                website = f"https://{website}"
+            hispanic_pct = school.get("latest.student.demographics.race_ethnicity.hispanic") or 0
+            student_size = school.get("latest.student.size") or 0
+
+            if not name:
+                continue
+
+            # Only include Chicago-area or schools with significant Hispanic enrollment
+            chicago_area = city.lower() in [
+                "chicago", "cicero", "berwyn", "oak park", "evanston",
+                "aurora", "elgin", "joliet", "waukegan", "melrose park",
+            ]
+            if not chicago_area and hispanic_pct < 0.15:
+                continue
+
+            focus = "latino-specific" if hispanic_pct >= 0.25 else "general"
+            desc = f"{name} in {city}, IL"
+            if hispanic_pct > 0:
+                desc += f" — {hispanic_pct:.0%} Hispanic enrollment"
+            if student_size:
+                desc += f", {student_size:,} students"
+
+            records.append({
+                "id": make_id("vocational", name),
+                "organization": name,
+                "title": f"{name} — Vocational/Trade Program",
+                "description": desc,
+                "url": website,
+                "source_url": "https://collegescorecard.ed.gov",
+                "location": f"{city}, IL",
+                "category": "job",
+                "language_support": "Spanish / Bilingual" if hispanic_pct >= 0.15 else "",
+                "tags": [focus, "vocational", "trade", "workforce"],
+            })
+
+        time.sleep(1)
+
+    print(f"  Got {len(records)} vocational/trade programs")
+    return records
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -574,5 +674,9 @@ if __name__ == "__main__":
     hsi_records = scrape_hsi_directory()
     push_to_supabase(hsi_records)
 
-    total = len(city_records) + len(extra_records) + len(events) + len(uni_records) + len(hsi_records)
+    print("Scraping vocational/trade programs...")
+    vocational_records = scrape_vocational_programs()
+    push_to_supabase(vocational_records)
+
+    total = len(city_records) + len(extra_records) + len(events) + len(uni_records) + len(hsi_records) + len(vocational_records)
     print(f"Done. {total} total records processed.")

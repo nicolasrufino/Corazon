@@ -153,3 +153,26 @@ export async function fetchUserPosts(userId: string): Promise<Post[]> {
 
   return ((data || []) as Post[]).map(p => ({ ...p, liked_by_me: false }))
 }
+
+export async function fetchLikedPosts(): Promise<Post[]> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  if (!session?.user) return []
+
+  // Get post IDs the user has liked
+  const { data: likes } = await supabase
+    .from('post_likes')
+    .select('post_id')
+    .eq('user_id', session.user.id)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (!likes || likes.length === 0) return []
+
+  const postIds = likes.map(l => l.post_id)
+  const { data: posts } = await supabase.from('posts').select('*').in('id', postIds)
+
+  if (!posts) return []
+  return (posts as Post[]).map(p => ({ ...p, liked_by_me: true }))
+}

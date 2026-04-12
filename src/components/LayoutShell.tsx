@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Compass, Home, MapPinned } from 'lucide-react'
+import { Compass, Home } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import AppNavbar from '@/components/AppNavbar'
 import { useAppContext } from '@/context/AppContext'
@@ -11,7 +11,6 @@ interface LayoutShellProps {
 
 const navigation = [
   { to: '/dashboard', icon: Home, labelEs: 'Recursos', labelEn: 'Resources' },
-  { to: '/community', icon: MapPinned, labelEs: 'Comunidad', labelEn: 'Community' },
   { to: '/discovery', icon: Compass, labelEs: 'Descubre', labelEn: 'Discovery' },
 ]
 

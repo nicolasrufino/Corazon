@@ -1,10 +1,11 @@
-import { Check, Heart, Pencil, Trash2, User as UserIcon, X } from 'lucide-react'
+import { Bookmark, Check, Heart, Pencil, Trash2, User as UserIcon, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 import { supabase } from '@/lib/supabase'
-import { deletePost, fetchUserPosts, type Post } from '@/lib/postsApi'
+import { deletePost, fetchLikedPosts, fetchUserPosts, type Post } from '@/lib/postsApi'
+import { fetchSavedItems, type SavedItem } from '@/lib/savedApi'
 import { cn } from '@/lib/utils'
 import type { Occupation, OnboardingProfile, ResourceCategory } from '@/types/app'
 
@@ -114,15 +115,15 @@ const ALL_OCCUPATIONS: Occupation[] = [
 ]
 
 const ALL_GOALS: ResourceCategory[] = [
+  'health',
+  'mental_health',
   'legal',
-  'healthcare',
-  'immigration',
-  'education',
-  'community',
-  'social_life',
-  'financial_aid',
-  'language_learning',
-  'business',
+  'housing',
+  'food_bank',
+  'scholarship',
+  'job',
+  'event',
+  'language',
 ]
 
 // Corazón logo letter palette — used to color goal pills.
@@ -178,7 +179,10 @@ export const ProfilePage = () => {
   const navigate = useNavigate()
   const isEs = language === 'es'
 
+  const [activeTab, setActiveTab] = useState<'posts' | 'liked' | 'saved'>('posts')
   const [posts, setPosts] = useState<Post[]>([])
+  const [likedPosts, setLikedPosts] = useState<Post[]>([])
+  const [savedItems, setSavedItems] = useState<SavedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [memberSince, setMemberSince] = useState<string | null>(null)
 
@@ -237,11 +241,15 @@ export const ProfilePage = () => {
     if (!user) return
     void (async () => {
       setLoading(true)
-      const [userPosts, authResult] = await Promise.all([
+      const [userPosts, liked, saved, authResult] = await Promise.all([
         fetchUserPosts(user.id),
+        fetchLikedPosts(),
+        fetchSavedItems(),
         supabase.auth.getUser(),
       ])
       setPosts(userPosts)
+      setLikedPosts(liked)
+      setSavedItems(saved)
       if (authResult.data.user?.created_at) {
         setMemberSince(authResult.data.user.created_at)
       }
@@ -521,11 +529,38 @@ export const ProfilePage = () => {
         </section>
       )}
 
-      {/* My posts */}
+      {/* Tabs: Posts / Liked / Saved */}
       <section className="space-y-4 rounded-2xl border border-border/50 bg-card/70 p-5 sm:p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">{isEs ? 'Mis publicaciones' : 'My Posts'}</h2>
-          <span className="text-xs text-muted-foreground">{posts.length}</span>
+        <div className="flex gap-2">
+          {(
+            [
+              {
+                key: 'posts' as const,
+                es: 'Mis publicaciones',
+                en: 'My Posts',
+                count: posts.length,
+              },
+              { key: 'liked' as const, es: 'Me gusta', en: 'Liked', count: likedPosts.length },
+              { key: 'saved' as const, es: 'Guardados', en: 'Saved', count: savedItems.length },
+            ] as const
+          ).map(tab => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors',
+                activeTab === tab.key
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border hover:bg-primary/10'
+              )}
+            >
+              {tab.key === 'liked' && <Heart className="size-3.5" />}
+              {tab.key === 'saved' && <Bookmark className="size-3.5" />}
+              {isEs ? tab.es : tab.en}
+              <span className="text-xs opacity-70">{tab.count}</span>
+            </button>
+          ))}
         </div>
 
         {loading ? (
@@ -534,51 +569,106 @@ export const ProfilePage = () => {
               <div key={i} className="h-24 animate-pulse rounded-xl bg-muted/40" />
             ))}
           </div>
-        ) : posts.length === 0 ? (
+        ) : activeTab === 'posts' ? (
+          posts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {isEs ? 'Todav\u00eda no has publicado nada.' : "You haven't posted anything yet."}
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {posts.map(post => (
+                <li
+                  key={post.id}
+                  className="rounded-xl border border-border/50 bg-background/40 p-4 transition-colors hover:border-border"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">
+                        {timeAgo(post.created_at, isEs)} · {post.category}
+                      </p>
+                      <p className="mt-1.5 text-sm leading-relaxed whitespace-pre-wrap">
+                        {post.content}
+                      </p>
+                      {post.image_url && (
+                        <div className="mt-2 overflow-hidden rounded-lg">
+                          <img
+                            src={post.image_url}
+                            alt=""
+                            className="w-full object-cover"
+                            style={{ maxHeight: 240 }}
+                          />
+                        </div>
+                      )}
+                      <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Heart className="size-3" />
+                        {post.likes_count}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePost(post.id)}
+                      className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={isEs ? 'Eliminar publicaci\u00f3n' : 'Delete post'}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : activeTab === 'liked' ? (
+          likedPosts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {isEs ? 'No has dado me gusta a nada.' : "You haven't liked anything yet."}
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {likedPosts.map(post => (
+                <li
+                  key={post.id}
+                  className="rounded-xl border border-border/50 bg-background/40 p-4 transition-colors hover:border-border"
+                >
+                  <p className="text-xs text-muted-foreground">
+                    {post.username} · {timeAgo(post.created_at, isEs)}
+                  </p>
+                  <p className="mt-1.5 text-sm leading-relaxed whitespace-pre-wrap">
+                    {post.content}
+                  </p>
+                  {post.image_url && (
+                    <div className="mt-2 overflow-hidden rounded-lg">
+                      <img
+                        src={post.image_url}
+                        alt=""
+                        className="w-full object-cover"
+                        style={{ maxHeight: 240 }}
+                      />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )
+        ) : savedItems.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {isEs
-              ? 'Todavía no has publicado nada. Visita Descubre para compartir tu primera publicación.'
-              : "You haven't posted anything yet. Visit Discover to share your first post."}
+            {isEs ? 'No has guardado nada.' : "You haven't saved anything yet."}
           </p>
         ) : (
           <ul className="space-y-3">
-            {posts.map(post => (
+            {savedItems.map(item => (
               <li
-                key={post.id}
+                key={item.id}
                 className="rounded-xl border border-border/50 bg-background/40 p-4 transition-colors hover:border-border"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground">
-                      {timeAgo(post.created_at, isEs)} · {post.category}
-                    </p>
-                    <p className="mt-1.5 text-sm leading-relaxed whitespace-pre-wrap">
-                      {post.content}
-                    </p>
-                    {post.image_url && (
-                      <div className="mt-2 overflow-hidden rounded-lg">
-                        <img
-                          src={post.image_url}
-                          alt=""
-                          className="w-full object-cover"
-                          style={{ maxHeight: 240 }}
-                        />
-                      </div>
-                    )}
-                    <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Heart className="size-3" />
-                      {post.likes_count}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDeletePost(post.id)}
-                    className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                    aria-label={isEs ? 'Eliminar publicación' : 'Delete post'}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                    {item.item_type}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {timeAgo(item.created_at, isEs)}
+                  </span>
                 </div>
+                <p className="mt-1 text-sm">{item.item_id}</p>
               </li>
             ))}
           </ul>

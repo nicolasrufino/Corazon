@@ -10,7 +10,15 @@ export type ImmigrationStatus =
   | 'undocumented'
   | 'prefer_not_to_say'
 
-export type Occupation = 'student' | 'worker' | 'job_seeker' | 'other'
+export type Occupation =
+  | 'student'
+  | 'worker'
+  | 'student_worker'
+  | 'job_seeker'
+  | 'two_jobs'
+  | 'retired'
+  | 'caregiver'
+  | 'other'
 
 export type ResourceCategory =
   | 'legal'

@@ -1,7 +1,8 @@
-import { Mic, SendHorizontal, X } from 'lucide-react'
+import { Mic, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useAppContext } from '@/context/AppContext'
-import { sendVoiceChatMessage } from '@/lib/mockApi'
+import { sendChatMessage } from '@/lib/chatApi'
+import { speak } from '@/lib/elevenlabs'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types/app'
 
@@ -10,6 +11,8 @@ export const VoiceAssistant = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [isResponding, setIsResponding] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [ttsEnabled, setTtsEnabled] = useState(true)
 
   const visibleHistory = useMemo(() => {
     if (!user) {
@@ -37,11 +40,63 @@ export const VoiceAssistant = () => {
     setIsResponding(true)
 
     try {
-      const response = await sendVoiceChatMessage(trimmed, language)
-      addChatMessage(response)
+      const responseText = await sendChatMessage(
+        trimmed,
+        language,
+        chatHistory,
+        user?.profile
+          ? {
+              goals: user.profile.goals,
+              occupation: user.profile.occupations?.[0],
+            }
+          : undefined
+      )
+
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: responseText,
+        createdAt: new Date().toISOString(),
+      }
+      addChatMessage(assistantMessage)
+
+      if (ttsEnabled) {
+        speak(responseText)
+      }
+    } catch {
+      const errorMessage: ChatMessage = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content:
+          language === 'es'
+            ? 'Hubo un problema al conectar con el asistente. Por favor intenta de nuevo.'
+            : 'There was a problem connecting to the assistant. Please try again.',
+        createdAt: new Date().toISOString(),
+      }
+      addChatMessage(errorMessage)
     } finally {
       setIsResponding(false)
     }
+  }
+
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) return
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = language === 'es' ? 'es-MX' : 'en-US'
+    recognition.interimResults = false
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript
+      setMessage(transcript)
+    }
+
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
+
+    setIsListening(true)
+    recognition.start()
   }
 
   return (
@@ -75,14 +130,36 @@ export const VoiceAssistant = () => {
                 : 'Informational guidance with a community-first lens.'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsOpen(false)}
-            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background transition-colors duration-200 hover:bg-primary/10"
-            aria-label={language === 'es' ? 'Cerrar asistente' : 'Close assistant'}
-          >
-            <X className="size-5" aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setTtsEnabled(prev => !prev)}
+              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background transition-colors duration-200 hover:bg-primary/10"
+              aria-label={
+                ttsEnabled
+                  ? language === 'es'
+                    ? 'Silenciar voz'
+                    : 'Mute voice'
+                  : language === 'es'
+                    ? 'Activar voz'
+                    : 'Enable voice'
+              }
+            >
+              {ttsEnabled ? (
+                <Volume2 className="size-5" aria-hidden="true" />
+              ) : (
+                <VolumeX className="size-5 text-muted-foreground" aria-hidden="true" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background transition-colors duration-200 hover:bg-primary/10"
+              aria-label={language === 'es' ? 'Cerrar asistente' : 'Close assistant'}
+            >
+              <X className="size-5" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <div className="mb-4 max-h-72 space-y-3 overflow-y-auto rounded-2xl border border-border/60 bg-background/70 p-3">
@@ -148,6 +225,26 @@ export const VoiceAssistant = () => {
             }
             className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
           />
+          <button
+            type="button"
+            onClick={startListening}
+            disabled={isListening}
+            className={cn(
+              'inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl border border-input bg-background px-3 transition-colors duration-200 hover:bg-primary/10 disabled:cursor-not-allowed',
+              isListening && 'animate-pulse border-red-500 text-red-500 ring-2 ring-red-500'
+            )}
+            aria-label={
+              isListening
+                ? language === 'es'
+                  ? 'Escuchando...'
+                  : 'Listening...'
+                : language === 'es'
+                  ? 'Hablar'
+                  : 'Speak'
+            }
+          >
+            <Mic className="size-4" aria-hidden="true" />
+          </button>
           <button
             type="button"
             onClick={() => {

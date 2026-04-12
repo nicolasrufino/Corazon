@@ -1,14 +1,17 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import OrnateHeart from './OrnateHeart'
 
-const letters = [
-  { char: 'C', color: '#0b4a31' },
-  { char: '\u2764\uFE0F', color: '#f94e4f' },
-  { char: 'R', color: '#334ab5' },
-  { char: 'A', color: '#ff6c00' },
-  { char: 'Z', color: '#ffab0d' },
-  { char: 'O', color: '#70b0a6' },
-  { char: 'N', color: '#808f3d' },
+type Letter = { type: 'char'; char: string; color: string } | { type: 'heart'; color: string }
+
+const letters: Letter[] = [
+  { type: 'char', char: 'C', color: '#0b4a31' },
+  { type: 'heart', color: '#f94e4f' },
+  { type: 'char', char: 'R', color: '#334ab5' },
+  { type: 'char', char: 'A', color: '#ff6c00' },
+  { type: 'char', char: 'Z', color: '#ffab0d' },
+  { type: 'char', char: 'O', color: '#70b0a6' },
+  { type: 'char', char: 'N', color: '#808f3d' },
 ]
 
 const glowOrbs = [
@@ -65,13 +68,16 @@ export default function Hero() {
       {/* Content with parallax */}
       <motion.div style={{ opacity, scale }} className="relative z-10 text-center px-4">
         {/* Title */}
-        <h1 className="font-display font-black leading-none select-none">
+        <h1 className="leading-none select-none">
           <span className="sr-only">Corazon</span>
           <span
             aria-hidden="true"
-            className="flex items-center justify-center"
+            className="flex items-center justify-center gap-[0.02em]"
             style={{
-              fontSize: 'clamp(4rem, 12vw, 10rem)',
+              fontFamily: 'var(--font-brand)',
+              fontWeight: 900,
+              fontSize: 'clamp(4rem, 13vw, 11rem)',
+              letterSpacing: '-0.045em',
             }}
           >
             {letters.map((letter, i) => (
@@ -85,13 +91,24 @@ export default function Hero() {
                   damping: 20,
                   delay: 0.15 + i * 0.1,
                 }}
-                className="inline-block"
+                className="inline-flex items-center"
                 style={{
                   color: letter.color,
                   textShadow: `0 0 60px ${letter.color}40, 0 0 120px ${letter.color}20`,
                 }}
               >
-                {letter.char}
+                {letter.type === 'heart' ? (
+                  <OrnateHeart
+                    size="0.85em"
+                    color={letter.color}
+                    style={{
+                      filter: `drop-shadow(0 0 60px ${letter.color}66) drop-shadow(0 0 120px ${letter.color}33)`,
+                      margin: '0 0.04em',
+                    }}
+                  />
+                ) : (
+                  letter.char
+                )}
               </motion.span>
             ))}
           </span>

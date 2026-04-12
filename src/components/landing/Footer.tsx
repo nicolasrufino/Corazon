@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import OrnateHeart from './OrnateHeart'
 
 const socialLinks = [
   {
@@ -63,7 +64,11 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative bg-onyx border-t border-white/[0.06]" aria-label="Site footer">
+    <footer
+      className="relative border-t border-white/[0.06]"
+      style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%)' }}
+      aria-label="Site footer"
+    >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 py-12 sm:py-16">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
           {/* Brand */}
@@ -76,10 +81,22 @@ export default function Footer() {
           >
             <a
               href="#"
-              className="font-body text-white text-2xl tracking-tight hover:opacity-80 transition-opacity"
+              className="inline-flex items-center text-white hover:opacity-80 transition-opacity"
+              style={{
+                fontFamily: 'var(--font-brand)',
+                fontWeight: 900,
+                fontSize: '1.75rem',
+                letterSpacing: '-0.03em',
+              }}
               aria-label="Corazon home"
             >
-              C<span className="text-coral">&#10084;&#65039;</span>razon
+              C
+              <OrnateHeart
+                size="0.85em"
+                color="#f94e4f"
+                style={{ margin: '0 0.04em', transform: 'translateY(0.02em)' }}
+              />
+              razon
             </a>
             <p className="mt-2 text-pearl/40 text-sm">
               &copy; {new Date().getFullYear()} Coraz&oacute;n. All rights reserved.

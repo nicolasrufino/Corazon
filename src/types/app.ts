@@ -43,6 +43,7 @@ export interface OnboardingProfile {
 export interface User {
   id: string
   email: string
+  username: string
   preferredAppLanguage: AppLanguage
   onboardingCompleted: boolean
   profile?: OnboardingProfile

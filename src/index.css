@@ -77,32 +77,33 @@
   --card-foreground: #f7f2e8;
   --popover: #12161f;
   --popover-foreground: #f7f2e8;
-  --primary: #ff4560;
+  /* Title palette — primary = brand red (heart), accent = orange, secondary = green */
+  --primary: #dc2626;
   --primary-foreground: #ffffff;
-  --secondary: #70b0a6;
-  --secondary-foreground: #07090e;
+  --secondary: #00aa63;
+  --secondary-foreground: #ffffff;
   --muted: #1a1f28;
   --muted-foreground: #c8c4b5;
-  --accent: #ff8a1f;
+  --accent: #ff8100;
   --accent-foreground: #07090e;
-  --destructive: #ff4560;
+  --destructive: #f82d1a;
   --border: #262b36;
   --input: #1a1f28;
-  --ring: #ff4560;
-  --chart-1: #ff4560;
-  --chart-2: #70b0a6;
-  --chart-3: #ff8a1f;
-  --chart-4: #b8c94d;
-  --chart-5: #5a78ff;
+  --ring: #1777d7;
+  --chart-1: #ff8100;
+  --chart-2: #00aa63;
+  --chart-3: #1777d7;
+  --chart-4: #ffd300;
+  --chart-5: #ffb5e2;
   --sidebar: #0a0d13;
   --sidebar-foreground: #f7f2e8;
-  --sidebar-primary: #ff4560;
+  --sidebar-primary: #dc2626;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #131821;
   --sidebar-accent-foreground: #f7f2e8;
   --sidebar-border: #262b36;
-  --sidebar-ring: #ff4560;
-  --cta: #ff4560;
+  --sidebar-ring: #1777d7;
+  --cta: #dc2626;
 }
 
 .dark {
@@ -112,31 +113,71 @@
   --card-foreground: #f7f2e8;
   --popover: #12161f;
   --popover-foreground: #f7f2e8;
-  --primary: #ff4560;
+  --primary: #dc2626;
   --primary-foreground: #ffffff;
-  --secondary: #70b0a6;
-  --secondary-foreground: #07090e;
+  --secondary: #00aa63;
+  --secondary-foreground: #ffffff;
   --muted: #1a1f28;
   --muted-foreground: #c8c4b5;
-  --accent: #ff8a1f;
+  --accent: #ff8100;
   --accent-foreground: #07090e;
-  --destructive: #ff4560;
+  --destructive: #f82d1a;
   --border: #262b36;
   --input: #1a1f28;
-  --ring: #ff4560;
-  --chart-1: #ff4560;
-  --chart-2: #70b0a6;
-  --chart-3: #ff8a1f;
-  --chart-4: #b8c94d;
-  --chart-5: #5a78ff;
+  --ring: #1777d7;
+  --chart-1: #ff8100;
+  --chart-2: #00aa63;
+  --chart-3: #1777d7;
+  --chart-4: #ffd300;
+  --chart-5: #ffb5e2;
   --sidebar: #0a0d13;
   --sidebar-foreground: #f7f2e8;
-  --sidebar-primary: #ff4560;
+  --sidebar-primary: #dc2626;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #131821;
   --sidebar-accent-foreground: #f7f2e8;
   --sidebar-border: #262b36;
-  --sidebar-ring: #ff4560;
+  --sidebar-ring: #1777d7;
+}
+
+/* Per-section theme overrides — applied via class on the page wrapper.
+   These rebind the shadcn semantic vars (primary / accent / cta / ring),
+   so any component inside picks up the new palette automatically. */
+
+.theme-auth {
+  --primary: #00aa63;
+  --primary-foreground: #ffffff;
+  --secondary: #00aa63;
+  --secondary-foreground: #ffffff;
+  --accent: #00aa63;
+  --accent-foreground: #ffffff;
+  --ring: #00aa63;
+  --cta: #00aa63;
+  --sidebar-primary: #00aa63;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-ring: #00aa63;
+  --chart-1: #00aa63;
+  --chart-2: #34d399;
+  --chart-3: #1777d7;
+}
+
+.theme-app {
+  --primary: #1777d7;
+  --primary-foreground: #ffffff;
+  --secondary: #ffb5e2;
+  --secondary-foreground: #07090e;
+  --accent: #ff8100;
+  --accent-foreground: #07090e;
+  --ring: #1777d7;
+  --cta: #1777d7;
+  --sidebar-primary: #1777d7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-ring: #1777d7;
+  --chart-1: #1777d7;
+  --chart-2: #ff8100;
+  --chart-3: #ffb5e2;
+  --chart-4: #00aa63;
+  --chart-5: #ffd300;
 }
 
 @layer base {

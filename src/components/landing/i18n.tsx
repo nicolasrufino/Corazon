@@ -98,61 +98,60 @@ const dictionaries: Record<Lang, Dict> = {
 
     // About
     'about.overline': 'Sobre Nosotros',
-    'about.heading.pre': 'Construyendo Comunidad,',
-    'about.heading.accent': 'Juntos',
+    'about.heading.pre': 'Construyendo comunidad,',
+    'about.heading.accent': 'juntos.',
     'about.p1':
-      'Corazón nació de una verdad simple: las personas necesitan recursos, pero no tienen el tiempo para buscarlos. Estamos construyendo la plaza digital donde las voces, historias y recursos latinos se unen - un espacio que honra nuestra cultura mientras empodera nuestro futuro. Desde estudiantes universitarios de primera generación buscando mentoría hasta inmigrantes indocumentados en busca de oportunidades de empleo, Corazón es el puente entre las necesidades y los logros.',
+      'Corazón nació de algo simple: somos latinos en Chicago, y sabemos lo que se siente buscar ayuda en un idioma que no es el tuyo, navegar sistemas que no fueron diseñados para ti, y perder horas que no tienes. No construimos esto para una comunidad hipotética. Lo construimos para nuestras familias, nuestros vecinos, nosotros mismos.',
     'about.p2':
-      'Creemos que la burocracia debe servir a las personas, no al revés. Cada función que construimos está moldeada por las experiencias vividas de nuestra comunidad - bilingüe por diseño, culturalmente arraigada y radicalmente inclusiva. Ya sea que estés en Los Ángeles, San Juan o Ciudad de México, Corazón es tu hogar. No solo estamos construyendo una aplicación; estamos nutriendo un movimiento que recupera el tiempo que los latinos tanto merecen.',
+      'Corazón es la plaza digital que siempre debió existir — un lugar donde los recursos, las oportunidades y la cultura latina de Chicago se encuentran en un solo espacio. Bilingüe por diseño. Culturalmente arraigado. Hecho con amor, de latinos para latinos.',
 
     // Stats
     'stats.1.value': '77%',
     'stats.1.label': 'de los inmigrantes indocumentados en EE.UU. son latinos.',
-    'stats.2.value': 'solo 9%',
-    'stats.2.label': 'de los estudiantes internacionales en EE.UU. vienen de Latinoamérica.',
+    'stats.2.value': '200+',
+    'stats.2.label': 'organizaciones latinas en Chicago en nuestra plataforma',
     'stats.3.value': '8%',
-    'stats.3.label':
-      'de los trabajadores STEM en EE.UU. son latinos, a pesar de ser el 19% de la población.',
-    'stats.4.value': 'solo 4%',
-    'stats.4.label': 'de los directores ejecutivos de Fortune 500 son hispanos.',
-    'stats.4.emphasis': 'Planeamos cambiar eso.',
+    'stats.3.label': 'de los trabajadores STEM son latinos — siendo el 19% de la población',
+    'stats.4.value': '1 de cada 3',
+    'stats.4.label':
+      'latinos en EE.UU. reporta dificultad accediendo a servicios básicos por barreras de idioma',
+    'stats.4.emphasis': 'Estamos aquí para cambiar eso. Un recurso a la vez.',
 
     // FAQ
-    'faq.overline': 'Preguntas',
+    'faq.overline': 'Preguntas frecuentes',
     'faq.heading.pre': 'Preguntas',
-    'faq.heading.accent': 'Frecuentes',
+    'faq.heading.accent': 'frecuentes',
     'faq.1.q': '¿Qué es Corazón?',
     'faq.1.a':
-      'Corazón es una plataforma impulsada por la comunidad diseñada específicamente para la comunidad latina. Ofrecemos un espacio para conectarte con otros, acceder a recursos, encontrar mentoría y celebrar nuestra herencia cultural compartida - todo en un entorno bilingüe y culturalmente arraigado.',
+      'Corazón es una plataforma bilingüe para la comunidad latina en Chicago. Te ayuda a encontrar organizaciones de confianza, oportunidades, eventos culturales y recursos — todo en un solo lugar, en tu idioma.',
     'faq.2.q': '¿Es gratis usar Corazón?',
-    'faq.2.a':
-      '¡Sí! Corazón es completamente gratis para todos los miembros de la comunidad. Creemos que el acceso a la comunidad y a los recursos nunca debe estar limitado por el costo. Nuestra plataforma se sostiene a través de alianzas con organizaciones que comparten nuestra misión de elevar a las comunidades latinas.',
+    'faq.2.a': 'Sí, completamente gratis. Siempre.',
     'faq.3.q': '¿La aplicación está disponible en español?',
     'faq.3.a':
-      'Por supuesto. Corazón es bilingüe por diseño - completamente disponible en inglés y español. Puedes cambiar entre idiomas en cualquier momento usando el interruptor en la barra de navegación. También estamos trabajando para apoyar otros idiomas hablados en América Latina.',
+      'Sí. Corazón es bilingüe por diseño — puedes cambiar entre español e inglés en cualquier momento desde cualquier página.',
     'faq.4.q': '¿Cómo puedo involucrarme o contribuir?',
     'faq.4.a':
-      '¡Hay muchas formas de involucrarte! Puedes compartir recursos con nuestra base de usuarios, contribuir a nuestro código abierto, organizar eventos comunitarios locales o simplemente correr la voz. Contáctanos a través de nuestra página de contacto o únete a uno de nuestros canales comunitarios para comenzar.',
+      'Comparte Corazón con alguien que lo necesite. Esa es la forma más poderosa de apoyar el proyecto ahora mismo.',
     'faq.5.q': '¿Quién está detrás de Corazón?',
     'faq.5.a':
-      'Corazón fue fundado por Nicolás, Eddie y Diego - tres amigos unidos por una visión compartida de empoderar a las comunidades latinas a través de la tecnología y recuperar el tiempo perdido. Nuestro creciente equipo incluye diseñadores, ingenieros y organizadores comunitarios de toda América.',
+      'Somos tres estudiantes hispanos de CS en UIC — Nicolas, Eddie y Diego. Construimos Corazón en 36 horas en WildHacks 2026 porque era algo que necesitábamos nosotros mismos.',
     'faq.6.q': '¿Qué recursos ofrece Corazón?',
     'faq.6.a':
-      'Ofrecemos una amplia gama de recursos, incluyendo conexión con mentores, bases de datos de becas, herramientas para pequeños negocios, guías de recursos migratorios, bolsas de trabajo con oportunidades bilingües, calendarios de eventos comunitarios y contenido de bienestar culturalmente relevante.',
+      'Ayuda legal e inmigración, clínicas de salud bilingües, bancos de alimentos, becas, empleos, eventos culturales, organizaciones comunitarias y más — todo enfocado en Chicago y sus alrededores.',
 
     // Founders
     'founders.overline': 'Nuestro Equipo',
     'founders.heading.pre': 'Conoce a los',
-    'founders.heading.accent': 'Fundadores',
-    'founders.nicolas.role': 'CEO y Cofundador',
+    'founders.heading.accent': 'fundadores',
+    'founders.nicolas.role': 'CEO & Cofundador',
     'founders.nicolas.bio':
-      'Estudiante Internacional de Bolivia, Nicolás aporta una década de experiencia en organización comunitaria y estrategia de producto. Su visión para Corazón está arraigada en la creencia de que la tecnología puede ser una fuerza para la preservación cultural y el empoderamiento.',
-    'founders.eddie.role': 'CTO y Cofundador',
+      'Estudiante internacional de Bolivia y Campus Lead de The AI Collective en UIC. Nicolas construyó Corazón desde la experiencia de navegar la vida universitaria en un país nuevo, sin una guía clara. Cree que la tecnología debe servir a quienes más la necesitan.',
+    'founders.eddie.role': 'CTO & Cofundador',
     'founders.eddie.bio':
-      'Eddie es un ingeniero mexicano-americano con pasión por construir tecnología accesible e inclusiva. Con experiencia en empresas tecnológicas líderes, asegura que Corazón esté construido sobre una base que escala mientras mantiene a la comunidad en su centro.',
-    'founders.diego.role': 'CDO y Cofundador',
+      'Estudiante mexicano-americano de CS en UIC y el cerebro técnico detrás de Corazón. Eddie construyó toda la integración de IA — desde el asistente de voz hasta las recomendaciones personalizadas. Para él, el código es una forma de cuidar a su comunidad.',
+    'founders.diego.role': 'CDO & Cofundador',
     'founders.diego.bio':
-      'Diego es un diseñador mexicano-americano que cree que el diseño hermoso es una forma de respeto. Crea cada píxel de Corazón con intención, asegurando que la plataforma se sienta como en casa para cada miembro de nuestra diversa comunidad.',
+      'Estudiante mexicano-americano de CS en UIC y el diseñador de Corazón. Diego cree que el diseño hermoso es una forma de respeto — cada pantalla está hecha para que cualquier persona, sin importar su nivel de tecnología, se sienta bienvenida.',
 
     // Footer
     'footer.rights': 'Todos los derechos reservados.',

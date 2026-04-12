@@ -1,300 +1,101 @@
 # Branch: feat/eddie-ai-voice-deploy
 
-**Assignee:** Eddie
+**Assignee:** Eddie → handoff to teammate
 **Branch name:** `feat/eddie-ai-voice-deploy`
 **What:** Wire VoiceAssistant to real backend, add ElevenLabs TTS, integrate Corazon_AI models, set up DigitalOcean deploy
-**Time estimate:** ~2-3 hours total across all tasks
+**Status:** Tracks 1–3 COMPLETE. Tracks 4–5 still needed.
 
 ---
 
-## Claude Code prompt
-
-Paste this into Claude Code to get started:
+## Claude Code prompt (for teammate continuing this branch)
 
 ```
-Read the files instructions/global-rules.md and instructions/branches/feat-eddie-ai-voice-deploy.md in order. Follow every step exactly. I also have a Corazon_AI folder on the edug-0/ai-layer branch with ML models and algorithms — check that branch for context on my models. Ask me before making any decision not covered in these instructions. After each major step, run npm run lint && npm run build to verify nothing is broken.
+Read the files instructions/global-rules.md and instructions/branches/feat-eddie-ai-voice-deploy.md in order. Tracks 1, 2, and 3 are already done — start from Track 4. Follow every step exactly. Ask me before making any decision not covered in these instructions. After each major step, run npm run lint && npm run build to verify nothing is broken.
 ```
 
 ---
 
-## Context: What exists right now
+## What was completed this session
 
-### Backend (Railway — LIVE at corazon-production-bd07.up.railway.app)
-- `backend/routers/ai.py` has 3 endpoints using Groq llama3-8b-8192:
-  - `POST /api/ai/chat` — streaming chat with bilingual prompts, conversation history
-  - `POST /api/ai/recommend` — returns top 3 resource categories from user profile
-  - `GET /api/ai/health` — health check
-- Backend env vars on Railway: `GROQ_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `FRONTEND_URL`
+### ✅ TRACK 1: VoiceAssistant wired to real backend
 
-### VoiceAssistant.tsx (frontend — BROKEN)
-- Currently imports `sendVoiceChatMessage` from `src/lib/mockApi.ts`
-- This returns FAKE hardcoded responses — not connected to the backend at all
-- Has Web Speech API mic button but speech-to-text is NOT wired up yet
-- No ElevenLabs TTS
+**Files changed:**
+- `src/lib/chatApi.ts` ← NEW — calls `POST /api/ai/chat`, reads full streamed text response
+- `src/components/VoiceAssistant.tsx` — replaced mock with real backend + STT + TTS toggle
+- `src/types/speech.d.ts` ← NEW — TypeScript declarations for `SpeechRecognitionEvent` and `Window`
 
-### Eddie's AI models (on edug-0/ai-layer branch)
-- `Corazon_AI/algorithms.py` — personalization + time-based recommendation algorithms
-- `Corazon_AI/chatbot.py` — chatbot with Supabase resource search
-- `Corazon_AI/train_models.py` — ML model training
-- `Corazon_AI/models/` — pre-trained .pkl models
-- `Corazon_AI/api.py` — FastAPI endpoints for the AI layer
-- `Corazon_AI/database.py` — Supabase connection for resource queries
+**What it does now:**
+- Sends messages to `${config.apiUrl}/api/ai/chat` with full conversation history + user profile (goals, occupation)
+- Shows bilingual error message in chat if API call fails
+- Mic button now runs Web Speech API (`window.SpeechRecognition || window.webkitSpeechRecognition`)
+  - Language-aware: `es-MX` or `en-US` based on current app language
+  - Pulses red with `ring-2 ring-red-500 animate-pulse` while listening
+  - Transcript populates the input field, user sends manually
 
-### Design system
-- Read `CLAUDE.md` at root for colors, fonts, component patterns
-- All text must be bilingual (ES/EN)
-- Use Corazon logo colors for accents
+### ✅ TRACK 2: ElevenLabs TTS
 
----
+**Files changed:**
+- `src/lib/elevenlabs.ts` ← NEW — Rachel voice (ID: `21m00Tcm4TlvDq8ikWAM`), no-ops gracefully if key missing
+- `src/config/env.ts` — added `elevenlabsApiKey: import.meta.env.VITE_ELEVENLABS_API_KEY`
+- `.env.example` — added `VITE_ELEVENLABS_API_KEY=`
+- `VoiceAssistant.tsx` — Volume2/VolumeX toggle button next to close, calls `speak(responseText)` after each AI reply
 
-## TRACK 1: Wire VoiceAssistant to real backend (45 min)
+**Still needs:**
+- Add `VITE_ELEVENLABS_API_KEY` to your local `.env.local` (get key from elevenlabs.io)
+- Add `VITE_ELEVENLABS_API_KEY` to Vercel → Settings → Environment Variables → redeploy
 
-### 1a. Create the real chat API client
+### ✅ TRACK 3: Corazon_AI algorithms integrated
 
-Create `src/lib/chatApi.ts`:
-```ts
-import { config } from '@/config/env'
-import type { AppLanguage, ChatMessage } from '@/types/app'
+**Files changed:**
+- `backend/routers/recommend.py` ← NEW — full algorithmic scoring engine
+- `backend/routers/ai.py` — removed Groq-based recommend endpoint + cleaned unused `json` import
+- `backend/main.py` — registered `recommend.router` under `/api/ai`
 
-interface ChatPayload {
-  message: string
-  history: Array<{ role: string; content: string }>
-  language: string
-  profile?: {
-    goals?: string[]
-    occupation?: string
-  }
-}
+**What the new recommend does:**
+Ports Eddie's multiplier system from `edug-0/ai-layer:Corazon_AI/algorithms.py` into pure Python
+(no `.pkl` models needed — Railway runs it as-is):
+- Seeds scores from user's stated `goals` (ResourceCategory[])
+- Applies `_STATUS_CATEGORY_BOOST`: undocumented 2.4× legal/immigration, DACA 1.8×, etc.
+- Applies `_LANGUAGE_CATEGORY_BOOST`: `es` → +1.8× language_learning, +1.3× community
+- Applies `_OCCUPATION_CATEGORY_BOOST`: job_seeker → +1.6× financial_aid, student → +1.6× education, etc.
+- Returns top 3 categories with bilingual message
+- Categories with zero stated-goal base can still surface if combined boost ≥ 2.0
 
-export async function sendChatMessage(
-  input: string,
-  language: AppLanguage,
-  history: ChatMessage[],
-  profile?: { goals?: string[]; occupation?: string }
-): Promise<string> {
-  const payload: ChatPayload = {
-    message: input,
-    history: history.slice(-10).map(m => ({ role: m.role, content: m.content })),
-    language,
-    profile,
-  }
-
-  const res = await fetch(`${config.apiUrl}/api/ai/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-
-  if (!res.ok) {
-    throw new Error(`Chat API error: ${res.status}`)
-  }
-
-  // The endpoint streams text — read the full response
-  const text = await res.text()
-  return text
-}
-```
-
-### 1b. Update VoiceAssistant.tsx
-
-Replace the mock import and wire to real backend:
-
-1. Replace `import { sendVoiceChatMessage } from '@/lib/mockApi'` with `import { sendChatMessage } from '@/lib/chatApi'`
-2. In `sendMessage()`, replace:
-   ```ts
-   const response = await sendVoiceChatMessage(trimmed, language)
-   addChatMessage(response)
-   ```
-   with:
-   ```ts
-   const responseText = await sendChatMessage(
-     trimmed,
-     language,
-     chatHistory,
-     user?.profile ? { goals: user.profile.goals, occupation: user.profile.occupations?.[0] } : undefined
-   )
-   const assistantMessage: ChatMessage = {
-     id: `assistant-${Date.now()}`,
-     role: 'assistant',
-     content: responseText,
-     createdAt: new Date().toISOString(),
-   }
-   addChatMessage(assistantMessage)
-   ```
-3. Add error handling — if the API call fails, show an error message in the chat
-
-### 1c. Add Web Speech API (speech-to-text)
-
-The mic button exists but doesn't do speech recognition. Add it:
-
-1. Add state: `const [isListening, setIsListening] = useState(false)`
-2. Create a `startListening()` function:
-   ```ts
-   const startListening = () => {
-     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-     if (!SpeechRecognition) return
-
-     const recognition = new SpeechRecognition()
-     recognition.lang = language === 'es' ? 'es-MX' : 'en-US'
-     recognition.interimResults = false
-
-     recognition.onresult = (event) => {
-       const transcript = event.results[0][0].transcript
-       setMessage(transcript)
-     }
-
-     recognition.onend = () => setIsListening(false)
-     recognition.onerror = () => setIsListening(false)
-
-     setIsListening(true)
-     recognition.start()
-   }
-   ```
-3. Wire the mic button to toggle `startListening()`
-4. Show a pulsing animation when listening (red ring around mic button)
-5. Add TypeScript declarations if needed:
-   ```ts
-   // Add to src/types/speech.d.ts
-   interface Window {
-     SpeechRecognition: typeof SpeechRecognition
-     webkitSpeechRecognition: typeof SpeechRecognition
-   }
-   ```
-
-### 1d. Test
-- Open the voice assistant
-- Type a message → should get a real response from Groq via the backend
-- Click mic → speak → transcript appears in input → send → real response
-- Verify bilingual: switch to ES, ask in Spanish, get Spanish response
+**Note on .pkl ML models:** The trained scikit-learn models (`time_model.pkl`, `personalization_model.pkl`) live on `edug-0/ai-layer:Corazon_AI/models/`. They are NOT integrated here because they require joblib + scikit-learn + the model files co-located on the server. If the team wants to deploy those, the path is:
+1. Copy `Corazon_AI/models/` → `backend/models/`
+2. Add `joblib`, `scikit-learn`, `pandas`, `numpy` to `backend/requirements.txt`
+3. Wrap `estimate_impact()` from `algorithms.py` into a new `/api/ai/impact` endpoint
 
 ---
 
-## TRACK 2: Add ElevenLabs TTS (30 min)
+## Current state of key files
 
-### 2a. Get the API key
-Go to elevenlabs.io → sign up (free: 10,000 chars/month) → API Keys → create key.
-Save it in `keys/keys.md` under a new section.
+### `src/components/VoiceAssistant.tsx`
+- Imports: `sendChatMessage` from `chatApi`, `speak` from `elevenlabs`
+- State: `isOpen`, `message`, `isResponding`, `isListening`, `ttsEnabled`
+- `sendMessage()` → hits real backend, creates `assistantMessage`, calls `speak()` if TTS on
+- `startListening()` → Web Speech API, populates input field
+- Header buttons: TTS toggle (Volume2/VolumeX) + close (X)
+- Input row: text input + mic button (red pulse when listening) + send button
 
-### 2b. Add env vars
+### `backend/routers/ai.py`
+- `POST /api/ai/chat` — Groq streaming, bilingual system prompt, last 10 messages of history
+- `GET /api/ai/health` — health check
+- `/recommend` removed (now owned by `recommend.py`)
 
-Add to `.env.local`:
-```
-VITE_ELEVENLABS_API_KEY=your_key_here
-```
-
-Add to `.env.example`:
-```
-VITE_ELEVENLABS_API_KEY=
-```
-
-Add to `src/config/env.ts`:
-```ts
-elevenlabsApiKey: import.meta.env.VITE_ELEVENLABS_API_KEY as string,
-```
-
-### 2c. Create the TTS utility
-
-Create `src/lib/elevenlabs.ts`:
-```ts
-import { config } from '@/config/env'
-
-const VOICE_ID = '21m00Tcm4TlvDq8ikWAM' // Rachel — warm, clear, natural
-
-export async function speak(text: string): Promise<void> {
-  if (!config.elevenlabsApiKey) return
-
-  const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'xi-api-key': config.elevenlabsApiKey,
-      },
-      body: JSON.stringify({
-        text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-      }),
-    }
-  )
-
-  if (!res.ok) return
-
-  const blob = await res.blob()
-  const audio = new Audio(URL.createObjectURL(blob))
-  await audio.play()
-}
-
-export function stopSpeaking(): void {
-  // Stop any currently playing audio
-  document.querySelectorAll('audio').forEach(a => {
-    a.pause()
-    a.remove()
-  })
-}
-```
-
-### 2d. Wire into VoiceAssistant.tsx
-
-1. Import: `import { speak } from '@/lib/elevenlabs'`
-2. Add state: `const [ttsEnabled, setTtsEnabled] = useState(true)`
-3. After adding the assistant message to chat, call:
-   ```ts
-   if (ttsEnabled) {
-     speak(responseText)
-   }
-   ```
-4. Add a speaker icon button (Volume2 / VolumeX from lucide-react) next to the close button that toggles `ttsEnabled`
-5. Style: when TTS is on, icon is white. When off, icon is muted with a line through it.
-
-### 2e. Add to Vercel env vars
-Add `VITE_ELEVENLABS_API_KEY` in Vercel dashboard → Settings → Environment Variables
+### `backend/routers/recommend.py`
+- `POST /api/ai/recommend` — algorithmic scoring, no LLM call, pure Python
 
 ---
 
-## TRACK 3: Integrate Corazon_AI models (1 hr)
+## ⏳ TRACK 4: DigitalOcean deploy (still needed)
 
-This is where Eddie brings in his own algorithms from the `edug-0/ai-layer` branch.
-
-### 3a. Decide with your Claude instance
-
-Your `Corazon_AI/` folder has:
-- `algorithms.py` — personalization + time-based recommendation
-- `chatbot.py` — chatbot with Supabase resource search
-- `train_models.py` + pre-trained `.pkl` models
-- `api.py` — FastAPI endpoints
-
-**Talk to your Claude about:**
-1. Which algorithms should be integrated into `backend/routers/ai.py`?
-2. Should `Corazon_AI/chatbot.py` replace the current Groq chatbot, or augment it?
-3. Can the .pkl models be loaded in the Railway/DigitalOcean backend?
-4. What endpoints from `Corazon_AI/api.py` should be merged into the main backend?
-
-### 3b. Integration approach
-
-The recommended approach:
-1. Copy relevant functions from `Corazon_AI/algorithms.py` into `backend/routers/ai.py` or a new `backend/routers/recommend.py`
-2. If using .pkl models: copy them to `backend/models/` and load them at startup
-3. Add any new dependencies to `backend/requirements.txt`
-4. The chatbot should use Groq for generation BUT use Eddie's algorithms for resource ranking/personalization
-5. Update the `POST /api/ai/recommend` endpoint to use the real ML model instead of just asking Groq
-
-### 3c. Test the integration
-- Hit `POST /api/ai/recommend` with a user profile → should return personalized results
-- Hit `POST /api/ai/chat` → should use resource context from the algorithms
-- Check Railway/DigitalOcean deploy logs for import errors
-
----
-
-## TRACK 4: DigitalOcean deploy (30 min)
-
-### 4a. Why DigitalOcean
+### Why
 - $200 free credits for new accounts
 - DigitalOcean prize at hackathon (retro wireless mouse)
 - Can run alongside Railway as backup, or replace it
 
-### 4b. Setup steps
+### Steps
 
 1. Go to digitalocean.com → sign up → get $200 free credits
 2. Go to App Platform → Create App → connect GitHub
@@ -309,23 +110,20 @@ The recommended approach:
    - `PORT` — 8080 (DigitalOcean default)
 7. Deploy → get the app URL (something like `corazon-xxxxx.ondigitalocean.app`)
 
-### 4c. Update frontend to use DigitalOcean
+### Update frontend to use DigitalOcean
 
 In Vercel env vars, update:
 ```
 VITE_API_URL=https://corazon-xxxxx.ondigitalocean.app
 ```
 
-Redeploy Vercel. The frontend now talks to DigitalOcean instead of Railway.
-
-### 4d. Keep Railway as backup
-Don't delete Railway — if DigitalOcean has issues, you can switch `VITE_API_URL` back to `corazon-production-bd07.up.railway.app` in Vercel.
+Redeploy Vercel. Keep Railway as backup — don't delete it.
 
 ---
 
-## TRACK 5: Pitch deck (30 min)
+## ⏳ TRACK 5: Pitch deck (still needed)
 
-### 5a. Create in Canva — 5 slides
+### Create in Canva — 5 slides
 
 **Slide 1 — Title**
 - "Corazon — Hispanic at Heart"
@@ -351,7 +149,7 @@ Don't delete Railway — if DigitalOcean has issues, you can switch `VITE_API_UR
 - Supabase (auth + database)
 - ElevenLabs (text-to-speech)
 - Web Speech API (speech-to-text)
-- ML recommendation models (Eddie's algorithms)
+- Eddie's algorithmic recommendation engine (status/language/occupation multipliers)
 - Python scrapers (1300+ real Chicago resources)
 
 **Slide 5 — The Team**
@@ -360,7 +158,7 @@ Don't delete Railway — if DigitalOcean has issues, you can switch `VITE_API_UR
 - Diego — Backend + data
 - "Built with love for our community. De latinos para latinos."
 
-### 5b. Demo script (2 min)
+### Demo script (2 min)
 1. Show landing page → "Join" → sign up → onboarding (country, language)
 2. Dashboard → search for "legal aid" → show resource cards
 3. Voice assistant → ask "Where can I get legal help?" → AI responds with voice
@@ -371,26 +169,30 @@ Don't delete Railway — if DigitalOcean has issues, you can switch `VITE_API_UR
 
 ## Final checklist before submitting
 
-1. `npm run lint` — 0 errors
-2. `npm run build` — passes
-3. Vercel live URL works end to end
-4. Backend health check returns `{"status": "ok"}`
-5. Voice assistant gets real AI responses
-6. TTS speaks the response out loud
-7. All env vars set in Vercel + Railway/DigitalOcean
-8. Pitch deck in Canva, exported as PDF backup
-9. Demo rehearsed at least once
+- [ ] `npm run lint` — 0 errors
+- [ ] `npm run build` — passes
+- [ ] `VITE_ELEVENLABS_API_KEY` set in Vercel env vars + redeployed
+- [ ] Vercel live URL works end to end
+- [ ] Backend health check returns `{"status": "ok"}`
+- [ ] Voice assistant gets real AI responses from Groq
+- [ ] TTS speaks the response out loud (ElevenLabs Rachel voice)
+- [ ] STT: mic button → speak → transcript fills input
+- [ ] `/api/ai/recommend` returns categories driven by algorithms (not Groq)
+- [ ] DigitalOcean deployed (Track 4)
+- [ ] `VITE_API_URL` updated in Vercel to point to DigitalOcean
+- [ ] Pitch deck in Canva, exported as PDF backup
+- [ ] Demo rehearsed at least once
 
 ---
 
-## Environment variables Eddie needs
+## Environment variables
 
 ### Vercel (frontend)
 ```
 VITE_SUPABASE_URL=https://vrgguurnbdtxzxtbjrvo.supabase.co
 VITE_SUPABASE_ANON_KEY=(in keys/keys.md)
-VITE_API_URL=https://corazon-production-bd07.up.railway.app (or DigitalOcean URL)
-VITE_ELEVENLABS_API_KEY=(from elevenlabs.io)
+VITE_API_URL=https://corazon-production-bd07.up.railway.app  ← update to DO when ready
+VITE_ELEVENLABS_API_KEY=(from elevenlabs.io)  ← ADD THIS
 ```
 
 ### Railway/DigitalOcean (backend)
@@ -405,17 +207,15 @@ FRONTEND_URL=(your Vercel URL)
 
 ## Push flow
 
-Work on branch `feat/eddie-ai-voice-deploy`. After each track:
-
 ```bash
 git add <specific files>
-git commit -m "feat: description of what was done"
+git commit -m "feat: description"
 git push origin feat/eddie-ai-voice-deploy
 ```
 
-When all tracks are done, create a PR to main. In the PR description list:
-- VoiceAssistant wired to real backend
-- ElevenLabs TTS added
-- Web Speech API speech-to-text added
-- Corazon_AI models integrated (describe which ones)
-- DigitalOcean deploy (if done)
+When all tracks are done, create a PR to main. PR description should list:
+- ✅ VoiceAssistant wired to real Groq backend
+- ✅ ElevenLabs TTS (Rachel voice, toggle button)
+- ✅ Web Speech API speech-to-text (language-aware, pulsing mic)
+- ✅ Algorithmic recommend endpoint (Eddie's status/language/occupation scoring)
+- ⬜ DigitalOcean deploy

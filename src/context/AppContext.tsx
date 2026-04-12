@@ -4,7 +4,6 @@ import { toBackendCategory } from '@/lib/aiApi'
 import { supabase } from '@/lib/supabase'
 import { generateUsername } from '@/lib/username'
 import type {
-  AnalyzerRecord,
   AppLanguage,
   ChatMessage,
   Occupation,
@@ -47,7 +46,6 @@ interface AppContextValue {
   user: User | null
   authLoading: boolean
   savedResourceIds: string[]
-  analyzerHistory: AnalyzerRecord[]
   chatHistory: ChatMessage[]
   interactionsLog: string[]
   signIn: (
@@ -66,7 +64,6 @@ interface AppContextValue {
   toggleSavedResource: (resource: Resource) => void
   hasSavedResource: (resourceId: string) => boolean
   addChatMessage: (message: ChatMessage) => void
-  addAnalyzerRecord: (record: AnalyzerRecord) => void
   logResourceInteraction: (resource: Resource) => void
 }
 
@@ -102,7 +99,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [savedResourceIds, setSavedResourceIds] = useState<string[]>([])
-  const [analyzerHistory, setAnalyzerHistory] = useState<AnalyzerRecord[]>([])
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
   const [interactionsLog, setInteractionsLog] = useState<string[]>(() => loadInteractionsLog())
 
@@ -259,7 +255,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut()
     setUser(null)
     setSavedResourceIds([])
-    setAnalyzerHistory([])
     setChatHistory([])
     // Clear interaction log + localStorage so the next user on a
     // shared browser doesn't inherit the previous user's archetype.
@@ -308,10 +303,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setChatHistory(current => [...current, message])
   }
 
-  const addAnalyzerRecord = (record: AnalyzerRecord) => {
-    setAnalyzerHistory(current => [record, ...current])
-  }
-
   const value = useMemo<AppContextValue>(
     () => ({
       language,
@@ -319,7 +310,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       user,
       authLoading,
       savedResourceIds,
-      analyzerHistory,
       chatHistory,
       interactionsLog,
       signIn,
@@ -330,11 +320,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       toggleSavedResource,
       hasSavedResource,
       addChatMessage,
-      addAnalyzerRecord,
       logResourceInteraction,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, user, authLoading, savedResourceIds, analyzerHistory, chatHistory, interactionsLog]
+    [language, user, authLoading, savedResourceIds, chatHistory, interactionsLog]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

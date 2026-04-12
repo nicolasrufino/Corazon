@@ -8,7 +8,6 @@ import { AuthPage } from '@/pages/AuthPage'
 import { CommunityPage } from '@/pages/CommunityPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DiscoveryPage } from '@/pages/DiscoveryPage'
-import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { ImpactPage } from '@/pages/ImpactPage'
 import { LandingPage } from '@/pages/LandingPage'
@@ -24,7 +23,6 @@ import { ProfilePage } from '@/pages/ProfilePage'
   /dashboard     → Resource dashboard (requires auth + onboarding)
   /community     → Community finder (requires auth + onboarding)
   /discovery     → Pinterest-style explore feed (requires auth + onboarding)
-  /analyzer      → Document analyzer (requires auth + onboarding)
   /impact        → Personalized impact dashboard (requires auth + onboarding)
 ──────────────────────────────────────────────*/
 
@@ -154,14 +152,6 @@ const AppFrame = () => {
           element={
             <ProtectedRoute>
               <DiscoveryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/analyzer"
-          element={
-            <ProtectedRoute>
-              <DocumentAnalyzerPage />
             </ProtectedRoute>
           }
         />

@@ -8,6 +8,7 @@ export interface Post {
   image_url: string | null
   category: string
   likes_count: number
+  comments_count: number
   created_at: string
   liked_by_me: boolean
 }

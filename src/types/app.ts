@@ -83,16 +83,6 @@ export interface CommunityOrganization {
   verified: boolean
   summary: string
 }
-
-export interface AnalyzerRecord {
-  id: string
-  fileName: string
-  createdAt: string
-  outputLanguage: AppLanguage
-  summary: string
-  nextSteps: string[]
-}
-
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant'

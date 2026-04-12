@@ -1,8 +1,19 @@
-import { Heart, ImagePlus, MessageCircle, Plus, Send, User as UserIcon, X } from 'lucide-react'
+import {
+  Bookmark,
+  Heart,
+  ImagePlus,
+  MessageCircle,
+  Plus,
+  Send,
+  User as UserIcon,
+  X,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { CommentDrawer } from '@/components/CommentDrawer'
 import { useAppContext } from '@/context/AppContext'
 import { uploadImage } from '@/lib/cloudinary'
+import { saveItem, unsaveItem } from '@/lib/savedApi'
 import { createPost, fetchPosts, toggleLike, type Post, type PostCategory } from '@/lib/postsApi'
 import { cn } from '@/lib/utils'
 
@@ -51,6 +62,8 @@ export const DiscoveryPage = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [commentPostId, setCommentPostId] = useState<string | null>(null)
+  const [savedPostIds, setSavedPostIds] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const resetCompose = () => {
@@ -369,10 +382,64 @@ export const DiscoveryPage = () => {
                   <Heart className="size-4" fill={post.liked_by_me ? 'currentColor' : 'none'} />
                   {post.likes_count > 0 && post.likes_count}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setCommentPostId(post.id)}
+                  className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <MessageCircle className="size-4" />
+                  {post.comments_count > 0 && post.comments_count}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!user) return
+                    if (savedPostIds.has(post.id)) {
+                      await unsaveItem('post', post.id)
+                      setSavedPostIds(prev => {
+                        const next = new Set(prev)
+                        next.delete(post.id)
+                        return next
+                      })
+                    } else {
+                      await saveItem('post', post.id)
+                      setSavedPostIds(prev => new Set(prev).add(post.id))
+                    }
+                  }}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-1.5 text-sm transition-colors',
+                    savedPostIds.has(post.id)
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-primary'
+                  )}
+                >
+                  <Bookmark
+                    className="size-4"
+                    fill={savedPostIds.has(post.id) ? 'currentColor' : 'none'}
+                  />
+                </button>
               </div>
             </article>
           ))}
         </div>
+      )}
+
+      {/* Comment drawer */}
+      {commentPostId && (
+        <CommentDrawer
+          postId={commentPostId}
+          isOpen={!!commentPostId}
+          onClose={() => setCommentPostId(null)}
+          onCommentCountChange={(postId, delta) => {
+            setPosts(prev =>
+              prev.map(p =>
+                p.id === postId
+                  ? { ...p, comments_count: Math.max(0, (p.comments_count || 0) + delta) }
+                  : p
+              )
+            )
+          }}
+        />
       )}
     </div>
   )

@@ -1,7 +1,6 @@
 import { API_CONFIG } from '@/config/api'
 import { mockCommunityOrganizations, mockResources } from '@/data/mockData'
 import type {
-  AnalyzerRecord,
   AppLanguage,
   ChatMessage,
   CommunityOrganization,
@@ -50,36 +49,6 @@ export const fetchCommunityOrganizations = async (
     const languageMatches = language === 'all' || org.languages.includes(language)
     return categoryMatches && languageMatches
   })
-}
-
-export const analyzeDocument = async (
-  fileName: string,
-  outputLanguage: AppLanguage
-): Promise<AnalyzerRecord> => {
-  await wait(1200)
-
-  return {
-    id: `analysis-${Date.now()}`,
-    fileName,
-    createdAt: new Date().toISOString(),
-    outputLanguage,
-    summary:
-      outputLanguage === 'es'
-        ? 'Este documento parece ser una notificación oficial con fecha límite. Resume requisitos, fechas y opciones de respuesta. Esta explicación es informativa y no reemplaza asesoría legal.'
-        : 'This document appears to be an official notice with a response deadline. It summarizes requirements, dates, and response options. This explanation is informational only and does not replace legal advice.',
-    nextSteps:
-      outputLanguage === 'es'
-        ? [
-            'Verifica la fecha límite y guarda copia del documento.',
-            'Consulta una organización legal verificada antes de responder.',
-            'Prepara tus preguntas para una cita o chat de seguimiento.',
-          ]
-        : [
-            'Verify the deadline and keep a copy of the document.',
-            'Speak with a verified legal organization before responding.',
-            'Prepare your questions for a follow-up visit or voice chat.',
-          ],
-  }
 }
 
 export const sendVoiceChatMessage = async (

@@ -2,6 +2,7 @@ import { User as UserIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
+import { NotificationDropdown } from '@/components/NotificationDropdown'
 import OrnateHeart from '@/components/landing/OrnateHeart'
 import { useAppContext } from '@/context/AppContext'
 
@@ -36,7 +37,6 @@ export default function AppNavbar() {
         { en: 'Resources', es: 'Recursos', href: '/dashboard' },
         { en: 'Community', es: 'Comunidad', href: '/community' },
         { en: 'Discover', es: 'Descubre', href: '/discovery' },
-        { en: 'Analyzer', es: 'Analizador', href: '/analyzer' },
       ]
     : []
 
@@ -154,7 +154,10 @@ export default function AppNavbar() {
             <LangToggle />
 
             {user ? (
-              <ProfileAvatar />
+              <>
+                <NotificationDropdown />
+                <ProfileAvatar />
+              </>
             ) : (
               <motion.button
                 onClick={handleJoin}

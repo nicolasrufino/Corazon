@@ -8,7 +8,6 @@ import { AuthPage } from '@/pages/AuthPage'
 import { CommunityPage } from '@/pages/CommunityPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DiscoveryPage } from '@/pages/DiscoveryPage'
-import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { LandingPage } from '@/pages/LandingPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
@@ -23,7 +22,6 @@ import { ProfilePage } from '@/pages/ProfilePage'
   /dashboard     → Resource dashboard (requires auth + onboarding)
   /community     → Community finder (requires auth + onboarding)
   /discovery     → Pinterest-style explore feed (requires auth + onboarding)
-  /analyzer      → Document analyzer (requires auth + onboarding)
 ──────────────────────────────────────────────*/
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -152,14 +150,6 @@ const AppFrame = () => {
           element={
             <ProtectedRoute>
               <DiscoveryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/analyzer"
-          element={
-            <ProtectedRoute>
-              <DocumentAnalyzerPage />
             </ProtectedRoute>
           }
         />

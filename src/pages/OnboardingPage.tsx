@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
@@ -208,8 +208,9 @@ export const OnboardingPage = () => {
   const [immigrationStatus, setImmigrationStatus] = useState<ImmigrationStatus | ''>('')
   const [visaType, setVisaType] = useState('')
   const [preferredLanguage, setPreferredLanguage] = useState<UiLanguagePreference>('spanish')
-  const [occupation, setOccupation] = useState<Occupation | ''>('')
+  const [occupations, setOccupations] = useState<Occupation[]>([])
   const [otherOccupation, setOtherOccupation] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const [goals, setGoals] = useState<ResourceCategory[]>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -229,12 +230,29 @@ export const OnboardingPage = () => {
   const subtitle = STEP_SUBTITLES[step - 1]
   const colors = STEP_COLORS[step]
 
+  // Close country dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setCountryDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   if (!user) {
     return <Navigate to="/auth" replace />
   }
 
   const nextStep = () => setStep(current => Math.min(TOTAL_STEPS, current + 1))
   const previousStep = () => setStep(current => Math.max(1, current - 1))
+
+  const toggleOccupation = (occ: Occupation) => {
+    setOccupations(current =>
+      current.includes(occ) ? current.filter(item => item !== occ) : [...current, occ]
+    )
+  }
 
   const toggleGoal = (goal: ResourceCategory) => {
     setGoals(current =>
@@ -253,6 +271,7 @@ export const OnboardingPage = () => {
   const skipOnboarding = async () => {
     const profile: OnboardingProfile = {
       preferredLanguage,
+      occupations: [],
       goals: [],
     }
     await completeOnboarding(profile)
@@ -265,7 +284,7 @@ export const OnboardingPage = () => {
       immigrationStatus: immigrationStatus || undefined,
       visaType: immigrationStatus === 'visa_holder' ? visaType || undefined : undefined,
       preferredLanguage,
-      occupation: occupation || undefined,
+      occupations,
       goals,
     }
     await completeOnboarding(profile)
@@ -344,7 +363,7 @@ export const OnboardingPage = () => {
         <div className="mt-6 space-y-4">
           {/* Step 1: Country */}
           {step === 1 && (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <label htmlFor="country-search" className="mb-2 block text-sm font-medium">
                 {language === 'es' ? 'Pais o region de origen' : 'Country or region of origin'}
               </label>
@@ -522,7 +541,7 @@ export const OnboardingPage = () => {
                     )}
                     style={
                       preferredLanguage === option.value
-                        ? { background: colors.accent, borderColor: colors.accent, color: '#fff' }
+                        ? { background: colors.accent, borderColor: colors.accent, color: '#000' }
                         : { borderColor: 'var(--border)' }
                     }
                   >
@@ -533,27 +552,30 @@ export const OnboardingPage = () => {
             </div>
           )}
 
-          {/* Step 4: Occupation — single select, no emojis */}
+          {/* Step 4: Occupation — multi select, no emojis */}
           {step === 4 && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {OCCUPATION_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setOccupation(option.value)}
-                    className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
-                    style={
-                      occupation === option.value
-                        ? { background: colors.accent, borderColor: colors.accent, color: '#fff' }
-                        : { borderColor: 'var(--border)' }
-                    }
-                  >
-                    {language === 'es' ? option.labelEs : option.labelEn}
-                  </button>
-                ))}
+                {OCCUPATION_OPTIONS.map(option => {
+                  const isSelected = occupations.includes(option.value)
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => toggleOccupation(option.value)}
+                      className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
+                      style={
+                        isSelected
+                          ? { background: colors.accent, borderColor: colors.accent, color: '#000' }
+                          : { borderColor: 'var(--border)' }
+                      }
+                    >
+                      {language === 'es' ? option.labelEs : option.labelEn}
+                    </button>
+                  )
+                })}
               </div>
-              {occupation === 'other' && (
+              {occupations.includes('other') && (
                 <input
                   type="text"
                   value={otherOccupation}
@@ -581,7 +603,7 @@ export const OnboardingPage = () => {
                     className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
                     style={
                       isSelected
-                        ? { background: colors.accent, borderColor: colors.accent, color: '#fff' }
+                        ? { background: colors.accent, borderColor: colors.accent, color: '#000' }
                         : { borderColor: 'var(--border)' }
                     }
                   >
@@ -608,7 +630,7 @@ export const OnboardingPage = () => {
           {step < TOTAL_STEPS ? (
             <Button
               type="button"
-              className="h-11 cursor-pointer text-white"
+              className="h-11 cursor-pointer text-black"
               style={{ background: colors.accent }}
               onClick={nextStep}
             >
@@ -617,7 +639,7 @@ export const OnboardingPage = () => {
           ) : (
             <Button
               type="button"
-              className="h-11 cursor-pointer text-white"
+              className="h-11 cursor-pointer text-black"
               style={{ background: colors.accent }}
               onClick={finishOnboarding}
             >

@@ -47,48 +47,32 @@ describe('search sanitization', () => {
   })
 })
 
-describe('category mapping', () => {
-  // Replicate the CATEGORY_MAP from supabaseApi.ts
-  const CATEGORY_MAP: Record<string, string> = {
-    health: 'healthcare',
-    mental_health: 'healthcare',
-    legal: 'legal',
-    housing: 'community',
-    food_bank: 'community',
-    event: 'community',
-    scholarship: 'education',
-    job: 'business',
-    language: 'language_learning',
-  }
+describe('category mapping (1:1)', () => {
+  const VALID = [
+    'legal',
+    'health',
+    'mental_health',
+    'housing',
+    'food_bank',
+    'scholarship',
+    'job',
+    'event',
+    'language',
+  ]
 
   function mapCategory(raw: string): string {
-    return CATEGORY_MAP[raw] || 'community'
+    if (VALID.includes(raw)) return raw
+    return 'health'
   }
 
-  it('maps health to healthcare', () => {
-    expect(mapCategory('health')).toBe('healthcare')
-    expect(mapCategory('mental_health')).toBe('healthcare')
+  it('maps valid categories to themselves', () => {
+    for (const cat of VALID) {
+      expect(mapCategory(cat)).toBe(cat)
+    }
   })
 
-  it('maps legal to legal', () => {
-    expect(mapCategory('legal')).toBe('legal')
-  })
-
-  it('maps housing and food_bank to community', () => {
-    expect(mapCategory('housing')).toBe('community')
-    expect(mapCategory('food_bank')).toBe('community')
-  })
-
-  it('maps scholarship to education', () => {
-    expect(mapCategory('scholarship')).toBe('education')
-  })
-
-  it('maps job to business', () => {
-    expect(mapCategory('job')).toBe('business')
-  })
-
-  it('defaults unknown categories to community', () => {
-    expect(mapCategory('unknown')).toBe('community')
-    expect(mapCategory('')).toBe('community')
+  it('defaults unknown categories to health', () => {
+    expect(mapCategory('unknown')).toBe('health')
+    expect(mapCategory('')).toBe('health')
   })
 })

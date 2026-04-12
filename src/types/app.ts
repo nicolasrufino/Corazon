@@ -22,14 +22,14 @@ export type Occupation =
 
 export type ResourceCategory =
   | 'legal'
-  | 'healthcare'
-  | 'immigration'
-  | 'education'
-  | 'community'
-  | 'social_life'
-  | 'financial_aid'
-  | 'language_learning'
-  | 'business'
+  | 'health'
+  | 'mental_health'
+  | 'housing'
+  | 'food_bank'
+  | 'scholarship'
+  | 'job'
+  | 'event'
+  | 'language'
 
 export interface OnboardingProfile {
   countryOfOrigin?: string

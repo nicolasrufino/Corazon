@@ -40,10 +40,16 @@ export const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-border/60 bg-card/80 lg:grid-cols-2">
+    <div className="flex h-screen w-full overflow-hidden">
       <AuthSidePanel />
 
-      <section className="p-6 sm:p-8">
+      <section className="flex w-full flex-col justify-center overflow-y-auto bg-background px-8 py-12 lg:w-1/2">
+        <p
+          className="mb-6 text-xs font-semibold uppercase tracking-[0.25em] text-primary lg:hidden"
+          style={{ fontFamily: 'var(--font-brand)' }}
+        >
+          Corazón
+        </p>
         <h2 className="text-2xl sm:text-3xl">
           {isEs ? 'Restablece tu contraseña' : 'Reset your Password'}
         </h2>

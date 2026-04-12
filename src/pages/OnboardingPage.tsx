@@ -1,6 +1,7 @@
 import { Lock } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import OrnateHeart from '@/components/landing/OrnateHeart'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 import { cn } from '@/lib/utils'
@@ -335,380 +336,447 @@ export const OnboardingPage = () => {
   }
 
   return (
-    <>
-      {/* Step-specific background — greyscale dark tint */}
-      <div
-        key={step}
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
-        style={{
-          backgroundImage: `url(${STEP_IMAGES[step]})`,
-          filter: 'grayscale(1) brightness(0.28)',
-          zIndex: 0,
-        }}
-      />
-      <div className="fixed inset-0 bg-black/45" style={{ zIndex: 0 }} />
-
-      <div
-        className="relative z-10 mx-auto w-full max-w-3xl rounded-3xl border bg-card/80 p-5 sm:p-8"
-        style={{ borderColor: colors.border }}
-      >
-        {/* Intro banner — only on step 1 */}
-        {step === 1 && (
-          <div
-            className="mb-6 rounded-xl p-4"
-            style={{
-              background: colors.accentMuted,
-              borderLeft: `3px solid ${colors.accent}`,
-            }}
-          >
-            <p className="text-sm leading-relaxed text-pearl/90">
-              {language === 'es'
-                ? 'Todo aqu\u00ed es opcional. Tu informaci\u00f3n es 100% privada. Puedes saltar todo el onboarding.'
-                : 'Everything here is optional. Your information is 100% private. You can skip the entire onboarding.'}
+    <div className="flex h-screen w-full overflow-hidden">
+      {/* Left panel — step photo + branding */}
+      <div className="relative hidden h-full flex-col overflow-hidden lg:flex lg:w-1/2">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${STEP_IMAGES[step]})`,
+            filter: 'grayscale(1) brightness(0.85)',
+          }}
+        />
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-14">
+          <div>
+            <div
+              className="flex items-center"
+              style={{
+                fontFamily: 'var(--font-brand)',
+                fontWeight: 400,
+                fontSize: 'clamp(1.25rem, 2vw, 1.6rem)',
+                letterSpacing: '-0.01em',
+                color: 'white',
+              }}
+            >
+              c
+              <OrnateHeart
+                size="0.85em"
+                color="#dc2626"
+                style={{ margin: '0 0.04em', transform: 'translateY(0.02em)' }}
+              />
+              razon
+            </div>
+            <h1
+              className="mt-6 text-4xl leading-tight xl:text-5xl"
+              style={{ color: colors.accent }}
+            >
+              {language === 'es' ? title.es : title.en}
+            </h1>
+            <p className="mt-4 text-sm text-foreground/70">
+              {language === 'es' ? subtitle.es : subtitle.en}
             </p>
+            <div className="mt-10 flex items-center gap-2">
+              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+                <span
+                  key={i}
+                  className="h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: i + 1 === step ? '2rem' : '0.5rem',
+                    background: i < step ? colors.accent : 'rgba(255,255,255,0.2)',
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        )}
-
-        {/* Step title */}
-        <h1 className="text-3xl sm:text-4xl" style={{ color: colors.accent }}>
-          {language === 'es' ? title.es : title.en}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {language === 'es' ? subtitle.es : subtitle.en}
-        </p>
-
-        {/* Progress bar */}
-        <div className="mt-6 flex items-center gap-2">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <span
-              key={i}
-              className="h-2 flex-1 rounded-full"
-              style={{ background: i < step ? colors.accent : 'var(--muted)' }}
-              aria-hidden="true"
-            />
-          ))}
+          <p className="text-xs text-foreground/40" style={{ fontFamily: 'var(--font-brand)' }}>
+            {language === 'es' ? 'De latinos para latinos.' : 'By Latinos, for Latinos.'}
+          </p>
         </div>
+      </div>
 
-        {/* Step content */}
-        <div className="mt-6 space-y-4">
-          {/* Step 1: Language */}
+      {/* Right panel — form */}
+      <div className="flex w-full flex-col overflow-y-auto bg-background lg:w-1/2">
+        <div className="flex min-h-full flex-col justify-center p-8 xl:p-12">
+          {/* Mobile: brand + step title */}
+          <div className="mb-6 lg:hidden">
+            <div
+              className="flex items-center"
+              style={{
+                fontFamily: 'var(--font-brand)',
+                fontWeight: 400,
+                fontSize: 'clamp(1.25rem, 2vw, 1.6rem)',
+                letterSpacing: '-0.01em',
+                color: 'white',
+              }}
+            >
+              c
+              <OrnateHeart
+                size="0.85em"
+                color="#dc2626"
+                style={{ margin: '0 0.04em', transform: 'translateY(0.02em)' }}
+              />
+              razon
+            </div>
+            <h2 className="mt-3 text-2xl" style={{ color: colors.accent }}>
+              {language === 'es' ? title.es : title.en}
+            </h2>
+            <div className="mt-4 flex items-center gap-2">
+              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+                <span
+                  key={i}
+                  className="h-1.5 flex-1 rounded-full"
+                  style={{ background: i < step ? colors.accent : 'var(--muted)' }}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Intro banner — only on step 1 */}
           {step === 1 && (
-            <div>
-              <p className="mb-3 text-sm font-medium">
+            <div
+              className="mb-6 rounded-xl p-4"
+              style={{
+                background: colors.accentMuted,
+                borderLeft: `3px solid ${colors.accent}`,
+              }}
+            >
+              <p className="text-sm leading-relaxed text-pearl/90">
                 {language === 'es'
-                  ? '\u00bfEn qu\u00e9 idioma quieres usar la app?'
-                  : 'What language do you want to use the app in?'}
+                  ? 'Todo aqu\u00ed es opcional. Tu informaci\u00f3n es 100% privada. Puedes saltar todo el onboarding.'
+                  : 'Everything here is optional. Your information is 100% private. You can skip the entire onboarding.'}
               </p>
-              <div className="flex gap-3">
-                {[
-                  { value: 'spanish' as const, label: 'Espa\u00f1ol' },
-                  { value: 'english' as const, label: 'English' },
-                ].map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleLanguageSelect(option.value)}
-                    className="h-12 flex-1 cursor-pointer rounded-xl border px-4 text-sm font-medium transition-all duration-200"
-                    style={
-                      preferredLanguage === option.value
-                        ? {
-                            background: colors.accent,
-                            borderColor: colors.accent,
-                            color: '#000',
-                          }
-                        : { borderColor: 'var(--border)' }
-                    }
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
 
-          {/* Step 2: Country */}
-          {step === 2 && (
-            <div className="relative" ref={dropdownRef}>
-              <label htmlFor="country-search" className="mb-2 block text-sm font-medium">
-                {language === 'es'
-                  ? 'Pa\u00eds o regi\u00f3n de origen'
-                  : 'Country or region of origin'}
-              </label>
+          {/* Step content */}
+          <div className="space-y-4">
+            {/* Step 1: Language */}
+            {step === 1 && (
+              <div>
+                <p className="mb-3 text-sm font-medium">
+                  {language === 'es'
+                    ? '\u00bfEn qu\u00e9 idioma quieres usar la app?'
+                    : 'What language do you want to use the app in?'}
+                </p>
+                <div className="flex gap-3">
+                  {[
+                    { value: 'spanish' as const, label: 'Espa\u00f1ol' },
+                    { value: 'english' as const, label: 'English' },
+                  ].map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleLanguageSelect(option.value)}
+                      className="h-12 flex-1 cursor-pointer rounded-xl border px-4 text-sm font-medium transition-all duration-200"
+                      style={
+                        preferredLanguage === option.value
+                          ? {
+                              background: colors.accent,
+                              borderColor: colors.accent,
+                              color: '#000',
+                            }
+                          : { borderColor: 'var(--border)' }
+                      }
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {countryOfOrigin ? (
+            {/* Step 2: Country */}
+            {step === 2 && (
+              <div className="relative" ref={dropdownRef}>
+                <label htmlFor="country-search" className="mb-2 block text-sm font-medium">
+                  {language === 'es'
+                    ? 'Pa\u00eds o regi\u00f3n de origen'
+                    : 'Country or region of origin'}
+                </label>
+
+                {countryOfOrigin ? (
+                  <div
+                    className="flex items-center gap-3 rounded-xl p-3"
+                    style={{
+                      background: colors.accentMuted,
+                      border: `1px solid ${colors.border}`,
+                    }}
+                  >
+                    <span className="text-2xl">
+                      {ALL_COUNTRIES.find(
+                        c => c.labelEs === countryOfOrigin || c.labelEn === countryOfOrigin
+                      )?.flag || ''}
+                    </span>
+                    <span className="flex-1 text-sm font-medium">{countryOfOrigin}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCountryOfOrigin('')
+                        setHighlightIndex(0)
+                        setTimeout(() => searchInputRef.current?.focus(), 50)
+                      }}
+                      className="cursor-pointer text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {language === 'es' ? 'Cambiar' : 'Change'}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      ref={searchInputRef}
+                      id="country-search"
+                      type="text"
+                      value={countrySearch}
+                      onChange={e => {
+                        setCountrySearch(e.target.value)
+                        setCountryDropdownOpen(true)
+                        setHighlightIndex(0)
+                      }}
+                      onFocus={() => setCountryDropdownOpen(true)}
+                      onKeyDown={handleCountryKeyDown}
+                      className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
+                      style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
+                      placeholder={
+                        language === 'es' ? 'Escribe para buscar...' : 'Type to search...'
+                      }
+                      autoComplete="off"
+                    />
+                    {countryDropdownOpen && (
+                      <div
+                        ref={listRef}
+                        className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-xl border border-border bg-card shadow-xl"
+                      >
+                        {filteredCountries.length === 0 ? (
+                          <p className="p-3 text-sm text-muted-foreground">
+                            {language === 'es' ? 'No encontrado' : 'Not found'}
+                          </p>
+                        ) : (
+                          filteredCountries.map((option, idx) => (
+                            <button
+                              key={option.code}
+                              type="button"
+                              onClick={() => selectCountry(option)}
+                              className={cn(
+                                'flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors',
+                                idx === highlightIndex ? 'bg-white/10' : 'hover:bg-white/5'
+                              )}
+                              style={
+                                idx === highlightIndex
+                                  ? { background: colors.accentMuted }
+                                  : undefined
+                              }
+                            >
+                              <span className="text-lg">{option.flag}</span>
+                              <span>{language === 'es' ? option.labelEs : option.labelEn}</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Immigration status */}
+            {step === 3 && (
+              <div className="space-y-4">
                 <div
-                  className="flex items-center gap-3 rounded-xl p-3"
+                  className="flex items-start gap-3 rounded-xl p-4"
                   style={{
                     background: colors.accentMuted,
                     border: `1px solid ${colors.border}`,
                   }}
                 >
-                  <span className="text-2xl">
-                    {ALL_COUNTRIES.find(
-                      c => c.labelEs === countryOfOrigin || c.labelEn === countryOfOrigin
-                    )?.flag || ''}
-                  </span>
-                  <span className="flex-1 text-sm font-medium">{countryOfOrigin}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCountryOfOrigin('')
-                      setHighlightIndex(0)
-                      setTimeout(() => searchInputRef.current?.focus(), 50)
-                    }}
-                    className="cursor-pointer text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    {language === 'es' ? 'Cambiar' : 'Change'}
-                  </button>
+                  <Lock className="mt-0.5 size-5 shrink-0" style={{ color: colors.accent }} />
+                  <div>
+                    <p className="text-sm font-semibold text-pearl">
+                      {language === 'es'
+                        ? 'Tu informaci\u00f3n es 100% privada.'
+                        : 'Your information is 100% private.'}
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-pearl/70">
+                      {language === 'es'
+                        ? 'Nunca se comparte, se vende, ni es visible para nadie. Solo la usamos para mostrarte los recursos m\u00e1s relevantes para tu situaci\u00f3n.'
+                        : 'It is never shared, sold, or visible to anyone. We only use it to show you the most relevant resources for your situation.'}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <>
-                  <input
-                    ref={searchInputRef}
-                    id="country-search"
-                    type="text"
-                    value={countrySearch}
-                    onChange={e => {
-                      setCountrySearch(e.target.value)
-                      setCountryDropdownOpen(true)
-                      setHighlightIndex(0)
-                    }}
-                    onFocus={() => setCountryDropdownOpen(true)}
-                    onKeyDown={handleCountryKeyDown}
-                    className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
-                    style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
-                    placeholder={language === 'es' ? 'Escribe para buscar...' : 'Type to search...'}
-                    autoComplete="off"
-                  />
-                  {countryDropdownOpen && (
-                    <div
-                      ref={listRef}
-                      className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-xl border border-border bg-card shadow-xl"
-                    >
-                      {filteredCountries.length === 0 ? (
-                        <p className="p-3 text-sm text-muted-foreground">
-                          {language === 'es' ? 'No encontrado' : 'Not found'}
-                        </p>
-                      ) : (
-                        filteredCountries.map((option, idx) => (
-                          <button
-                            key={option.code}
-                            type="button"
-                            onClick={() => selectCountry(option)}
-                            className={cn(
-                              'flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors',
-                              idx === highlightIndex ? 'bg-white/10' : 'hover:bg-white/5'
-                            )}
-                            style={
-                              idx === highlightIndex
-                                ? { background: colors.accentMuted }
-                                : undefined
-                            }
-                          >
-                            <span className="text-lg">{option.flag}</span>
-                            <span>{language === 'es' ? option.labelEs : option.labelEn}</span>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
 
-          {/* Step 3: Immigration status */}
-          {step === 3 && (
-            <div className="space-y-4">
-              <div
-                className="flex items-start gap-3 rounded-xl p-4"
-                style={{
-                  background: colors.accentMuted,
-                  border: `1px solid ${colors.border}`,
-                }}
-              >
-                <Lock className="mt-0.5 size-5 shrink-0" style={{ color: colors.accent }} />
                 <div>
-                  <p className="text-sm font-semibold text-pearl">
-                    {language === 'es'
-                      ? 'Tu informaci\u00f3n es 100% privada.'
-                      : 'Your information is 100% private.'}
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-pearl/70">
-                    {language === 'es'
-                      ? 'Nunca se comparte, se vende, ni es visible para nadie. Solo la usamos para mostrarte los recursos m\u00e1s relevantes para tu situaci\u00f3n.'
-                      : 'It is never shared, sold, or visible to anyone. We only use it to show you the most relevant resources for your situation.'}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="status" className="mb-2 block text-sm font-medium">
-                  {language === 'es' ? 'Estatus migratorio' : 'Immigration status'}
-                </label>
-                <select
-                  id="status"
-                  value={immigrationStatus}
-                  onChange={event => setImmigrationStatus(event.target.value as ImmigrationStatus)}
-                  className="h-11 w-full cursor-pointer rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
-                  style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
-                >
-                  <option value="">
-                    {language === 'es' ? 'Prefiero no decir' : 'Prefer not to say'}
-                  </option>
-                  <option value="citizen">{language === 'es' ? 'Ciudadano(a)' : 'Citizen'}</option>
-                  <option value="permanent_resident">
-                    {language === 'es'
-                      ? 'Residente permanente (Green Card)'
-                      : 'Permanent resident (Green Card)'}
-                  </option>
-                  <option value="daca">DACA</option>
-                  <option value="visa_holder">
-                    {language === 'es' ? 'Tengo visa' : 'Visa holder'}
-                  </option>
-                  <option value="undocumented">
-                    {language === 'es' ? 'Indocumentado(a)' : 'Undocumented'}
-                  </option>
-                  <option value="prefer_not_to_say">
-                    {language === 'es' ? 'Otro / Prefiero no decir' : 'Other / Prefer not to say'}
-                  </option>
-                </select>
-              </div>
-
-              {immigrationStatus === 'visa_holder' && (
-                <div>
-                  <label htmlFor="visa-type" className="mb-2 block text-sm font-medium">
-                    {language === 'es'
-                      ? '\u00bfQu\u00e9 tipo de visa tienes?'
-                      : 'What type of visa do you have?'}
+                  <label htmlFor="status" className="mb-2 block text-sm font-medium">
+                    {language === 'es' ? 'Estatus migratorio' : 'Immigration status'}
                   </label>
                   <select
-                    id="visa-type"
-                    value={visaType}
-                    onChange={event => setVisaType(event.target.value)}
+                    id="status"
+                    value={immigrationStatus}
+                    onChange={event =>
+                      setImmigrationStatus(event.target.value as ImmigrationStatus)
+                    }
                     className="h-11 w-full cursor-pointer rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
                     style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
                   >
-                    <option value="">{language === 'es' ? 'Seleccionar' : 'Select'}</option>
-                    {VISA_OPTIONS.map(v => (
-                      <option key={v.value} value={v.value}>
-                        {v.label}
-                      </option>
-                    ))}
+                    <option value="">
+                      {language === 'es' ? 'Prefiero no decir' : 'Prefer not to say'}
+                    </option>
+                    <option value="citizen">
+                      {language === 'es' ? 'Ciudadano(a)' : 'Citizen'}
+                    </option>
+                    <option value="permanent_resident">
+                      {language === 'es'
+                        ? 'Residente permanente (Green Card)'
+                        : 'Permanent resident (Green Card)'}
+                    </option>
+                    <option value="daca">DACA</option>
+                    <option value="visa_holder">
+                      {language === 'es' ? 'Tengo visa' : 'Visa holder'}
+                    </option>
+                    <option value="undocumented">
+                      {language === 'es' ? 'Indocumentado(a)' : 'Undocumented'}
+                    </option>
+                    <option value="prefer_not_to_say">
+                      {language === 'es' ? 'Otro / Prefiero no decir' : 'Other / Prefer not to say'}
+                    </option>
                   </select>
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* Step 4: Occupation — single select */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {OCCUPATION_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setOccupation(option.value)}
-                    className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
-                    style={
-                      occupation === option.value
-                        ? {
-                            background: colors.accent,
-                            borderColor: colors.accent,
-                            color: '#000',
-                          }
-                        : { borderColor: 'var(--border)' }
-                    }
-                  >
-                    {language === 'es' ? option.labelEs : option.labelEn}
-                  </button>
-                ))}
+                {immigrationStatus === 'visa_holder' && (
+                  <div>
+                    <label htmlFor="visa-type" className="mb-2 block text-sm font-medium">
+                      {language === 'es'
+                        ? '\u00bfQu\u00e9 tipo de visa tienes?'
+                        : 'What type of visa do you have?'}
+                    </label>
+                    <select
+                      id="visa-type"
+                      value={visaType}
+                      onChange={event => setVisaType(event.target.value)}
+                      className="h-11 w-full cursor-pointer rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
+                      style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
+                    >
+                      <option value="">{language === 'es' ? 'Seleccionar' : 'Select'}</option>
+                      {VISA_OPTIONS.map(v => (
+                        <option key={v.value} value={v.value}>
+                          {v.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
-              {occupation === 'other' && (
-                <input
-                  type="text"
-                  value={otherOccupation}
-                  onChange={e => setOtherOccupation(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
-                  style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
-                  placeholder={
-                    language === 'es'
-                      ? 'Describe tu ocupaci\u00f3n...'
-                      : 'Describe your occupation...'
-                  }
-                />
-              )}
-            </div>
-          )}
+            )}
 
-          {/* Step 5: Goals — multi select */}
-          {step === 5 && (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {GOAL_OPTIONS.map(goal => {
-                const isSelected = goals.includes(goal.value)
-                return (
-                  <button
-                    key={goal.value}
-                    type="button"
-                    onClick={() => toggleGoal(goal.value)}
-                    className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
-                    style={
-                      isSelected
-                        ? {
-                            background: colors.accent,
-                            borderColor: colors.accent,
-                            color: '#000',
-                          }
-                        : { borderColor: 'var(--border)' }
+            {/* Step 4: Occupation — single select */}
+            {step === 4 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {OCCUPATION_OPTIONS.map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setOccupation(option.value)}
+                      className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
+                      style={
+                        occupation === option.value
+                          ? {
+                              background: colors.accent,
+                              borderColor: colors.accent,
+                              color: '#000',
+                            }
+                          : { borderColor: 'var(--border)' }
+                      }
+                    >
+                      {language === 'es' ? option.labelEs : option.labelEn}
+                    </button>
+                  ))}
+                </div>
+                {occupation === 'other' && (
+                  <input
+                    type="text"
+                    value={otherOccupation}
+                    onChange={e => setOtherOccupation(e.target.value)}
+                    className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2"
+                    style={{ '--tw-ring-color': colors.accent } as React.CSSProperties}
+                    placeholder={
+                      language === 'es'
+                        ? 'Describe tu ocupaci\u00f3n...'
+                        : 'Describe your occupation...'
                     }
-                  >
-                    {language === 'es' ? goal.labelEs : goal.labelEn}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
+                  />
+                )}
+              </div>
+            )}
 
-        {/* Navigation — Back + Next/Finish */}
-        <div className="mt-8 flex items-center justify-between">
-          <Button
-            type="button"
-            className="h-11 cursor-pointer border text-black"
-            style={{
-              background: step > 1 ? colors.accent : 'transparent',
-              borderColor: step > 1 ? colors.accent : 'var(--border)',
-              color: step > 1 ? '#000' : 'var(--foreground)',
-              opacity: step === 1 ? 0.4 : 1,
-            }}
-            onClick={previousStep}
-            disabled={step === 1}
-          >
-            {language === 'es' ? 'Atr\u00e1s' : 'Back'}
-          </Button>
+            {/* Step 5: Goals — multi select */}
+            {step === 5 && (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {GOAL_OPTIONS.map(goal => {
+                  const isSelected = goals.includes(goal.value)
+                  return (
+                    <button
+                      key={goal.value}
+                      type="button"
+                      onClick={() => toggleGoal(goal.value)}
+                      className="h-12 cursor-pointer rounded-xl border px-4 text-left text-sm font-medium transition-all duration-200"
+                      style={
+                        isSelected
+                          ? {
+                              background: colors.accent,
+                              borderColor: colors.accent,
+                              color: '#000',
+                            }
+                          : { borderColor: 'var(--border)' }
+                      }
+                    >
+                      {language === 'es' ? goal.labelEs : goal.labelEn}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
 
-          {step < TOTAL_STEPS ? (
+          {/* Navigation — Back + Next/Finish */}
+          <div className="mt-8 flex items-center justify-between">
             <Button
               type="button"
-              className="h-11 cursor-pointer text-black"
-              style={{ background: colors.accent }}
-              onClick={nextStep}
+              className="h-11 cursor-pointer border text-black"
+              style={{
+                background: step > 1 ? colors.accent : 'transparent',
+                borderColor: step > 1 ? colors.accent : 'var(--border)',
+                color: step > 1 ? '#000' : 'var(--foreground)',
+                opacity: step === 1 ? 0.4 : 1,
+              }}
+              onClick={previousStep}
+              disabled={step === 1}
             >
-              {language === 'es' ? 'Siguiente' : 'Next'}
+              {language === 'es' ? 'Atr\u00e1s' : 'Back'}
             </Button>
-          ) : (
-            <Button
-              type="button"
-              className="h-11 cursor-pointer text-black"
-              style={{ background: colors.accent }}
-              onClick={finishOnboarding}
-            >
-              {language === 'es' ? 'Empezar a explorar' : 'Start exploring'}
-            </Button>
-          )}
+
+            {step < TOTAL_STEPS ? (
+              <Button
+                type="button"
+                className="h-11 cursor-pointer text-black"
+                style={{ background: colors.accent }}
+                onClick={nextStep}
+              >
+                {language === 'es' ? 'Siguiente' : 'Next'}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                className="h-11 cursor-pointer text-black"
+                style={{ background: colors.accent }}
+                onClick={finishOnboarding}
+              >
+                {language === 'es' ? 'Empezar a explorar' : 'Start exploring'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

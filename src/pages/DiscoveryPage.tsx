@@ -128,11 +128,16 @@ export const DiscoveryPage = () => {
   }
 
   const handleLike = async (postId: string) => {
+    if (!user) return
     const liked = await toggleLike(postId)
     setPosts(prev =>
       prev.map(p =>
         p.id === postId
-          ? { ...p, liked_by_me: liked, likes_count: p.likes_count + (liked ? 1 : -1) }
+          ? {
+              ...p,
+              liked_by_me: liked,
+              likes_count: Math.max(0, p.likes_count + (liked ? 1 : -1)),
+            }
           : p
       )
     )

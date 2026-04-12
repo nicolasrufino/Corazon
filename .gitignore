@@ -20,9 +20,12 @@ backend/dist/
 backend/.env
 backend/.env.production
 backend/.env*
+scraper/.env
+scraper/.env*
 # Keep example files tracked
 !.env.example
 !backend/.env.example
+!scraper/.env.example
 
 # Keys folder — local reference only
 /keys/

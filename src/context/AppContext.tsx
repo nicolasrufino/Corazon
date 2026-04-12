@@ -119,11 +119,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     password: string,
     preferredAppLanguage: AppLanguage
   ): Promise<string | null> => {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: undefined, data: {} },
+    })
     if (error) return error.message
     setLanguage(preferredAppLanguage)
-    // If Supabase requires email confirmation, user won't have a session yet
-    // but we still set local state so they can proceed to onboarding
+
+    // If email confirmation is required, session will be null
+    if (!data.session) {
+      return '__confirm_email__'
+    }
+
     if (data.user) {
       setUser({
         id: data.user.id,

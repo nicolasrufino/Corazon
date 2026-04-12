@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { generateUsername } from '@/lib/username'
 import type {
-  AnalyzerRecord,
   AppLanguage,
   ChatMessage,
   Occupation,
@@ -18,7 +17,6 @@ interface AppContextValue {
   user: User | null
   authLoading: boolean
   savedResourceIds: string[]
-  analyzerHistory: AnalyzerRecord[]
   chatHistory: ChatMessage[]
   signIn: (
     email: string,
@@ -36,7 +34,6 @@ interface AppContextValue {
   toggleSavedResource: (resource: Resource) => void
   hasSavedResource: (resourceId: string) => boolean
   addChatMessage: (message: ChatMessage) => void
-  addAnalyzerRecord: (record: AnalyzerRecord) => void
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined)
@@ -46,11 +43,14 @@ interface ProfileData {
   username: string
 }
 
-async function fetchProfile(userId: string): Promise<ProfileData | null> {
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
-  if (!data) return null
+async function fetchProfile(
+  userId: string
+): Promise<(ProfileData & { onboardingCompleted: boolean }) | null> {
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
+  if (error || !data) return null
   return {
     username: data.username || '',
+    onboardingCompleted: !!data.onboarding_completed,
     profile: {
       countryOfOrigin: data.country_of_origin || undefined,
       immigrationStatus: data.immigration_status || undefined,
@@ -68,29 +68,39 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [savedResourceIds, setSavedResourceIds] = useState<string[]>([])
-  const [analyzerHistory, setAnalyzerHistory] = useState<AnalyzerRecord[]>([])
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
 
   // Restore session on mount + subscribe to auth changes
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const u = session.user
-        fetchProfile(u.id).then(result => {
-          setUser({
-            id: u.id,
-            email: u.email || '',
-            username: result?.username || '',
-            preferredAppLanguage: language,
-            onboardingCompleted: !!result,
-            profile: result?.profile || undefined,
-          })
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) {
+          const u = session.user
+          fetchProfile(u.id)
+            .then(result => {
+              const lang = result?.profile?.preferredLanguage === 'english' ? 'en' : 'es'
+              setLanguage(lang)
+              setUser({
+                id: u.id,
+                email: u.email || '',
+                username: result?.username || '',
+                preferredAppLanguage: lang,
+                onboardingCompleted: result?.onboardingCompleted ?? false,
+                profile: result?.profile || undefined,
+              })
+              setAuthLoading(false)
+            })
+            .catch(() => {
+              setAuthLoading(false)
+            })
+        } else {
           setAuthLoading(false)
-        })
-      } else {
+        }
+      })
+      .catch(() => {
         setAuthLoading(false)
-      }
-    })
+      })
 
     const {
       data: { subscription },
@@ -100,22 +110,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return
       }
       const u = session.user
-      fetchProfile(u.id).then(result => {
-        setUser({
-          id: u.id,
-          email: u.email || '',
-          username: result?.username || '',
-          preferredAppLanguage: language,
-          onboardingCompleted: !!result,
-          profile: result?.profile || undefined,
+      fetchProfile(u.id)
+        .then(result => {
+          const lang = result?.profile?.preferredLanguage === 'english' ? 'en' : 'es'
+          setLanguage(lang)
+          setUser({
+            id: u.id,
+            email: u.email || '',
+            username: result?.username || '',
+            preferredAppLanguage: lang,
+            onboardingCompleted: result?.onboardingCompleted ?? false,
+            profile: result?.profile || undefined,
+          })
         })
-      })
+        .catch(() => {
+          // Profile fetch failed — user stays null, app still works
+        })
     })
 
     return () => {
       subscription.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const signIn = async (
@@ -181,6 +196,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await supabase.from('profiles').upsert({
       id: user.id,
       email: user.email,
+      username: user.username,
       country_of_origin: profile.countryOfOrigin || null,
       immigration_status: profile.immigrationStatus || null,
       language_preference: profile.preferredLanguage,
@@ -199,7 +215,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut()
     setUser(null)
     setSavedResourceIds([])
-    setAnalyzerHistory([])
     setChatHistory([])
   }
 
@@ -218,10 +233,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setChatHistory(current => [...current, message])
   }
 
-  const addAnalyzerRecord = (record: AnalyzerRecord) => {
-    setAnalyzerHistory(current => [record, ...current])
-  }
-
   const value = useMemo<AppContextValue>(
     () => ({
       language,
@@ -229,7 +240,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       user,
       authLoading,
       savedResourceIds,
-      analyzerHistory,
       chatHistory,
       signIn,
       startSignUp,
@@ -239,10 +249,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       toggleSavedResource,
       hasSavedResource,
       addChatMessage,
-      addAnalyzerRecord,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, user, authLoading, savedResourceIds, analyzerHistory, chatHistory]
+    [language, user, authLoading, savedResourceIds, chatHistory]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

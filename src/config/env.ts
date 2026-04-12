@@ -3,4 +3,6 @@ export const config = {
   supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
   apiUrl: import.meta.env.VITE_API_URL as string,
   elevenlabsApiKey: import.meta.env.VITE_ELEVENLABS_API_KEY as string,
+  cloudinaryCloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string,
+  cloudinaryUploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string,
 }

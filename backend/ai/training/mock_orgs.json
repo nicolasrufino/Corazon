@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Enlace Chicago",
+    "categories": ["employment", "legal"],
+    "languages": ["es", "en"],
+    "eligibility": ["undocumented", "DACA", "all"],
+    "address": "2756 S Millard Ave, Chicago IL",
+    "phone": "773-542-7070",
+    "zip": "60623"
+  },
+  {
+    "name": "Casa Central",
+    "categories": ["housing", "benefits", "healthcare"],
+    "languages": ["es", "en"],
+    "eligibility": ["all"],
+    "address": "1343 W Erie St, Chicago IL",
+    "phone": "773-645-4100",
+    "zip": "60642"
+  },
+  {
+    "name": "LUCHA",
+    "categories": ["housing", "legal"],
+    "languages": ["es", "en"],
+    "eligibility": ["undocumented", "DACA", "permanent_resident"],
+    "address": "1752 N Karlov Ave, Chicago IL",
+    "phone": "773-394-2737",
+    "zip": "60639"
+  },
+  {
+    "name": "Alivio Medical Center",
+    "categories": ["healthcare"],
+    "languages": ["es", "en"],
+    "eligibility": ["all"],
+    "address": "966 W 21st St, Chicago IL",
+    "phone": "312-226-9636",
+    "zip": "60608"
+  },
+  {
+    "name": "LARES",
+    "categories": ["legal", "benefits", "employment"],
+    "languages": ["es", "en"],
+    "eligibility": ["undocumented", "DACA"],
+    "address": "2036 N Milwaukee Ave, Chicago IL",
+    "phone": "773-252-0970",
+    "zip": "60647"
+  },
+  {
+    "name": "Illinois Hispanic Chamber of Commerce",
+    "categories": ["employment"],
+    "languages": ["es", "en"],
+    "eligibility": ["all"],
+    "address": "55 W Monroe St, Chicago IL",
+    "phone": "312-425-9500",
+    "zip": "60603"
+  }
+]

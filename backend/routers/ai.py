@@ -15,13 +15,21 @@ Endpoints:
   GET  /api/ai/health                → health check
 """
 
+import asyncio
+import logging
 import os
+import re
 from typing import Any, List, Optional
 
 import httpx
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+
+# Allowlist regex for ElevenLabs voice IDs (defense-in-depth, see M2)
+_VOICE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{10,40}$")
 
 from ai.algorithms import (
     build_complex_archetype,
@@ -137,19 +145,28 @@ async def chat(req: ChatRequest):
     Chat with the bilingual Corazón assistant. Uses chatbot.chat() which
     grounds responses in real Supabase resources (no hallucinated phone
     numbers) and uses the upgraded Groq llama-3.3-70b-versatile model.
+
+    chatbot.chat() is synchronous (Groq SDK is sync), so we run it in
+    a worker thread via asyncio.to_thread to avoid blocking the FastAPI
+    event loop. Without this, a single in-flight chat would freeze the
+    entire backend until Groq responds (~1-3s).
     """
     try:
         archetype = _profile_to_archetype(req.profile, req.language)
         history = [{"role": m.role, "content": m.content} for m in req.history]
-        response_text = ai_chat(
+        response_text = await asyncio.to_thread(
+            ai_chat,
             message=req.message,
             history=history,
             simple_archetype=archetype,
             auto_fetch=True,
         )
         return PlainTextResponse(content=response_text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("ai.chat failed")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 @router.post("/recommend")
@@ -172,8 +189,11 @@ async def recommend(req: RecommendRequest):
             "resources": top,
             "count": len(top),
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("ai.recommend failed")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 @router.post("/impact")
@@ -191,8 +211,11 @@ async def impact(req: ImpactRequest):
             occupation=req.occupation,
         )
         return estimate_impact(simple)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("ai.impact failed")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 @router.post("/time-saved")
@@ -208,8 +231,11 @@ async def time_saved(req: TimeSavedRequest):
             occupation=req.occupation,
         )
         return calculate_time_saved(simple, req.interactions_log)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("ai.time_saved failed")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 @router.post("/discovery/recommend")
@@ -236,8 +262,11 @@ async def discovery_recommend(req: DiscoveryRecommendRequest):
             "events": top,
             "count": len(top),
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("ai.discovery_recommend failed")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 @router.post("/discovery/isolation")
@@ -254,8 +283,11 @@ async def discovery_isolation(req: IsolationRequest):
             occupation=req.occupation,
         )
         return calculate_isolation_impact(simple)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("ai.discovery_isolation failed")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 # Default voice = the Corazón brand voice (Spanish-native, multilingual).
@@ -287,6 +319,12 @@ async def tts(req: TtsRequest):
 
     voice_id = req.voice_id or _DEFAULT_VOICE_ID
 
+    # Defense-in-depth: only allow alphanumeric / dash / underscore
+    # voice IDs in the URL. Prevents path traversal or weird ElevenLabs
+    # endpoint manipulation if someone passes a malicious voice_id.
+    if not _VOICE_ID_RE.match(voice_id):
+        raise HTTPException(status_code=400, detail="invalid voice_id")
+
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             res = await client.post(
@@ -305,14 +343,13 @@ async def tts(req: TtsRequest):
                     },
                 },
             )
-    except httpx.HTTPError as e:
-        raise HTTPException(status_code=502, detail=f"TTS upstream error: {e}")
+    except httpx.HTTPError:
+        logger.exception("ai.tts upstream HTTP error")
+        raise HTTPException(status_code=502, detail="TTS upstream error")
 
     if res.status_code != 200:
-        raise HTTPException(
-            status_code=502,
-            detail=f"ElevenLabs returned {res.status_code}",
-        )
+        logger.warning("ElevenLabs returned %s for voice %s", res.status_code, voice_id)
+        raise HTTPException(status_code=502, detail="TTS upstream error")
 
     return Response(content=res.content, media_type="audio/mpeg")
 

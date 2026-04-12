@@ -8,6 +8,7 @@ export interface Post {
   image_url: string | null
   category: string
   likes_count: number
+  comments_count: number
   created_at: string
   liked_by_me: boolean
 }
@@ -135,4 +136,20 @@ export async function toggleLike(postId: string): Promise<boolean> {
 export async function deletePost(postId: string): Promise<boolean> {
   const { error } = await supabase.from('posts').delete().eq('id', postId)
   return !error
+}
+
+export async function fetchUserPosts(userId: string): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  if (error) {
+    console.error('Error fetching user posts:', error)
+    return []
+  }
+
+  return ((data || []) as Post[]).map(p => ({ ...p, liked_by_me: false }))
 }

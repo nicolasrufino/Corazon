@@ -1,8 +1,8 @@
-import { Mic, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Mic, MicOff, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppContext } from '@/context/AppContext'
 import { sendChatMessage } from '@/lib/chatApi'
-import { speak } from '@/lib/elevenlabs'
+import { speak, stopSpeaking } from '@/lib/elevenlabs'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types/app'
 
@@ -11,8 +11,29 @@ export const VoiceAssistant = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [isResponding, setIsResponding] = useState(false)
+  const [errorText, setErrorText] = useState<string | null>(null)
   const [isListening, setIsListening] = useState(false)
   const [ttsEnabled, setTtsEnabled] = useState(true)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+
+  // Stop any in-flight TTS audio AND stop the speech recognizer when
+  // the dialog is closed. Without the STT cleanup, the browser keeps
+  // listening (and the mic permission indicator stays on) until the
+  // recognizer times out, which is creepy.
+  useEffect(() => {
+    if (!isOpen) {
+      stopSpeaking()
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop()
+        } catch {
+          /* noop */
+        }
+        recognitionRef.current = null
+        setIsListening(false)
+      }
+    }
+  }, [isOpen])
 
   const visibleHistory = useMemo(() => {
     if (!user) {
@@ -38,6 +59,7 @@ export const VoiceAssistant = () => {
     addChatMessage(userMessage)
     setMessage('')
     setIsResponding(true)
+    setErrorText(null)
 
     try {
       const responseText = await sendChatMessage(
@@ -48,10 +70,10 @@ export const VoiceAssistant = () => {
           ? {
               goals: user.profile.goals,
               occupation: user.profile.occupations?.[0],
+              immigration_status: user.profile.immigrationStatus,
             }
           : undefined
       )
-
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -59,42 +81,72 @@ export const VoiceAssistant = () => {
         createdAt: new Date().toISOString(),
       }
       addChatMessage(assistantMessage)
-
       if (ttsEnabled) {
-        speak(responseText)
+        void speak(responseText)
       }
-    } catch {
-      const errorMessage: ChatMessage = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content:
-          language === 'es'
-            ? 'Hubo un problema al conectar con el asistente. Por favor intenta de nuevo.'
-            : 'There was a problem connecting to the assistant. Please try again.',
-        createdAt: new Date().toISOString(),
-      }
-      addChatMessage(errorMessage)
+    } catch (err) {
+      console.error('Chat API error:', err)
+      setErrorText(
+        language === 'es'
+          ? 'No pude conectar con el asistente. Intenta de nuevo en un momento.'
+          : "Couldn't reach the assistant. Try again in a moment."
+      )
     } finally {
       setIsResponding(false)
     }
   }
 
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch {
+        /* noop */
+      }
+      recognitionRef.current = null
+    }
+    setIsListening(false)
+  }
+
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) return
-
-    const recognition = new SpeechRecognition()
-    recognition.lang = language === 'es' ? 'es-MX' : 'en-US'
-    recognition.interimResults = false
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript
-      setMessage(transcript)
+    if (isListening) {
+      stopListening()
+      return
     }
 
-    recognition.onend = () => setIsListening(false)
-    recognition.onerror = () => setIsListening(false)
+    const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!Ctor) {
+      setErrorText(
+        language === 'es'
+          ? 'Tu navegador no soporta entrada por voz.'
+          : "Your browser doesn't support voice input."
+      )
+      return
+    }
 
+    const recognition = new Ctor()
+    recognition.lang = language === 'es' ? 'es-MX' : 'en-US'
+    recognition.interimResults = false
+    recognition.continuous = false
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = event => {
+      const transcript = event.results[0]?.[0]?.transcript || ''
+      if (transcript) {
+        setMessage(transcript)
+      }
+    }
+    recognition.onend = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+    recognition.onerror = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    setErrorText(null)
     setIsListening(true)
     recognition.start()
   }
@@ -133,8 +185,16 @@ export const VoiceAssistant = () => {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setTtsEnabled(prev => !prev)}
-              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background transition-colors duration-200 hover:bg-primary/10"
+              onClick={() => {
+                if (ttsEnabled) stopSpeaking()
+                setTtsEnabled(prev => !prev)
+              }}
+              className={cn(
+                'inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors duration-200',
+                ttsEnabled
+                  ? 'border-border bg-background text-foreground hover:bg-primary/10'
+                  : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/40'
+              )}
               aria-label={
                 ttsEnabled
                   ? language === 'es'
@@ -144,11 +204,12 @@ export const VoiceAssistant = () => {
                     ? 'Activar voz'
                     : 'Enable voice'
               }
+              aria-pressed={ttsEnabled}
             >
               {ttsEnabled ? (
                 <Volume2 className="size-5" aria-hidden="true" />
               ) : (
-                <VolumeX className="size-5 text-muted-foreground" aria-hidden="true" />
+                <VolumeX className="size-5" aria-hidden="true" />
               )}
             </button>
             <button
@@ -195,6 +256,12 @@ export const VoiceAssistant = () => {
           ) : null}
         </div>
 
+        {errorText ? (
+          <div className="mb-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+            <p className="text-xs text-destructive">{errorText}</p>
+          </div>
+        ) : null}
+
         {!user ? (
           <p className="mb-3 rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-muted-foreground">
             {language === 'es'
@@ -211,6 +278,7 @@ export const VoiceAssistant = () => {
             id="voice-message"
             type="text"
             value={message}
+            maxLength={1000}
             onChange={event => setMessage(event.target.value)}
             onKeyDown={event => {
               if (event.key === 'Enter') {
@@ -228,22 +296,31 @@ export const VoiceAssistant = () => {
           <button
             type="button"
             onClick={startListening}
-            disabled={isListening}
             className={cn(
-              'inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl border border-input bg-background px-3 transition-colors duration-200 hover:bg-primary/10 disabled:cursor-not-allowed',
-              isListening && 'animate-pulse border-red-500 text-red-500 ring-2 ring-red-500'
+              'relative inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl border transition-colors duration-200',
+              isListening
+                ? 'border-destructive bg-destructive/10 text-destructive'
+                : 'border-border bg-background text-muted-foreground hover:bg-muted/40'
             )}
             aria-label={
               isListening
                 ? language === 'es'
-                  ? 'Escuchando...'
-                  : 'Listening...'
+                  ? 'Detener grabación'
+                  : 'Stop listening'
                 : language === 'es'
                   ? 'Hablar'
                   : 'Speak'
             }
+            aria-pressed={isListening}
           >
-            <Mic className="size-4" aria-hidden="true" />
+            {isListening ? (
+              <>
+                <span className="absolute inset-0 animate-ping rounded-xl border-2 border-destructive/60" />
+                <MicOff className="relative size-4" aria-hidden="true" />
+              </>
+            ) : (
+              <Mic className="size-4" aria-hidden="true" />
+            )}
           </button>
           <button
             type="button"

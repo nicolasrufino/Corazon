@@ -6,7 +6,6 @@ import { useAppContext } from '@/context/AppContext'
  */
 const features = [
   { en: 'Verified bilingual directory', es: 'Directorio bilingüe verificado' },
-  { en: 'Document analyzer', es: 'Analizador de documentos' },
   { en: 'Community voice assistant', es: 'Asistente de voz comunitario' },
   { en: 'Discovery feed', es: 'Feed de descubrimiento' },
   { en: 'Latino organization finder', es: 'Buscador de organizaciones latinas' },

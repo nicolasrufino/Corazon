@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { generateUsername } from '@/lib/username'
 import type {
-  AnalyzerRecord,
   AppLanguage,
   ChatMessage,
   Occupation,
@@ -18,7 +17,6 @@ interface AppContextValue {
   user: User | null
   authLoading: boolean
   savedResourceIds: string[]
-  analyzerHistory: AnalyzerRecord[]
   chatHistory: ChatMessage[]
   signIn: (
     email: string,
@@ -36,7 +34,6 @@ interface AppContextValue {
   toggleSavedResource: (resource: Resource) => void
   hasSavedResource: (resourceId: string) => boolean
   addChatMessage: (message: ChatMessage) => void
-  addAnalyzerRecord: (record: AnalyzerRecord) => void
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined)
@@ -71,7 +68,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [savedResourceIds, setSavedResourceIds] = useState<string[]>([])
-  const [analyzerHistory, setAnalyzerHistory] = useState<AnalyzerRecord[]>([])
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
 
   // Restore session on mount + subscribe to auth changes
@@ -219,7 +215,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut()
     setUser(null)
     setSavedResourceIds([])
-    setAnalyzerHistory([])
     setChatHistory([])
   }
 
@@ -238,10 +233,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setChatHistory(current => [...current, message])
   }
 
-  const addAnalyzerRecord = (record: AnalyzerRecord) => {
-    setAnalyzerHistory(current => [record, ...current])
-  }
-
   const value = useMemo<AppContextValue>(
     () => ({
       language,
@@ -249,7 +240,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       user,
       authLoading,
       savedResourceIds,
-      analyzerHistory,
       chatHistory,
       signIn,
       startSignUp,
@@ -259,10 +249,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       toggleSavedResource,
       hasSavedResource,
       addChatMessage,
-      addAnalyzerRecord,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, user, authLoading, savedResourceIds, analyzerHistory, chatHistory]
+    [language, user, authLoading, savedResourceIds, chatHistory]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

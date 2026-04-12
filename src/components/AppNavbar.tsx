@@ -35,6 +35,7 @@ export default function AppNavbar() {
     ? [
         { en: 'Resources', es: 'Recursos', href: '/dashboard' },
         { en: 'Community', es: 'Comunidad', href: '/community' },
+        { en: 'Discover', es: 'Descubre', href: '/discovery' },
         { en: 'Analyzer', es: 'Analizador', href: '/analyzer' },
       ]
     : []

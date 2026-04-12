@@ -68,6 +68,7 @@ const stubClient = {
       Promise.resolve({ data: { user: null, session: null }, error: FALLBACK_ERROR }),
     signUp: () => Promise.resolve({ data: { user: null, session: null }, error: FALLBACK_ERROR }),
     signOut: () => Promise.resolve({ error: null }),
+    resetPasswordForEmail: () => Promise.resolve({ data: {}, error: null }),
   },
   from: (_table: string) => createStubQueryBuilder(),
 }

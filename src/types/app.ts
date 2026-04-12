@@ -1,6 +1,6 @@
 export type AppLanguage = 'es' | 'en'
 
-export type UiLanguagePreference = 'english' | 'spanish' | 'both'
+export type UiLanguagePreference = 'english' | 'spanish'
 
 export type ImmigrationStatus =
   | 'citizen'
@@ -36,13 +36,14 @@ export interface OnboardingProfile {
   immigrationStatus?: ImmigrationStatus
   visaType?: string
   preferredLanguage: UiLanguagePreference
-  occupation?: Occupation
+  occupations: Occupation[]
   goals: ResourceCategory[]
 }
 
 export interface User {
   id: string
   email: string
+  username: string
   preferredAppLanguage: AppLanguage
   onboardingCompleted: boolean
   profile?: OnboardingProfile

@@ -79,7 +79,7 @@
   --popover-foreground: #f7f2e8;
   /* Title palette — primary = brand red (heart), accent = orange, secondary = green */
   --primary: #dc2626;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #000000;
   --secondary: #00aa63;
   --secondary-foreground: #ffffff;
   --muted: #1a1f28;
@@ -98,7 +98,7 @@
   --sidebar: #0a0d13;
   --sidebar-foreground: #f7f2e8;
   --sidebar-primary: #dc2626;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: #000000;
   --sidebar-accent: #131821;
   --sidebar-accent-foreground: #f7f2e8;
   --sidebar-border: #262b36;
@@ -114,7 +114,7 @@
   --popover: #12161f;
   --popover-foreground: #f7f2e8;
   --primary: #dc2626;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #000000;
   --secondary: #00aa63;
   --secondary-foreground: #ffffff;
   --muted: #1a1f28;
@@ -133,7 +133,7 @@
   --sidebar: #0a0d13;
   --sidebar-foreground: #f7f2e8;
   --sidebar-primary: #dc2626;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: #000000;
   --sidebar-accent: #131821;
   --sidebar-accent-foreground: #f7f2e8;
   --sidebar-border: #262b36;
@@ -146,7 +146,7 @@
 
 .theme-auth {
   --primary: #00aa63;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #000000;
   --secondary: #00aa63;
   --secondary-foreground: #ffffff;
   --accent: #00aa63;
@@ -154,7 +154,7 @@
   --ring: #00aa63;
   --cta: #00aa63;
   --sidebar-primary: #00aa63;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: #000000;
   --sidebar-ring: #00aa63;
   --chart-1: #00aa63;
   --chart-2: #34d399;
@@ -163,7 +163,7 @@
 
 .theme-app {
   --primary: #1777d7;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #000000;
   --secondary: #ffb5e2;
   --secondary-foreground: #07090e;
   --accent: #ff8100;
@@ -171,7 +171,7 @@
   --ring: #1777d7;
   --cta: #1777d7;
   --sidebar-primary: #1777d7;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: #000000;
   --sidebar-ring: #1777d7;
   --chart-1: #1777d7;
   --chart-2: #ff8100;

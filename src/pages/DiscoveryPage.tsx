@@ -316,11 +316,18 @@ export const DiscoveryPage = () => {
         </section>
       )}
 
-      {/* Feed */}
+      {/* Feed — Pinterest-style masonry using CSS multi-column layout.
+         Posts flow top-to-bottom in each column, so variable heights
+         stack cleanly without JavaScript. `break-inside-avoid` on each
+         card keeps the card from splitting across columns. */}
       {loading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted/40" />
+        <div className="gap-4 columns-1 sm:columns-2 lg:columns-3">
+          {[32, 48, 40, 56, 36, 44].map((h, i) => (
+            <div
+              key={i}
+              className="mb-4 break-inside-avoid animate-pulse rounded-2xl bg-muted/40"
+              style={{ height: `${h * 4}px` }}
+            />
           ))}
         </div>
       ) : posts.length === 0 ? (
@@ -333,11 +340,11 @@ export const DiscoveryPage = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="gap-4 columns-1 sm:columns-2 lg:columns-3">
           {posts.map(post => (
             <article
               key={post.id}
-              className="rounded-2xl border border-border/50 bg-card/70 p-5 transition-colors hover:border-border"
+              className="mb-4 break-inside-avoid rounded-2xl border border-border/50 bg-card/70 p-5 transition-colors hover:border-border"
             >
               {/* Post header */}
               <div className="flex items-center gap-3">

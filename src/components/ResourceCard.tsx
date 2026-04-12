@@ -10,7 +10,8 @@ interface ResourceCardProps {
 }
 
 export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => {
-  const { language, user, hasSavedResource, toggleSavedResource } = useAppContext()
+  const { language, user, hasSavedResource, toggleSavedResource, logResourceInteraction } =
+    useAppContext()
 
   const isSaved = hasSavedResource(resource.id)
 
@@ -20,6 +21,13 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
       return
     }
     toggleSavedResource(resource)
+  }
+
+  // Click-throughs on the website link are the strongest intent signal
+  // we have — the user is actively leaving to engage with the resource.
+  // Log it into the interaction log regardless of auth state.
+  const handleVisit = () => {
+    logResourceInteraction(resource)
   }
 
   return (
@@ -107,7 +115,7 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
               className="h-11 cursor-pointer bg-[var(--cta)] text-background hover:bg-[var(--cta)]/85"
               asChild
             >
-              <a href={resource.website} target="_blank" rel="noreferrer">
+              <a href={resource.website} target="_blank" rel="noreferrer" onClick={handleVisit}>
                 {language === 'es' ? 'Visitar' : 'Visit'}
               </a>
             </Button>

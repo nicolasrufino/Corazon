@@ -7,7 +7,9 @@ import { useAppContext } from '@/context/AppContext'
 import { AuthPage } from '@/pages/AuthPage'
 import { CommunityPage } from '@/pages/CommunityPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { DiscoveryPage } from '@/pages/DiscoveryPage'
 import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { LandingPage } from '@/pages/LandingPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
 
@@ -15,9 +17,11 @@ import { OnboardingPage } from '@/pages/OnboardingPage'
   Flow:
   /              → Landing page (public)
   /auth          → Sign in / Sign up (redirects to /dashboard if already logged in)
+  /forgot-password → Password reset email request
   /onboarding    → Profile setup (requires auth, redirects to /auth if not)
   /dashboard     → Resource dashboard (requires auth + onboarding)
   /community     → Community finder (requires auth + onboarding)
+  /discovery     → Pinterest-style explore feed (requires auth + onboarding)
   /analyzer      → Document analyzer (requires auth + onboarding)
 ──────────────────────────────────────────────*/
 
@@ -68,7 +72,10 @@ const AuthGuardRoute = ({ children }: { children: ReactNode }) => {
 const AppFrame = () => {
   const location = useLocation()
   const isLanding = location.pathname === '/'
-  const isAuthScreen = location.pathname === '/auth' || location.pathname === '/onboarding'
+  const isAuthScreen =
+    location.pathname === '/auth' ||
+    location.pathname === '/onboarding' ||
+    location.pathname === '/forgot-password'
 
   // Landing page — standalone, no app chrome
   if (isLanding) {
@@ -94,6 +101,14 @@ const AppFrame = () => {
               element={
                 <AuthGuardRoute>
                   <AuthPage />
+                </AuthGuardRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <AuthGuardRoute>
+                  <ForgotPasswordPage />
                 </AuthGuardRoute>
               }
             />
@@ -128,6 +143,14 @@ const AppFrame = () => {
           element={
             <ProtectedRoute>
               <CommunityPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/discovery"
+          element={
+            <ProtectedRoute>
+              <DiscoveryPage />
             </ProtectedRoute>
           }
         />

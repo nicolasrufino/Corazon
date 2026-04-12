@@ -84,12 +84,10 @@ export async function speak(text: string): Promise<void> {
       // Browser autoplay policy can throw if no user gesture has happened.
       // Clean up the orphaned blob URL so we don't leak.
       cleanup()
-
       console.warn('TTS play() rejected:', playErr)
     }
   } catch (err) {
     if ((err as Error).name === 'AbortError') return
-
     console.warn('TTS failed:', err)
   } finally {
     clearTimeout(timeout)

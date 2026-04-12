@@ -5,6 +5,7 @@ import type {
   AnalyzerRecord,
   AppLanguage,
   ChatMessage,
+  Occupation,
   OnboardingProfile,
   Resource,
   User,
@@ -44,8 +45,10 @@ async function fetchProfile(userId: string): Promise<OnboardingProfile | null> {
   return {
     countryOfOrigin: data.country_of_origin || undefined,
     immigrationStatus: data.immigration_status || undefined,
-    preferredLanguage: data.language_preference || 'both',
-    occupation: data.occupation || undefined,
+    preferredLanguage: data.language_preference || 'spanish',
+    occupations: data.occupation
+      ? ((data.occupation as string).split(',').filter(Boolean) as Occupation[])
+      : [],
     goals: data.goals || [],
   }
 }
@@ -152,7 +155,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       country_of_origin: profile.countryOfOrigin || null,
       immigration_status: profile.immigrationStatus || null,
       language_preference: profile.preferredLanguage,
-      occupation: profile.occupation || null,
+      occupation: profile.occupations.length > 0 ? profile.occupations.join(',') : null,
       goals: profile.goals,
       onboarding_completed: true,
     })

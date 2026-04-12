@@ -20,60 +20,60 @@ const dictionaries: Record<Lang, Dict> = {
 
     // About
     'about.overline': 'About Us',
-    'about.heading.pre': 'Building Community,',
-    'about.heading.accent': 'Together',
+    'about.heading.pre': 'Building community,',
+    'about.heading.accent': 'together.',
     'about.p1':
-      "Corazón was born from a simple truth: people need resources, but they don't have the time to search for them. We're building the digital plaza where Latino voices, stories, and resources come together - a space that honors our culture while empowering our future. From first-generation college students seeking mentorship to undocumented immigrants looking for employment opportunities, Corazón is the bridge between needs and achievements.",
+      "Coraz\u00f3n was born from something simple: we're Latinos in Chicago, and we know what it feels like to search for help in a language that isn't yours, navigate systems that weren't designed for you, and lose hours you don't have. We didn't build this for a hypothetical community. We built it for our families, our neighbors, ourselves.",
     'about.p2':
-      "We believe bureaucracy should serve the people, not the other way around. Every feature we build is shaped by the lived experiences of our community - bilingual by design, culturally rooted, and radically inclusive. Whether you're in Los Angeles, San Juan, or Mexico City, Corazón is your home. We're not just building an app; we're nurturing a movement that takes back the time Latinos so desperately deserve",
+      'Coraz\u00f3n is the digital plaza that should have always existed \u2014 a place where resources, opportunities, and Latino culture in Chicago come together in one space. Bilingual by design. Culturally rooted. Made with love, by Latinos for Latinos.',
 
     // Stats
     'stats.1.value': '77%',
-    'stats.1.label': 'of undocumented immigrants in the U.S. are Latino.',
-    'stats.2.value': 'only 9%',
-    'stats.2.label': 'of international students in the U.S. come from Latin America.',
+    'stats.1.label': 'of undocumented immigrants in the U.S. are Latino',
+    'stats.2.value': '200+',
+    'stats.2.label': 'Latino organizations in Chicago on our platform',
     'stats.3.value': '8%',
-    'stats.3.label': 'of U.S. STEM workers are Latino, despite being 19% of the population.',
-    'stats.4.value': 'only 4%',
-    'stats.4.label': 'of Fortune 500 CEOs are Hispanic.',
-    'stats.4.emphasis': 'We plan to change that.',
+    'stats.3.label': 'of STEM workers are Latino \u2014 despite being 19% of the population',
+    'stats.4.value': '1 in 3',
+    'stats.4.label':
+      'Latinos in the U.S. report difficulty accessing basic services due to language barriers',
+    'stats.4.emphasis': "We're here to change that. One resource at a time.",
 
     // FAQ
     'faq.overline': 'FAQ',
-    'faq.heading.pre': 'Common',
+    'faq.heading.pre': 'Frequently Asked',
     'faq.heading.accent': 'Questions',
-    'faq.1.q': 'What is Corazon?',
+    'faq.1.q': 'What is Coraz\u00f3n?',
     'faq.1.a':
-      'Corazon is a community-driven platform designed specifically for the Latino community. We provide a space to connect with others, access resources, find mentorship, and celebrate our shared cultural heritage - all in a bilingual, culturally-rooted environment.',
-    'faq.2.q': 'Is Corazon free to use?',
-    'faq.2.a':
-      'Yes! Corazon is completely free for all community members. We believe access to community and resources should never be gated by cost. Our platform is sustained through partnerships with organizations that share our mission of uplifting Latino communities.',
+      'Coraz\u00f3n is a bilingual platform for the Latino community in Chicago. It helps you find trusted organizations, opportunities, cultural events, and resources \u2014 all in one place, in your language.',
+    'faq.2.q': 'Is Coraz\u00f3n free to use?',
+    'faq.2.a': 'Yes, completely free. Always.',
     'faq.3.q': 'Is the app available in Spanish?',
     'faq.3.a':
-      "Absolutely. Corazon is bilingual by design - fully available in both English and Spanish. You can switch between languages at any time using the toggle in the navigation bar. We're also working on supporting additional languages spoken across Latin America.",
+      'Yes. Coraz\u00f3n is bilingual by design \u2014 you can switch between Spanish and English at any time from any page.',
     'faq.4.q': 'How can I get involved or contribute?',
     'faq.4.a':
-      'There are many ways to get involved! You can share resources out to our userbase, contribute to our open-source codebase, organize local community events, or simply spread the word. Reach out through our contact page or join one of our community channels to get started.',
-    'faq.5.q': 'Who is behind Corazon?',
+      "Share Coraz\u00f3n with someone who needs it. That's the most powerful way to support the project right now.",
+    'faq.5.q': 'Who is behind Coraz\u00f3n?',
     'faq.5.a':
-      'Corazon was founded by Nicolas, Eddie, and Diego - three friends united by a shared vision of empowering Latino communities through technology and regaining lost time. Our growing team includes designers, engineers, and community organizers from across the Americas.',
-    'faq.6.q': 'What resources does Corazon offer?',
+      "We're three Hispanic CS students at UIC \u2014 Nicolas, Eddie, and Diego. We built Coraz\u00f3n in 36 hours at WildHacks 2026 because it was something we needed ourselves.",
+    'faq.6.q': 'What resources does Coraz\u00f3n offer?',
     'faq.6.a':
-      'We offer a wide range of resources including mentorship matching, scholarship databases, small business tools, immigration resource guides, job boards with bilingual opportunities, community events calendars, and culturally-relevant wellness content.',
+      'Legal and immigration help, bilingual health clinics, food banks, scholarships, jobs, cultural events, community organizations, and more \u2014 all focused on Chicago and the surrounding area.',
 
     // Founders
     'founders.overline': 'Our Team',
     'founders.heading.pre': 'Meet the',
-    'founders.heading.accent': 'Founders',
+    'founders.heading.accent': 'founders',
     'founders.nicolas.role': 'CEO & Co-Founder',
     'founders.nicolas.bio':
-      'An international student from Bolivia, Nicolas brings a decade of experience in community organizing and product strategy. His vision for Corazon is rooted in the belief that technology can be a force for cultural preservation and empowerment.',
+      'International student from Bolivia and Campus Lead of The AI Collective at UIC. Nicolas built Coraz\u00f3n from the experience of navigating college life in a new country, without a clear guide. He believes technology should serve those who need it most.',
     'founders.eddie.role': 'CTO & Co-Founder',
     'founders.eddie.bio':
-      'Eddie is a Mexican-American engineer with a passion for building accessible, inclusive technology. With experience at leading tech companies, he ensures Corazon is built on a foundation that scales while keeping the community at its core.',
+      'Mexican-American CS student at UIC and the technical brain behind Coraz\u00f3n. Eddie built the entire AI integration \u2014 from the voice assistant to personalized recommendations. For him, code is a way to take care of his community.',
     'founders.diego.role': 'CDO & Co-Founder',
     'founders.diego.bio':
-      'Diego is a Mexican-American designer who believes beautiful design is a form of respect. He crafts every pixel of Corazon with intention, ensuring the platform feels like home for every member of our diverse community.',
+      'Mexican-American CS student at UIC and the designer of Coraz\u00f3n. Diego believes beautiful design is a form of respect \u2014 every screen is made so that anyone, regardless of their tech level, feels welcome.',
 
     // Footer
     'footer.rights': 'All rights reserved.',

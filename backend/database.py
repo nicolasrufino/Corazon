@@ -8,7 +8,7 @@ load_dotenv()
 # Supabase
 SUPABASE_URL: str = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_KEY: str = os.environ["SUPABASE_SERVICE_KEY"]
-RESOURCES_TABLE: str = os.getenv("SUPABASE_RESOURCES_TABLE", "resources")
+RESOURCES_TABLE: str = os.getenv("SUPABASE_RESOURCES_TABLE", "opportunities")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 

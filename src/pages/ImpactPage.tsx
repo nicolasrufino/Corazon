@@ -96,11 +96,11 @@ export const ImpactPage = () => {
   }, [profileGoals, liveInteractions])
 
   useEffect(() => {
-    if (!userId || !profileImmigration) return
+    if (!userId) return
     let cancelled = false
 
     const aiProfile = buildAiProfile({
-      immigrationStatus: profileImmigration,
+      immigrationStatus: profileImmigration || 'citizen',
       preferredLanguage: profileLanguage,
       occupations: profileOccupation ? [profileOccupation] : [],
     })

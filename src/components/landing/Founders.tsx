@@ -22,6 +22,7 @@ const founders = [
     bioKey: 'founders.nicolas.bio',
     gradient: 'from-emerald to-aquamarine',
     borderColor: '#0b4a31',
+    photo: '/nicolas.png',
   },
   {
     name: 'Eddie',
@@ -31,6 +32,7 @@ const founders = [
     bioKey: 'founders.eddie.bio',
     gradient: 'from-sapphire to-citrine',
     borderColor: '#334ab5',
+    photo: '/eddie.jpg',
   },
   {
     name: 'Diego',
@@ -40,6 +42,7 @@ const founders = [
     bioKey: 'founders.diego.bio',
     gradient: 'from-coral to-amber',
     borderColor: '#f94e4f',
+    photo: '/diego.jpg',
   },
 ]
 
@@ -141,7 +144,7 @@ export default function Founders() {
               <div className="relative z-10 p-8">
                 {/* Avatar — drifts to card center and grows on hover */}
                 <motion.div
-                  className={`mx-auto w-24 h-24 rounded-full bg-gradient-to-br ${founder.gradient} mb-6 flex items-center justify-center text-3xl font-bold text-white/90 select-none font-display ring-2 ring-white/30 ring-offset-2 ring-offset-transparent`}
+                  className="mx-auto w-24 h-24 rounded-full mb-6 ring-2 ring-white/30 ring-offset-2 ring-offset-transparent overflow-hidden"
                   variants={{
                     rest: { y: 0, scale: 1 },
                     hover: { y: 100, scale: 1.5 },
@@ -149,7 +152,11 @@ export default function Founders() {
                   transition={{ type: 'spring', stiffness: 220, damping: 24 }}
                   aria-hidden="true"
                 >
-                  {founder.name[0]}
+                  <img
+                    src={founder.photo}
+                    alt={founder.name}
+                    className="w-full h-full object-cover object-top"
+                  />
                 </motion.div>
 
                 {/* Text block — fades out on hover to reveal the flag */}

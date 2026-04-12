@@ -7,6 +7,7 @@ import { AuthPage } from '@/pages/AuthPage'
 import { CommunityPage } from '@/pages/CommunityPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
+import { LandingPage } from '@/pages/LandingPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
 
 const ProtectedOnboardingRoute = ({ children }: { children: ReactNode }) => {
@@ -36,7 +37,16 @@ const AuthGuardRoute = ({ children }: { children: ReactNode }) => {
 const AppFrame = () => {
   const { user } = useAppContext()
   const location = useLocation()
+  const isLanding = location.pathname === '/landing'
   const isAuthScreen = location.pathname === '/auth' || location.pathname === '/onboarding'
+
+  if (isLanding) {
+    return (
+      <Routes>
+        <Route path="/landing" element={<LandingPage />} />
+      </Routes>
+    )
+  }
 
   if (isAuthScreen) {
     return (

@@ -86,17 +86,15 @@ describe('comment validation', () => {
 })
 
 describe('self-notification prevention', () => {
+  function shouldNotify(actorId: string, postAuthorId: string): boolean {
+    return actorId !== postAuthorId
+  }
+
   it('should not notify when actor is the post author', () => {
-    const actorId = 'user-1'
-    const postAuthorId = 'user-1'
-    const shouldNotify = actorId !== postAuthorId
-    expect(shouldNotify).toBe(false)
+    expect(shouldNotify('user-1', 'user-1')).toBe(false)
   })
 
   it('should notify when actor is different from post author', () => {
-    const actorId = 'user-2'
-    const postAuthorId = 'user-1'
-    const shouldNotify = actorId !== postAuthorId
-    expect(shouldNotify).toBe(true)
+    expect(shouldNotify('user-2', 'user-1')).toBe(true)
   })
 })

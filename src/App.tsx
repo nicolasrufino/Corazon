@@ -52,7 +52,7 @@ const AppFrame = () => {
   if (isAuthScreen) {
     return (
       <div
-        className="relative min-h-screen w-full text-foreground"
+        className="theme-auth relative min-h-screen w-full text-foreground"
         style={{ background: '#050608' }}
       >
         <AppNavbar />

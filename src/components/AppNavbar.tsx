@@ -87,7 +87,7 @@ export default function AppNavbar() {
       className={`relative rounded-full font-body font-semibold tracking-wide text-white cursor-pointer ${
         large ? 'px-7 py-3 text-base' : 'px-5 py-2 text-sm'
       }`}
-      style={{ background: '#dc2626' }}
+      style={{ background: 'var(--cta)' }}
       aria-label={primaryAria}
     >
       <span className="relative z-10">{primaryLabel}</span>

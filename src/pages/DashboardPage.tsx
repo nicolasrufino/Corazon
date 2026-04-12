@@ -242,12 +242,14 @@ export const DashboardPage = () => {
               : 'No results found for that filter. Try a different search.'}
           </div>
         ) : (
-          <div className="-mx-1 overflow-x-auto pb-2">
-            <div className="flex min-w-full gap-4 px-1">
+          <div className="max-h-[calc(3*460px+2*1rem)] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {resources.map(resource => (
-                <div key={resource.id} className="w-full min-w-[290px] flex-1 md:min-w-[360px]">
-                  <ResourceCard resource={resource} onRequestAuth={() => navigate('/auth')} />
-                </div>
+                <ResourceCard
+                  key={resource.id}
+                  resource={resource}
+                  onRequestAuth={() => navigate('/auth')}
+                />
               ))}
             </div>
           </div>

@@ -121,55 +121,59 @@ export const CommunityPage = () => {
               : 'No organizations found for that filter.'}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {organizations.map(organization => (
-              <article
-                key={organization.id}
-                className="flex h-full flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 p-4 transition-colors duration-200 hover:border-primary/45"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-heading text-lg">{organization.name}</h2>
-                  <span
-                    className={cn(
-                      'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
-                      organization.verified
-                        ? 'bg-emerald-500/20 text-emerald-200'
-                        : 'bg-muted/90 text-muted-foreground'
-                    )}
-                  >
-                    {organization.verified ? (
-                      <CheckCircle2 className="size-3.5" aria-hidden="true" />
-                    ) : (
-                      <Globe2 className="size-3.5" aria-hidden="true" />
-                    )}
-                    {organization.verified
-                      ? language === 'es'
-                        ? 'Para latinos'
-                        : 'Latino-focused'
-                      : language === 'es'
-                        ? 'Recurso comunitario'
-                        : 'Community resource'}
-                  </span>
-                </div>
+          <div className="max-h-[calc(3*240px+2*1rem)] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {organizations.map(organization => (
+                <article
+                  key={organization.id}
+                  className="flex h-full flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 p-4 transition-colors duration-200 hover:border-primary/45"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="font-heading text-lg">{organization.name}</h2>
+                    <span
+                      className={cn(
+                        'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
+                        organization.verified
+                          ? 'bg-emerald-500/20 text-emerald-200'
+                          : 'bg-muted/90 text-muted-foreground'
+                      )}
+                    >
+                      {organization.verified ? (
+                        <CheckCircle2 className="size-3.5" aria-hidden="true" />
+                      ) : (
+                        <Globe2 className="size-3.5" aria-hidden="true" />
+                      )}
+                      {organization.verified
+                        ? language === 'es'
+                          ? 'Para latinos'
+                          : 'Latino-focused'
+                        : language === 'es'
+                          ? 'Recurso comunitario'
+                          : 'Community resource'}
+                    </span>
+                  </div>
 
-                <p className="line-clamp-3 text-sm text-muted-foreground">{organization.summary}</p>
+                  <p className="line-clamp-3 text-sm text-muted-foreground">
+                    {organization.summary}
+                  </p>
 
-                <div className="mt-auto space-y-2 text-xs text-muted-foreground">
-                  {organization.address && (
-                    <p className="inline-flex items-center gap-2">
-                      <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-                      {organization.address}
-                    </p>
-                  )}
-                  {organization.phone && (
-                    <p className="inline-flex items-center gap-2">
-                      <Phone className="size-3.5 shrink-0" aria-hidden="true" />
-                      {organization.phone}
-                    </p>
-                  )}
-                </div>
-              </article>
-            ))}
+                  <div className="mt-auto space-y-2 text-xs text-muted-foreground">
+                    {organization.address && (
+                      <p className="inline-flex items-center gap-2">
+                        <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                        {organization.address}
+                      </p>
+                    )}
+                    {organization.phone && (
+                      <p className="inline-flex items-center gap-2">
+                        <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                        {organization.phone}
+                      </p>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         )}
       </section>

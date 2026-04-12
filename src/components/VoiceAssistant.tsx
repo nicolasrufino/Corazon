@@ -1,4 +1,4 @@
-import { Mic, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
+import { Mic, MicOff, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import OrnateHeart from '@/components/landing/OrnateHeart'
 import { useAppContext } from '@/context/AppContext'
@@ -314,8 +314,8 @@ export const VoiceAssistant = () => {
             className={cn(
               'relative inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl border transition-colors duration-200',
               isListening
-                ? 'border-destructive bg-destructive/10 text-destructive'
-                : 'border-border bg-background text-muted-foreground hover:bg-muted/40'
+                ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25'
+                : 'border-destructive/60 bg-destructive/10 text-destructive hover:bg-destructive/20'
             )}
             aria-label={
               isListening
@@ -328,13 +328,18 @@ export const VoiceAssistant = () => {
             }
             aria-pressed={isListening}
           >
-            {/* Always show the Mic icon — color + animation indicate state.
-               Previously we swapped to MicOff while listening, which read
-               as "muted" to users instead of "actively recording". */}
+            {/* Icon reflects current state: green Mic when actively
+               listening, red crossed-out MicOff when idle. The button
+               click still toggles recording on/off. Animated ping ring
+               on the listening state for extra feedback. */}
             {isListening ? (
-              <span className="absolute inset-0 animate-ping rounded-xl border-2 border-destructive/60" />
-            ) : null}
-            <Mic className="relative size-4" aria-hidden="true" />
+              <>
+                <span className="absolute inset-0 animate-ping rounded-xl border-2 border-emerald-400/60" />
+                <Mic className="relative size-4" aria-hidden="true" />
+              </>
+            ) : (
+              <MicOff className="relative size-4" aria-hidden="true" />
+            )}
           </button>
           <button
             type="button"

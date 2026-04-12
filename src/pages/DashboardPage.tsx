@@ -14,7 +14,7 @@ import { ResourceCard } from '@/components/ResourceCard'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 import { resourceCategories } from '@/data/mockData'
-import { fetchResources } from '@/lib/mockApi'
+import { fetchResources, type SortOption } from '@/lib/supabaseApi'
 import { cn } from '@/lib/utils'
 import type { Resource, ResourceCategory } from '@/types/app'
 
@@ -35,6 +35,7 @@ export const DashboardPage = () => {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<ResourceCategory | 'all'>('all')
+  const [sort, setSort] = useState<SortOption>('relevance')
   const [resources, setResources] = useState<Resource[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -44,7 +45,7 @@ export const DashboardPage = () => {
     const loadResources = async () => {
       setIsLoading(true)
       try {
-        const result = await fetchResources({ search, category: activeCategory })
+        const result = await fetchResources({ search, category: activeCategory, sort })
         if (isMounted) {
           setResources(result)
         }
@@ -60,7 +61,7 @@ export const DashboardPage = () => {
     return () => {
       isMounted = false
     }
-  }, [search, activeCategory])
+  }, [search, activeCategory, sort])
 
   const metrics = useMemo(
     () => [
@@ -69,12 +70,12 @@ export const DashboardPage = () => {
         value: user ? savedResourceIds.length : 0,
       },
       {
-        label: language === 'es' ? 'Organizaciones verificadas' : 'Verified organizations',
+        label: language === 'es' ? 'Para latinos' : 'Latino-focused',
         value: resources.filter(resource => resource.verified).length,
       },
       {
-        label: language === 'es' ? 'Abiertos ahora' : 'Open now',
-        value: resources.filter(resource => resource.openNow).length,
+        label: language === 'es' ? 'Total recursos' : 'Total resources',
+        value: resources.length,
       },
     ],
     [language, resources, savedResourceIds.length, user]
@@ -93,8 +94,8 @@ export const DashboardPage = () => {
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           {language === 'es'
-            ? 'Brújula reúne recursos comunitarios, legales y de salud en un espacio claro, bilingüe y pensado para tu tranquilidad.'
-            : 'Brújula brings legal, healthcare, and community resources together in one bilingual space designed for clarity and trust.'}
+            ? 'Corazón reúne recursos comunitarios, legales y de salud en un espacio claro, bilingüe y pensado para tu tranquilidad.'
+            : 'Corazón brings legal, healthcare, and community resources together in one bilingual space designed for clarity and trust.'}
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -198,17 +199,31 @@ export const DashboardPage = () => {
       ) : null}
 
       <section>
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl sm:text-3xl">
-              {language === 'es' ? 'El viaje de recursos' : 'Resource journey'}
+              {language === 'es' ? 'Recursos para ti' : 'Resources for you'}
             </h2>
             <p className="text-sm text-muted-foreground">
               {language === 'es'
-                ? 'Desliza horizontalmente para descubrir servicios por categoría.'
-                : 'Scroll horizontally to explore services by category.'}
+                ? 'Explora servicios verificados por categoría.'
+                : 'Explore verified services by category.'}
             </p>
           </div>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value as SortOption)}
+            className="h-11 cursor-pointer rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="relevance">
+              {language === 'es' ? 'Más relevantes' : 'Most relevant'}
+            </option>
+            <option value="latino_first">
+              {language === 'es' ? 'Para latinos primero' : 'Latino-focused first'}
+            </option>
+            <option value="recent">{language === 'es' ? 'Más recientes' : 'Most recent'}</option>
+            <option value="az">{language === 'es' ? 'A → Z' : 'A → Z'}</option>
+          </select>
         </div>
 
         {isLoading ? (

@@ -1,15 +1,15 @@
-import { CheckCircle2, Clock3, Languages, Phone, ShieldAlert } from 'lucide-react'
+import { CheckCircle2, Globe2, MapPin, Phone } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAppContext } from '@/context/AppContext'
 import { resourceCategories } from '@/data/mockData'
-import { fetchCommunityOrganizations } from '@/lib/mockApi'
+import { fetchCommunityOrganizations, type SortOption } from '@/lib/supabaseApi'
 import { cn } from '@/lib/utils'
 import type { CommunityOrganization, ResourceCategory } from '@/types/app'
 
 export const CommunityPage = () => {
   const { language } = useAppContext()
   const [category, setCategory] = useState<ResourceCategory | 'all'>('all')
-  const [languageFilter, setLanguageFilter] = useState<'all' | 'Español' | 'English'>('all')
+  const [sort, setSort] = useState<SortOption>('relevance')
   const [organizations, setOrganizations] = useState<CommunityOrganization[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -19,7 +19,7 @@ export const CommunityPage = () => {
     const loadOrganizations = async () => {
       setIsLoading(true)
       try {
-        const result = await fetchCommunityOrganizations(category, languageFilter)
+        const result = await fetchCommunityOrganizations(category, sort)
         if (isMounted) {
           setOrganizations(result)
         }
@@ -35,7 +35,7 @@ export const CommunityPage = () => {
     return () => {
       isMounted = false
     }
-  }, [category, languageFilter])
+  }, [category, sort])
 
   return (
     <div className="space-y-6">
@@ -45,15 +45,31 @@ export const CommunityPage = () => {
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           {language === 'es'
-            ? 'Compara organizaciones por categoría y servicios lingüísticos para elegir apoyo confiable cerca de ti.'
-            : 'Compare organizations by category and language support to choose trusted help near you.'}
+            ? 'Compara organizaciones por categoría para elegir apoyo confiable cerca de ti.'
+            : 'Compare organizations by category to choose trusted help near you.'}
         </p>
       </section>
 
       <section className="space-y-3 rounded-2xl border border-border/50 bg-card/70 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          {language === 'es' ? 'Filtros rápidos' : 'Quick filters'}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {language === 'es' ? 'Filtros rápidos' : 'Quick filters'}
+          </p>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value as SortOption)}
+            className="h-9 cursor-pointer rounded-lg border border-input bg-background px-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="relevance">
+              {language === 'es' ? 'Más relevantes' : 'Most relevant'}
+            </option>
+            <option value="latino_first">
+              {language === 'es' ? 'Para latinos primero' : 'Latino-focused first'}
+            </option>
+            <option value="recent">{language === 'es' ? 'Más recientes' : 'Most recent'}</option>
+            <option value="az">{language === 'es' ? 'A → Z' : 'A → Z'}</option>
+          </select>
+        </div>
 
         <div className="-mx-1 overflow-x-auto pb-1">
           <div className="inline-flex min-w-full gap-2 px-1">
@@ -86,28 +102,6 @@ export const CommunityPage = () => {
             ))}
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-2">
-          {(['all', 'Español', 'English'] as const).map(option => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setLanguageFilter(option)}
-              className={cn(
-                'h-11 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors duration-200',
-                languageFilter === option
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border hover:bg-primary/15'
-              )}
-            >
-              {option === 'all'
-                ? language === 'es'
-                  ? 'Todos los idiomas'
-                  : 'All languages'
-                : option}
-            </button>
-          ))}
-        </div>
       </section>
 
       <section>
@@ -120,6 +114,12 @@ export const CommunityPage = () => {
               />
             ))}
           </div>
+        ) : organizations.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+            {language === 'es'
+              ? 'No encontramos organizaciones con ese filtro.'
+              : 'No organizations found for that filter.'}
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {organizations.map(organization => (
@@ -131,48 +131,42 @@ export const CommunityPage = () => {
                   <h2 className="font-heading text-lg">{organization.name}</h2>
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
+                      'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
                       organization.verified
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-amber-500/20 text-amber-200'
+                        ? 'bg-emerald-500/20 text-emerald-200'
+                        : 'bg-muted/90 text-muted-foreground'
                     )}
                   >
                     {organization.verified ? (
                       <CheckCircle2 className="size-3.5" aria-hidden="true" />
                     ) : (
-                      <ShieldAlert className="size-3.5" aria-hidden="true" />
+                      <Globe2 className="size-3.5" aria-hidden="true" />
                     )}
                     {organization.verified
                       ? language === 'es'
-                        ? 'Verificado'
-                        : 'Verified'
+                        ? 'Para latinos'
+                        : 'Latino-focused'
                       : language === 'es'
-                        ? 'Pendiente'
-                        : 'Pending'}
+                        ? 'Recurso comunitario'
+                        : 'Community resource'}
                   </span>
                 </div>
 
-                <p className="text-sm text-muted-foreground">{organization.summary}</p>
+                <p className="line-clamp-3 text-sm text-muted-foreground">{organization.summary}</p>
 
                 <div className="mt-auto space-y-2 text-xs text-muted-foreground">
-                  <p className="inline-flex items-center gap-2">
-                    <Phone className="size-3.5" aria-hidden="true" />
-                    {organization.phone}
-                  </p>
-                  <p className="inline-flex items-center gap-2">
-                    <Languages className="size-3.5" aria-hidden="true" />
-                    {organization.languages.join(' · ')}
-                  </p>
-                  <p className="inline-flex items-center gap-2">
-                    <Clock3 className="size-3.5" aria-hidden="true" />
-                    {organization.openNow
-                      ? language === 'es'
-                        ? 'Abierto ahora'
-                        : 'Open now'
-                      : language === 'es'
-                        ? 'Horario limitado'
-                        : 'Limited hours'}
-                  </p>
+                  {organization.address && (
+                    <p className="inline-flex items-center gap-2">
+                      <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                      {organization.address}
+                    </p>
+                  )}
+                  {organization.phone && (
+                    <p className="inline-flex items-center gap-2">
+                      <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                      {organization.phone}
+                    </p>
+                  )}
                 </div>
               </article>
             ))}

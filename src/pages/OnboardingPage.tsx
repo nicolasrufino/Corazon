@@ -653,8 +653,8 @@ export const OnboardingPage = () => {
           type="button"
           className="h-11 cursor-pointer border text-black"
           style={{
-            background: step > 1 ? STEP_COLORS[step - 1].accent : 'transparent',
-            borderColor: step > 1 ? STEP_COLORS[step - 1].accent : 'var(--border)',
+            background: step > 1 ? colors.accent : 'transparent',
+            borderColor: step > 1 ? colors.accent : 'var(--border)',
             color: step > 1 ? '#000' : 'var(--foreground)',
             opacity: step === 1 ? 0.4 : 1,
           }}

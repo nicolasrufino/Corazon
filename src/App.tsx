@@ -89,13 +89,29 @@ const AppFrame = () => {
 
   // Auth + onboarding — minimal chrome with AppNavbar
   if (isAuthScreen) {
+    const isAuthOrForgot = location.pathname === '/auth' || location.pathname === '/forgot-password'
+
     return (
       <div
         className="theme-auth relative min-h-screen w-full text-foreground"
-        style={{ background: '#050608' }}
+        style={{ backgroundColor: '#050608' }}
       >
+        {/* signup_photo.png behind auth + forgot-password; onboarding handles its own */}
+        {isAuthOrForgot && (
+          <>
+            <div
+              className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: 'url(/signup_photo.png)',
+                filter: 'grayscale(1) brightness(0.3)',
+                zIndex: 0,
+              }}
+            />
+            <div className="fixed inset-0 bg-black/40" style={{ zIndex: 0 }} />
+          </>
+        )}
         <AppNavbar />
-        <div className="flex min-h-screen w-full items-center justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8">
+        <div className="relative z-10 flex min-h-screen w-full items-center justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8">
           <Routes>
             <Route
               path="/auth"

@@ -190,6 +190,43 @@ function rowToOrganization(row: OpportunityRow): CommunityOrganization {
   }
 }
 
+// Normalize a URL to its hostname (without www) for dedup purposes.
+function hostKey(url: string | null): string {
+  if (!url) return ''
+  try {
+    return new URL(url).hostname.replace(/^www\./, '').toLowerCase()
+  } catch {
+    return url.toLowerCase()
+  }
+}
+
+// Collapse rows that point to the same host + have no unique description.
+// Many rows come from the same organization (e.g. ACCESS health network) with
+// generic fallback descriptions, so they render as visual duplicates. We keep
+// the first occurrence per (host, normalized-name, description) signature and
+// prefer rows that carry a real, non-fallback description.
+function dedupRows(rows: OpportunityRow[]): OpportunityRow[] {
+  const seen = new Map<string, OpportunityRow>()
+  for (const row of rows) {
+    const host = hostKey(row.url)
+    const name = cleanName(row.organization, row.title).trim().toLowerCase()
+    const desc = (row.description || '').trim().toLowerCase()
+    const hasRealDesc = desc.length > 20 && !desc.startsWith('http')
+    // Primary key: host + name. If no host, fall back to name + description.
+    const key = host ? `${host}::${name}` : `${name}::${desc}`
+    const existing = seen.get(key)
+    if (!existing) {
+      seen.set(key, row)
+      continue
+    }
+    // Prefer the row with a real description over a generic-fallback row.
+    const existingDesc = (existing.description || '').trim().toLowerCase()
+    const existingReal = existingDesc.length > 20 && !existingDesc.startsWith('http')
+    if (hasRealDesc && !existingReal) seen.set(key, row)
+  }
+  return Array.from(seen.values())
+}
+
 function sortRows(rows: OpportunityRow[], sort: SortOption): OpportunityRow[] {
   switch (sort) {
     case 'latino_first':
@@ -246,15 +283,16 @@ export async function fetchResources(query: ResourceQuery): Promise<Resource[]> 
     }
   }
 
-  const { data, error } = await q.order('title').limit(50)
+  const { data, error } = await q.order('title').limit(120)
 
   if (error) {
     console.error('Supabase fetch error:', error)
     return []
   }
 
-  const rows = sortRows((data || []) as OpportunityRow[], query.sort || 'relevance')
-  return rows.map(rowToResource)
+  const deduped = dedupRows((data || []) as OpportunityRow[])
+  const rows = sortRows(deduped, query.sort || 'relevance')
+  return rows.slice(0, 50).map(rowToResource)
 }
 
 export async function fetchCommunityOrganizations(
@@ -267,13 +305,14 @@ export async function fetchCommunityOrganizations(
     q = q.eq('category', category)
   }
 
-  const { data, error } = await q.order('title').limit(60)
+  const { data, error } = await q.order('title').limit(150)
 
   if (error) {
     console.error('Supabase fetch error:', error)
     return []
   }
 
-  const rows = sortRows((data || []) as OpportunityRow[], sort)
-  return rows.map(rowToOrganization)
+  const deduped = dedupRows((data || []) as OpportunityRow[])
+  const rows = sortRows(deduped, sort)
+  return rows.slice(0, 60).map(rowToOrganization)
 }

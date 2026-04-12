@@ -88,12 +88,12 @@ export const NotificationDropdown = () => {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-white/10 transition-colors hover:bg-white/20"
+        className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#ff8100]/30 bg-gradient-to-br from-[#ff8100]/15 to-[#f82d1a]/5 text-[#ffb15a] shadow-[inset_0_1px_0_0_rgba(255,181,90,0.25)] transition-all duration-300 hover:border-[#ff8100]/60 hover:from-[#ff8100]/25 hover:to-[#f82d1a]/15 hover:text-white"
         aria-label={isEs ? 'Notificaciones' : 'Notifications'}
       >
         <Bell className="size-4" />
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border border-[#ff8100] bg-[#f82d1a] px-1 text-[10px] font-bold text-white shadow-[0_0_12px_rgba(248,45,26,0.8)]">
             {unread > 9 ? '9+' : unread}
           </span>
         )}

@@ -192,21 +192,58 @@ export const ImpactPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">
-        <div className="flex items-start justify-between gap-3">
+      {/* Header — cinematic glass with tropical warmth */}
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#050608] p-5 sm:p-8">
+        {/* Tropical PINK.jpg texture */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.1] mix-blend-screen"
+          style={{
+            backgroundImage: "url('/PINK.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(1px) saturate(1.1)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[#050608]/72 backdrop-blur-[2px]"
+        />
+        {/* Green + orange ambient glows */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-55 blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(0,170,99,0.45) 0%, rgba(255,129,0,0.2) 40%, transparent 70%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00aa63]/50 to-transparent"
+        />
+
+        <div className="relative flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/90">
-              {isEs ? 'Tu tiempo, en números' : 'Your time, in numbers'}
-            </p>
-            <h1 className="mt-2 text-3xl sm:text-4xl">{isEs ? 'Tu impacto' : 'Your impact'}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="h-px w-8 bg-gradient-to-r from-transparent to-[#00aa63]/60"
+              />
+              <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#4dd19a]">
+                {isEs ? 'Tu tiempo, en números' : 'Your time, in numbers'}
+              </p>
+            </div>
+            <h1 className="mt-2 bg-gradient-to-b from-white to-white/70 bg-clip-text text-3xl text-transparent sm:text-4xl">
+              {isEs ? 'Tu impacto' : 'Your impact'}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
               {isEs
                 ? 'Esto es cuánto tiempo te tomaría hacer las cosas tú solo — y cuánto te estamos ayudando a recuperar. Tu tiempo importa, y queremos que veas adónde se va.'
                 : "This is how much time it would take you to do this on your own — and how much we're helping you get back. Your time matters, and we want you to see where it goes."}
             </p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary">
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#ff8100]/30 bg-[#ff8100]/10 px-3 py-1.5 text-xs font-medium text-[#ffb15a] backdrop-blur-md">
             <Sparkles className="size-3.5" aria-hidden="true" />
             {isEs ? 'Personalizado' : 'For you'}
           </span>
@@ -219,22 +256,40 @@ export const ImpactPage = () => {
          (the first 3 in CATEGORIES, by tie-order) when the log is
          empty. Showing that would lie to a brand-new user. */}
       {archetype && archetype.interaction_count > 0 ? (
-        <section className="rounded-3xl border border-primary/30 bg-primary/5 p-5 sm:p-7">
-          <div className="flex items-start justify-between gap-3">
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0a0b10]/60 p-5 backdrop-blur-xl sm:p-7">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full opacity-50 blur-3xl"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(23,119,215,0.45) 0%, rgba(0,170,99,0.2) 40%, transparent 70%)',
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#1777d7]/50 to-transparent"
+          />
+          <div className="relative flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/90">
-                {isEs ? 'Tu perfil, construido por ti' : 'Your profile, built by you'}
-              </p>
-              <h2 className="mt-2 text-xl sm:text-2xl">
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="h-px w-8 bg-gradient-to-r from-transparent to-[#1777d7]/60"
+                />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[#5a9ff0]">
+                  {isEs ? 'Tu perfil, construido por ti' : 'Your profile, built by you'}
+                </p>
+              </div>
+              <h2 className="mt-2 bg-gradient-to-b from-white to-white/70 bg-clip-text text-xl text-transparent sm:text-2xl">
                 {isEs ? 'Lo que nos has enseñado hasta ahora' : "What you've shown us so far"}
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
                 {isEs
                   ? 'Cada recurso que guardas o visitas nos ayuda a entender mejor lo que necesitas. Esto es lo que más te importa, basado en lo que has explorado.'
                   : "Each resource you save or visit helps us understand what you need. Here's what matters to you most, based on what you've explored."}
               </p>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/60 backdrop-blur-md">
               {archetype.interaction_count}{' '}
               {isEs
                 ? archetype.interaction_count === 1
@@ -245,16 +300,16 @@ export const ImpactPage = () => {
                   : 'interactions'}
             </span>
           </div>
-          <ul className="mt-5 flex flex-wrap gap-2">
+          <ul className="relative mt-5 flex flex-wrap gap-2">
             {archetype.dominant_categories.map((cat, i) => {
               const label = CATEGORY_LABELS[cat]
               const display = label ? (isEs ? label.es : label.en) : cat
               return (
                 <li
                   key={cat}
-                  className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/70 px-3.5 py-1.5 text-sm font-medium"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#1777d7]/40 bg-[#1777d7]/10 px-3.5 py-1.5 text-sm font-medium text-white backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(90,159,240,0.2)]"
                 >
-                  <span className="font-display text-xs text-primary">#{i + 1}</span>
+                  <span className="font-display text-xs text-[#5a9ff0]">#{i + 1}</span>
                   {display}
                 </li>
               )
@@ -264,22 +319,26 @@ export const ImpactPage = () => {
       ) : null}
 
       {/* Bars */}
-      <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0a0b10]/60 p-5 backdrop-blur-xl sm:p-7">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff8100]/40 to-transparent"
+        />
         {error ? (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
-            <p className="text-sm text-destructive">{error}</p>
+          <div className="relative rounded-xl border border-[#dc2626]/30 bg-[#dc2626]/10 p-4">
+            <p className="text-sm text-[#dc2626]">{error}</p>
           </div>
         ) : loading ? (
-          <div className="space-y-5">
+          <div className="relative space-y-5">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="space-y-2">
-                <div className="h-4 w-40 animate-pulse rounded bg-muted/40" />
-                <div className="h-10 w-full animate-pulse rounded-xl bg-muted/40" />
+                <div className="h-4 w-40 animate-pulse rounded bg-white/[0.04]" />
+                <div className="h-10 w-full animate-pulse rounded-xl border border-white/[0.06] bg-white/[0.02]" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-7">
+          <div className="relative space-y-7">
             {bars.map((bar, i) => {
               const widthPct = Math.max(4, (bar.hoursPerYear / maxHours) * 100)
               const color = PILL_COLORS[bar.key]
@@ -289,12 +348,16 @@ export const ImpactPage = () => {
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <span
-                        className="flex size-6 items-center justify-center rounded-md"
-                        style={{ background: `${color}22`, color }}
+                        className="flex size-7 items-center justify-center rounded-lg border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                        style={{
+                          borderColor: `${color}55`,
+                          background: `${color}18`,
+                          color,
+                        }}
                       >
                         <Icon className="size-3.5" aria-hidden="true" />
                       </span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium text-white">
                         {isEs ? bar.labelEs : bar.labelEn}
                       </span>
                     </div>
@@ -302,14 +365,14 @@ export const ImpactPage = () => {
                       <span className="font-display text-lg font-bold" style={{ color }}>
                         {bar.hoursPerYear.toFixed(0)}
                       </span>
-                      <span className="ml-1 text-xs text-muted-foreground">
+                      <span className="ml-1 text-xs text-white/45">
                         {isEs ? 'hrs/año' : 'hrs/yr'}
                       </span>
                     </div>
                   </div>
 
                   {/* Bar track */}
-                  <div className="relative h-10 overflow-hidden rounded-xl border border-border/40 bg-background/40">
+                  <div className="relative h-10 overflow-hidden rounded-xl border border-white/[0.08] bg-black/30">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${widthPct}%` }}
@@ -335,46 +398,53 @@ export const ImpactPage = () => {
             {/* Summary callout */}
             {timeSaved && impact && isolation && (
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-border/40 bg-background/40 p-4">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {isEs ? 'Lo que cuesta cada año' : 'What it costs you each year'}
-                  </p>
-                  <p className="mt-1 font-display text-2xl font-bold text-destructive">
-                    {totalNegative.toFixed(0)}
-                    <span className="ml-1 text-sm text-muted-foreground">
-                      {isEs ? 'horas' : 'hours'}
-                    </span>
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/40 bg-background/40 p-4">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {isEs ? 'En 20 años, eso es' : "Over 20 years, that's"}
-                  </p>
-                  <p className="mt-1 font-display text-2xl font-bold text-accent">
-                    {impact.lifetime_days.toFixed(0)}
-                    <span className="ml-1 text-sm text-muted-foreground">
-                      {isEs ? 'días de tu vida' : 'days of your life'}
-                    </span>
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/40 bg-background/40 p-4">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {isEs ? 'Lo que ya recuperaste' : "What you've already gotten back"}
-                  </p>
-                  <p
-                    className="mt-1 font-display text-2xl font-bold"
-                    style={{ color: PILL_COLORS.saved }}
+                {[
+                  {
+                    label: isEs ? 'Lo que cuesta cada año' : 'What it costs you each year',
+                    value: totalNegative.toFixed(0),
+                    suffix: isEs ? 'horas' : 'hours',
+                    color: '#dc2626',
+                  },
+                  {
+                    label: isEs ? 'En 20 años, eso es' : "Over 20 years, that's",
+                    value: impact.lifetime_days.toFixed(0),
+                    suffix: isEs ? 'días de tu vida' : 'days of your life',
+                    color: '#ff8100',
+                  },
+                  {
+                    label: isEs ? 'Lo que ya recuperaste' : "What you've already gotten back",
+                    value: (timeSaved.total_saved_hrs ?? 0).toFixed(0),
+                    suffix: isEs ? 'horas' : 'hours',
+                    color: PILL_COLORS.saved,
+                  },
+                ].map(item => (
+                  <div
+                    key={item.label}
+                    className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 backdrop-blur-md"
                   >
-                    {(timeSaved.total_saved_hrs ?? 0).toFixed(0)}
-                    <span className="ml-1 text-sm text-muted-foreground">
-                      {isEs ? 'horas' : 'hours'}
-                    </span>
-                  </p>
-                </div>
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                      style={{
+                        background: `linear-gradient(90deg, transparent, ${item.color}99, transparent)`,
+                      }}
+                    />
+                    <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/50">
+                      {item.label}
+                    </p>
+                    <p
+                      className="mt-1 font-display text-2xl font-bold"
+                      style={{ color: item.color }}
+                    >
+                      {item.value}
+                      <span className="ml-1 text-sm text-white/45">{item.suffix}</span>
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
 
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-white/40">
               {isEs
                 ? 'Datos basados en estudios reales sobre familias latinas en EE.UU.'
                 : 'Based on real research about Latino families in the U.S.'}
@@ -386,17 +456,21 @@ export const ImpactPage = () => {
       {/* Plain-language explanations of each bar — render only once data
          is loaded so the page doesn't show definitions for empty bars. */}
       {!loading && !error && impact && timeSaved && isolation ? (
-        <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">
-          <h2 className="text-xl font-semibold sm:text-2xl">
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0a0b10]/60 p-5 backdrop-blur-xl sm:p-7">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00aa63]/40 to-transparent"
+          />
+          <h2 className="relative bg-gradient-to-b from-white to-white/70 bg-clip-text text-xl font-semibold text-transparent sm:text-2xl">
             {isEs ? '¿Qué significa todo esto?' : 'What does all this mean?'}
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          <p className="relative mt-1 text-sm leading-relaxed text-white/55">
             {isEs
               ? 'Sabemos que los números pueden sentirse fríos. Aquí te lo explicamos como se lo contarías a un amigo.'
               : "We know numbers can feel cold. Here's what each one really means — the way you'd explain it to a friend."}
           </p>
 
-          <ul className="mt-5 space-y-5">
+          <ul className="relative mt-5 space-y-5">
             {[
               {
                 color: PILL_COLORS.saved,
@@ -433,11 +507,14 @@ export const ImpactPage = () => {
                 <span
                   aria-hidden="true"
                   className="mt-1.5 size-3 shrink-0 rounded-full"
-                  style={{ background: item.color }}
+                  style={{
+                    background: item.color,
+                    boxShadow: `0 0 12px ${item.color}99`,
+                  }}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                  <p className="text-sm font-semibold text-white">{item.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-white/55">{item.body}</p>
                 </div>
               </li>
             ))}
@@ -445,14 +522,24 @@ export const ImpactPage = () => {
 
           {/* Closing — the emotional payoff. Anchors saved hours to family
              time so the gratitude framing lands harder than a generic "thx". */}
-          <p
-            className="mt-7 rounded-2xl border border-primary/30 bg-primary/10 p-5 text-sm leading-relaxed text-foreground"
-            style={{ fontFamily: 'var(--font-brand)' }}
-          >
-            {isEs
-              ? 'Cada hora aquí es una hora que te devolvemos. Para que la pases con tu familia, en tu cocina, escuchando música, o simplemente respirando. Gracias por dejarnos caminar contigo. ❤️'
-              : "Every hour here is an hour we're handing back to you. To spend with your family, in your kitchen, listening to music, or just breathing. Thank you for letting us walk with you. ❤️"}
-          </p>
+          <div className="relative mt-7 overflow-hidden rounded-2xl border border-[#dc2626]/30 bg-[#dc2626]/5 p-5 backdrop-blur-md">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-60 blur-2xl"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(220,38,38,0.5) 0%, rgba(255,129,0,0.2) 40%, transparent 70%)',
+              }}
+            />
+            <p
+              className="relative text-sm leading-relaxed text-white/90"
+              style={{ fontFamily: 'var(--font-brand)' }}
+            >
+              {isEs
+                ? 'Cada hora aquí es una hora que te devolvemos. Para que la pases con tu familia, en tu cocina, escuchando música, o simplemente respirando. Gracias por dejarnos caminar contigo. ❤️'
+                : "Every hour here is an hour we're handing back to you. To spend with your family, in your kitchen, listening to music, or just breathing. Thank you for letting us walk with you. ❤️"}
+            </p>
+          </div>
         </section>
       ) : null}
     </div>

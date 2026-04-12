@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
+import { useAppContext } from '@/context/AppContext'
 
 export type Lang = 'EN' | 'ES'
 
@@ -173,10 +174,20 @@ interface LangContextValue {
 const LangContext = createContext<LangContextValue | undefined>(undefined)
 
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>('EN')
+  // Source of truth is AppContext.language so the landing's EN/ES toggle
+  // carries through to /auth, /onboarding, and the rest of the app.
+  const { language, setLanguage } = useAppContext()
+  const lang: Lang = language === 'en' ? 'EN' : 'ES'
 
   const t = (key: string) => dictionaries[lang][key] ?? key
-  const toggle = () => setLang(current => (current === 'EN' ? 'ES' : 'EN'))
+
+  const setLang = (next: Lang) => {
+    setLanguage(next === 'EN' ? 'en' : 'es')
+  }
+
+  const toggle = () => {
+    setLanguage(language === 'en' ? 'es' : 'en')
+  }
 
   return (
     <LangContext.Provider value={{ lang, setLang, toggle, t }}>{children}</LangContext.Provider>

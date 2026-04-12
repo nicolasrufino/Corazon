@@ -23,7 +23,7 @@ export const ResourceCard = ({ resource, onRequestAuth }: ResourceCardProps) => 
   }
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-lg shadow-black/15 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/45">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/45">
       <div className="relative h-48 w-full overflow-hidden">
         {resource.imageUrl ? (
           <img

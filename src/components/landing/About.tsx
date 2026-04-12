@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion'
+import { useLang } from './i18n'
 
 export default function About() {
+  const { t } = useLang()
+
   return (
     <section
       id="about"
@@ -31,7 +34,7 @@ export default function About() {
           transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 20 }}
           className="inline-block text-coral text-sm tracking-[0.2em] uppercase mb-4"
         >
-          About Us
+          {t('about.overline')}
         </motion.span>
 
         <motion.h2
@@ -42,7 +45,8 @@ export default function About() {
           className="font-display font-bold text-pearl mb-8"
           style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
         >
-          Building Community, <span className="text-aquamarine">Together</span>
+          {t('about.heading.pre')}{' '}
+          <span className="text-aquamarine">{t('about.heading.accent')}</span>
         </motion.h2>
 
         <motion.p
@@ -53,11 +57,7 @@ export default function About() {
           className="text-pearl/75 mb-6 leading-relaxed"
           style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)' }}
         >
-          Coraz&oacute;n was born from a simple truth: our communities are stronger when we&apos;re
-          connected. We&apos;re building the digital plaza where Latino voices, stories, and
-          resources come together &mdash; a space that honors our culture while empowering our
-          future. From first-generation college students seeking mentorship to entrepreneurs looking
-          for community capital, Coraz&oacute;n is the bridge between aspiration and achievement.
+          {t('about.p1')}
         </motion.p>
 
         <motion.p
@@ -68,12 +68,7 @@ export default function About() {
           className="text-pearl/75 leading-relaxed"
           style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)' }}
         >
-          We believe technology should serve the people, not the other way around. Every feature we
-          build is shaped by the lived experiences of our community &mdash; bilingual by design,
-          culturally rooted, and radically inclusive. Whether you&apos;re in Los Angeles, San Juan,
-          or Mexico City, Coraz&oacute;n is your home. We&apos;re not just building an app;
-          we&apos;re nurturing a movement that celebrates the richness of Latino identity in all its
-          beautiful complexity.
+          {t('about.p2')}
         </motion.p>
       </motion.div>
     </section>

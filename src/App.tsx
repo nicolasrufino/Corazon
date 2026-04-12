@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import AppNavbar from '@/components/AppNavbar'
 import { LayoutShell } from '@/components/LayoutShell'
 import { VoiceAssistant } from '@/components/VoiceAssistant'
 import { useAppContext } from '@/context/AppContext'
@@ -50,30 +51,33 @@ const AppFrame = () => {
 
   if (isAuthScreen) {
     return (
-      <div className="relative min-h-screen w-full px-4 py-8 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(139,92,246,0.24),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(251,191,36,0.18),transparent_42%),linear-gradient(180deg,rgba(15,15,35,0.95),rgba(15,15,35,1))]" />
-        </div>
+      <div
+        className="relative min-h-screen w-full text-foreground"
+        style={{ background: '#050608' }}
+      >
+        <AppNavbar />
 
-        <Routes>
-          <Route
-            path="/auth"
-            element={
-              <AuthGuardRoute>
-                <AuthPage />
-              </AuthGuardRoute>
-            }
-          />
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedOnboardingRoute>
-                <OnboardingPage />
-              </ProtectedOnboardingRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/auth" replace />} />
-        </Routes>
+        <div className="flex min-h-screen w-full items-center justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8">
+          <Routes>
+            <Route
+              path="/auth"
+              element={
+                <AuthGuardRoute>
+                  <AuthPage />
+                </AuthGuardRoute>
+              }
+            />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedOnboardingRoute>
+                  <OnboardingPage />
+                </ProtectedOnboardingRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/auth" replace />} />
+          </Routes>
+        </div>
       </div>
     )
   }

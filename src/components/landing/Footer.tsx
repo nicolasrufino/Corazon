@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import OrnateHeart from './OrnateHeart'
+import { useLang } from './i18n'
 
 const socialLinks = [
   {
@@ -63,6 +65,7 @@ const socialLinks = [
 ]
 
 export default function Footer() {
+  const { t } = useLang()
   return (
     <footer
       className="relative border-t border-white/[0.06]"
@@ -79,8 +82,8 @@ export default function Footer() {
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
             className="text-center sm:text-left"
           >
-            <a
-              href="#"
+            <Link
+              to="/landing"
               className="inline-flex items-center text-white hover:opacity-80 transition-opacity"
               style={{
                 fontFamily: 'var(--font-brand)',
@@ -88,18 +91,18 @@ export default function Footer() {
                 fontSize: '1.75rem',
                 letterSpacing: '-0.01em',
               }}
-              aria-label="Corazon home"
+              aria-label={t('aria.logoHome')}
             >
               c
               <OrnateHeart
                 size="0.85em"
-                color="#ff4560"
+                color="#dc2626"
                 style={{ margin: '0 0.04em', transform: 'translateY(0.02em)' }}
               />
               razon
-            </a>
+            </Link>
             <p className="mt-2 text-pearl/40 text-sm">
-              &copy; {new Date().getFullYear()} Coraz&oacute;n. All rights reserved.
+              &copy; {new Date().getFullYear()} Coraz&oacute;n. {t('footer.rights')}
             </p>
           </motion.div>
 

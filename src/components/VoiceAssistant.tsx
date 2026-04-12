@@ -49,7 +49,7 @@ export const VoiceAssistant = () => {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/45 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         aria-label={language === 'es' ? 'Abrir asistente de voz' : 'Open voice assistant'}
       >
         <Mic className="size-6" aria-hidden="true" />
@@ -57,7 +57,7 @@ export const VoiceAssistant = () => {
 
       <div
         className={cn(
-          'fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-2xl transform rounded-t-3xl border border-border bg-card p-4 shadow-2xl shadow-black/40 transition-transform duration-300 sm:inset-x-4 sm:bottom-4 sm:rounded-3xl',
+          'fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-2xl transform rounded-t-3xl border border-border bg-card p-4 transition-transform duration-300 sm:inset-x-4 sm:bottom-4 sm:rounded-3xl',
           isOpen ? 'translate-y-0' : 'translate-y-[110%]'
         )}
         role="dialog"
@@ -67,7 +67,7 @@ export const VoiceAssistant = () => {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h3 className="font-heading text-lg">
-              {language === 'es' ? 'Asistente Brújula' : 'Brújula Assistant'}
+              {language === 'es' ? 'Asistente Corazón' : 'Corazón Assistant'}
             </h3>
             <p className="text-xs text-muted-foreground">
               {language === 'es'

@@ -548,7 +548,9 @@ export const OnboardingPage = () => {
                   </option>
                   <option value="citizen">{language === 'es' ? 'Ciudadano(a)' : 'Citizen'}</option>
                   <option value="permanent_resident">
-                    {language === 'es' ? 'Residente permanente' : 'Permanent resident'}
+                    {language === 'es'
+                      ? 'Residente permanente (Green Card)'
+                      : 'Permanent resident (Green Card)'}
                   </option>
                   <option value="daca">DACA</option>
                   <option value="visa_holder">

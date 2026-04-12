@@ -69,7 +69,7 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 flex items-center justify-between h-16 sm:h-18">
           {/* Logo */}
           <Link
-            to="/landing"
+            to="/"
             className="flex items-center text-white hover:opacity-80 transition-opacity"
             style={{
               fontFamily: 'var(--font-brand)',

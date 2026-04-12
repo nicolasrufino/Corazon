@@ -38,13 +38,13 @@ export default function AppNavbar() {
 
   // When signed in, the logo returns to the authenticated dashboard. When
   // signed out, it returns to the public landing page.
-  const logoHref = user?.onboardingCompleted ? '/' : '/landing'
+  const logoHref = user?.onboardingCompleted ? '/dashboard' : '/'
 
   const handlePrimary = () => {
     setMobileOpen(false)
     if (user?.onboardingCompleted) {
       signOut()
-      navigate('/landing')
+      navigate('/')
     } else {
       navigate('/auth')
     }

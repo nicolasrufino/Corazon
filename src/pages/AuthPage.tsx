@@ -83,7 +83,7 @@ export const AuthPage = () => {
       }
       return
     }
-    navigate('/')
+    navigate('/dashboard')
   }
 
   return (

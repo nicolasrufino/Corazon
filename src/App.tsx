@@ -11,8 +11,36 @@ import { DocumentAnalyzerPage } from '@/pages/DocumentAnalyzerPage'
 import { LandingPage } from '@/pages/LandingPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
 
-const ProtectedOnboardingRoute = ({ children }: { children: ReactNode }) => {
-  const { user } = useAppContext()
+/*──────────────────────────────────────────────
+  Flow:
+  /              → Landing page (public)
+  /auth          → Sign in / Sign up (redirects to /dashboard if already logged in)
+  /onboarding    → Profile setup (requires auth, redirects to /auth if not)
+  /dashboard     → Resource dashboard (requires auth + onboarding)
+  /community     → Community finder (requires auth + onboarding)
+  /analyzer      → Document analyzer (requires auth + onboarding)
+──────────────────────────────────────────────*/
+
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user, authLoading } = useAppContext()
+
+  if (authLoading) return null
+
+  if (!user) {
+    return <Navigate to="/auth" replace />
+  }
+
+  if (!user.onboardingCompleted) {
+    return <Navigate to="/onboarding" replace />
+  }
+
+  return children
+}
+
+const OnboardingRoute = ({ children }: { children: ReactNode }) => {
+  const { user, authLoading } = useAppContext()
+
+  if (authLoading) return null
 
   if (!user) {
     return <Navigate to="/auth" replace />
@@ -22,7 +50,9 @@ const ProtectedOnboardingRoute = ({ children }: { children: ReactNode }) => {
 }
 
 const AuthGuardRoute = ({ children }: { children: ReactNode }) => {
-  const { user } = useAppContext()
+  const { user, authLoading } = useAppContext()
+
+  if (authLoading) return null
 
   if (!user) {
     return children
@@ -32,23 +62,24 @@ const AuthGuardRoute = ({ children }: { children: ReactNode }) => {
     return <Navigate to="/onboarding" replace />
   }
 
-  return <Navigate to="/" replace />
+  return <Navigate to="/dashboard" replace />
 }
 
 const AppFrame = () => {
-  const { user } = useAppContext()
   const location = useLocation()
-  const isLanding = location.pathname === '/landing'
+  const isLanding = location.pathname === '/'
   const isAuthScreen = location.pathname === '/auth' || location.pathname === '/onboarding'
 
+  // Landing page — standalone, no app chrome
   if (isLanding) {
     return (
       <Routes>
-        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     )
   }
 
+  // Auth + onboarding — minimal chrome with AppNavbar
   if (isAuthScreen) {
     return (
       <div
@@ -56,7 +87,6 @@ const AppFrame = () => {
         style={{ background: '#050608' }}
       >
         <AppNavbar />
-
         <div className="flex min-h-screen w-full items-center justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8">
           <Routes>
             <Route
@@ -70,29 +100,46 @@ const AppFrame = () => {
             <Route
               path="/onboarding"
               element={
-                <ProtectedOnboardingRoute>
+                <OnboardingRoute>
                   <OnboardingPage />
-                </ProtectedOnboardingRoute>
+                </OnboardingRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/auth" replace />} />
           </Routes>
         </div>
       </div>
     )
   }
 
-  if (user && !user.onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />
-  }
-
+  // App pages — full LayoutShell with sidebar + navbar
   return (
     <LayoutShell>
       <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/community" element={<CommunityPage />} />
-        <Route path="/analyzer" element={<DocumentAnalyzerPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/community"
+          element={
+            <ProtectedRoute>
+              <CommunityPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analyzer"
+          element={
+            <ProtectedRoute>
+              <DocumentAnalyzerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
       <VoiceAssistant />
     </LayoutShell>

@@ -59,7 +59,7 @@ export const OnboardingPage = () => {
     }
 
     await completeOnboarding(profile)
-    navigate('/')
+    navigate('/dashboard')
   }
 
   return (

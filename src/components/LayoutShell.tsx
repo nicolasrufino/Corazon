@@ -10,7 +10,7 @@ interface LayoutShellProps {
 }
 
 const navigation = [
-  { to: '/', icon: Home, labelEs: 'Recursos', labelEn: 'Resources' },
+  { to: '/dashboard', icon: Home, labelEs: 'Recursos', labelEn: 'Resources' },
   { to: '/community', icon: MapPinned, labelEs: 'Comunidad', labelEn: 'Community' },
   { to: '/analyzer', icon: FileText, labelEs: 'Analizador', labelEn: 'Analyzer' },
 ]

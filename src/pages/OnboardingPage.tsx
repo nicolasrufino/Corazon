@@ -48,7 +48,7 @@ export const OnboardingPage = () => {
     )
   }
 
-  const finishOnboarding = () => {
+  const finishOnboarding = async () => {
     const profile: OnboardingProfile = {
       countryOfOrigin: countryOfOrigin || undefined,
       immigrationStatus: immigrationStatus || undefined,
@@ -58,7 +58,7 @@ export const OnboardingPage = () => {
       goals,
     }
 
-    completeOnboarding(profile)
+    await completeOnboarding(profile)
     navigate('/')
   }
 

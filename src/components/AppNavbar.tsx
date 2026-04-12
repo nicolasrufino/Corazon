@@ -2,6 +2,7 @@ import { User as UserIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
+import { NotificationDropdown } from '@/components/NotificationDropdown'
 import OrnateHeart from '@/components/landing/OrnateHeart'
 import { useAppContext } from '@/context/AppContext'
 
@@ -154,7 +155,10 @@ export default function AppNavbar() {
             <LangToggle />
 
             {user ? (
-              <ProfileAvatar />
+              <>
+                <NotificationDropdown />
+                <ProfileAvatar />
+              </>
             ) : (
               <motion.button
                 onClick={handleJoin}

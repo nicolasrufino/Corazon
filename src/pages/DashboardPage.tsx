@@ -83,7 +83,7 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-border/50 bg-card/70 p-5 shadow-xl shadow-black/20 sm:p-7 lg:p-8">
+      <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7 lg:p-8">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/90">
           {language === 'es' ? 'Tu camino empieza aquí' : 'Your path starts here'}
         </p>

@@ -63,7 +63,7 @@ export const OnboardingPage = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl rounded-3xl border border-border/60 bg-card/80 p-5 shadow-2xl shadow-black/30 sm:p-8">
+    <div className="mx-auto w-full max-w-3xl rounded-3xl border border-border/60 bg-card/80 p-5 sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
         {language === 'es' ? 'Onboarding personalizado' : 'Personalized onboarding'}
       </p>

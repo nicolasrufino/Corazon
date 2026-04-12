@@ -1,10 +1,18 @@
-import { Mic, MicOff, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
+import { Mic, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import OrnateHeart from '@/components/landing/OrnateHeart'
 import { useAppContext } from '@/context/AppContext'
 import { sendChatMessage } from '@/lib/chatApi'
 import { speak, stopSpeaking } from '@/lib/elevenlabs'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types/app'
+
+// Sentinel returned by backend/ai/chatbot.py when the upstream Groq call
+// fails. We detect it on the client and surface our own error UI instead
+// of showing the raw "[Corazón encountered an error: ...]" string as a
+// chat bubble. The backend has been fixed to raise instead, but until
+// Railway redeploys we need this defensive check.
+const CHATBOT_ERROR_PREFIX = '[Corazón encountered an error'
 
 export const VoiceAssistant = () => {
   const { addChatMessage, chatHistory, language, user } = useAppContext()
@@ -22,6 +30,15 @@ export const VoiceAssistant = () => {
       stopSpeaking()
     }
   }, [isOpen])
+
+  // Allow other components (e.g. the LayoutShell sidebar "Chat" button)
+  // to open the assistant by dispatching a `corazon:open-chat` event on
+  // window. Avoids lifting state into AppContext just for this.
+  useEffect(() => {
+    const open = () => setIsOpen(true)
+    window.addEventListener('corazon:open-chat', open)
+    return () => window.removeEventListener('corazon:open-chat', open)
+  }, [])
 
   const visibleHistory = useMemo(() => {
     if (!user) {
@@ -62,6 +79,14 @@ export const VoiceAssistant = () => {
             }
           : undefined
       )
+
+      // Backend chatbot.py used to swallow Groq errors and return them
+      // as the chat response. Detect that and show our error UI instead
+      // of treating the error string as an assistant message.
+      if (responseText.startsWith(CHATBOT_ERROR_PREFIX) || responseText.trim() === '') {
+        throw new Error(responseText || 'empty chatbot response')
+      }
+
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -141,13 +166,16 @@ export const VoiceAssistant = () => {
 
   return (
     <>
+      {/* Floating chat button — uses the Corazón ornate heart instead
+         of a generic mic icon. The heart IS the brand and visually
+         signals "talk to Corazón" rather than "record audio". */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        aria-label={language === 'es' ? 'Abrir asistente de voz' : 'Open voice assistant'}
+        className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-black/80 text-white shadow-lg backdrop-blur-sm transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={language === 'es' ? 'Abrir asistente Corazón' : 'Open Corazón assistant'}
       >
-        <Mic className="size-6" aria-hidden="true" />
+        <OrnateHeart size="2rem" color="#dc2626" />
       </button>
 
       <div
@@ -300,14 +328,13 @@ export const VoiceAssistant = () => {
             }
             aria-pressed={isListening}
           >
+            {/* Always show the Mic icon — color + animation indicate state.
+               Previously we swapped to MicOff while listening, which read
+               as "muted" to users instead of "actively recording". */}
             {isListening ? (
-              <>
-                <span className="absolute inset-0 animate-ping rounded-xl border-2 border-destructive/60" />
-                <MicOff className="relative size-4" aria-hidden="true" />
-              </>
-            ) : (
-              <Mic className="size-4" aria-hidden="true" />
-            )}
+              <span className="absolute inset-0 animate-ping rounded-xl border-2 border-destructive/60" />
+            ) : null}
+            <Mic className="relative size-4" aria-hidden="true" />
           </button>
           <button
             type="button"

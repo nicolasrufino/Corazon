@@ -116,32 +116,32 @@ export const ImpactPage = () => {
   const bars: BarSpec[] = [
     {
       key: 'saved',
-      labelEs: 'Tiempo ahorrado',
-      labelEn: 'Time saved',
+      labelEs: 'Horas que recuperaste',
+      labelEn: 'Hours you got back',
       hoursPerYear: timeSaved?.total_saved_hrs ?? 0,
       icon: TrendingUp,
       positive: true,
     },
     {
       key: 'nav',
-      labelEs: 'Tiempo perdido en burocracia',
-      labelEn: 'Time wasted on bureaucracy',
+      labelEs: 'Horas en papeleo y trámites',
+      labelEn: 'Hours on paperwork and red tape',
       hoursPerYear: impact?.nav_hours ?? 0,
       icon: TrendingDown,
       positive: false,
     },
     {
       key: 'poverty',
-      labelEs: 'Costo del "impuesto de pobreza"',
-      labelEn: 'Poverty premium tax',
+      labelEs: 'Horas extra trabajando para alcanzar',
+      labelEn: 'Extra hours working just to keep up',
       hoursPerYear: impact?.poverty_hours ?? 0,
       icon: Clock,
       positive: false,
     },
     {
       key: 'isolation',
-      labelEs: 'Tiempo perdido por aislamiento',
-      labelEn: 'Time lost to isolation',
+      labelEs: 'Horas sin saber a quién acudir',
+      labelEn: 'Hours feeling alone in the system',
       hoursPerYear: isolation?.isolation_hours_yr ?? 0,
       icon: AlertCircle,
       positive: false,
@@ -160,18 +160,18 @@ export const ImpactPage = () => {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/90">
-              {isEs ? 'Tu impacto personal' : 'Your personal impact'}
+              {isEs ? 'Tu tiempo, en números' : 'Your time, in numbers'}
             </p>
-            <h1 className="mt-2 text-3xl sm:text-4xl">{isEs ? 'Impacto' : 'Impact'}</h1>
+            <h1 className="mt-2 text-3xl sm:text-4xl">{isEs ? 'Tu impacto' : 'Your impact'}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {isEs
-                ? 'Una vista cuantitativa de cómo el sistema afecta tu tiempo cada año, y cuánto te ayuda Corazón a recuperar.'
-                : 'A quantitative view of how the system costs you time each year — and how much Corazón helps you reclaim.'}
+                ? 'Esto es cuánto tiempo te tomaría hacer las cosas tú solo — y cuánto te estamos ayudando a recuperar. Tu tiempo importa, y queremos que veas adónde se va.'
+                : "This is how much time it would take you to do this on your own — and how much we're helping you get back. Your time matters, and we want you to see where it goes."}
             </p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary">
             <Sparkles className="size-3.5" aria-hidden="true" />
-            ML
+            {isEs ? 'Personalizado' : 'For you'}
           </span>
         </div>
       </section>
@@ -250,29 +250,29 @@ export const ImpactPage = () => {
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-border/40 bg-background/40 p-4">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {isEs ? 'Pérdida total/año' : 'Total annual loss'}
+                    {isEs ? 'Lo que cuesta cada año' : 'What it costs you each year'}
                   </p>
                   <p className="mt-1 font-display text-2xl font-bold text-destructive">
                     {totalNegative.toFixed(0)}
                     <span className="ml-1 text-sm text-muted-foreground">
-                      {isEs ? 'hrs' : 'hrs'}
+                      {isEs ? 'horas' : 'hours'}
                     </span>
                   </p>
                 </div>
                 <div className="rounded-xl border border-border/40 bg-background/40 p-4">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {isEs ? 'Días de vida (proy. 20 años)' : 'Lifetime days (20 yr proj.)'}
+                    {isEs ? 'En 20 años, eso es' : "Over 20 years, that's"}
                   </p>
                   <p className="mt-1 font-display text-2xl font-bold text-accent">
                     {impact.lifetime_days.toFixed(0)}
                     <span className="ml-1 text-sm text-muted-foreground">
-                      {isEs ? 'días' : 'days'}
+                      {isEs ? 'días de tu vida' : 'days of your life'}
                     </span>
                   </p>
                 </div>
                 <div className="rounded-xl border border-border/40 bg-background/40 p-4">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {isEs ? 'Recuperado por Corazón' : 'Reclaimed via Corazón'}
+                    {isEs ? 'Lo que ya recuperaste' : "What you've already gotten back"}
                   </p>
                   <p
                     className="mt-1 font-display text-2xl font-bold"
@@ -280,7 +280,7 @@ export const ImpactPage = () => {
                   >
                     {(timeSaved.total_saved_hrs ?? 0).toFixed(0)}
                     <span className="ml-1 text-sm text-muted-foreground">
-                      {isEs ? 'hrs' : 'hrs'}
+                      {isEs ? 'horas' : 'hours'}
                     </span>
                   </p>
                 </div>
@@ -289,8 +289,8 @@ export const ImpactPage = () => {
 
             <p className="mt-2 text-xs text-muted-foreground">
               {isEs
-                ? 'Fuente: BLS Q2 2024 + modelo entrenado de Corazon AI.'
-                : 'Source: BLS Q2 2024 + trained Corazon AI model.'}
+                ? 'Datos basados en estudios reales sobre familias latinas en EE.UU.'
+                : 'Based on real research about Latino families in the U.S.'}
             </p>
           </div>
         )}
@@ -301,41 +301,45 @@ export const ImpactPage = () => {
       {!loading && !error && impact && timeSaved && isolation ? (
         <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">
           <h2 className="text-xl font-semibold sm:text-2xl">
-            {isEs ? '¿Qué significan estos números?' : 'What do these numbers mean?'}
+            {isEs ? '¿Qué significa todo esto?' : 'What does all this mean?'}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isEs ? 'Una guía rápida — sin tecnicismos.' : 'A quick guide — no jargon.'}
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            {isEs
+              ? 'Sabemos que los números pueden sentirse fríos. Aquí te lo explicamos como se lo contarías a un amigo.'
+              : "We know numbers can feel cold. Here's what each one really means — the way you'd explain it to a friend."}
           </p>
 
-          <ul className="mt-5 space-y-4">
+          <ul className="mt-5 space-y-5">
             {[
               {
                 color: PILL_COLORS.saved,
-                title: isEs ? 'Tiempo ahorrado' : 'Time saved',
+                title: isEs ? 'Horas que recuperaste' : 'Hours you got back',
                 body: isEs
-                  ? 'Las horas que Corazón te ayudó a recuperar al conectarte con el recurso correcto a la primera. Sin rebotes, sin laberintos telefónicos.'
-                  : 'Hours Corazón helped you reclaim by connecting you with the right resource on the first try. No bouncing between agencies, no dead-end phone trees.',
+                  ? 'Tiempo que ya no tuviste que gastar buscando ayuda, llamando a oficinas que no responden, o esperando en filas. Cada una de estas horas la viviste como tú quisiste.'
+                  : "Time you didn't have to spend hunting for help, calling offices that never pick up, or waiting in lines. Every one of these hours, you got to spend on what actually matters to you.",
               },
               {
                 color: PILL_COLORS.nav,
-                title: isEs ? 'Tiempo perdido en burocracia' : 'Time wasted on bureaucracy',
+                title: isEs ? 'Horas en papeleo y trámites' : 'Hours on paperwork and red tape',
                 body: isEs
-                  ? 'Lo que la gente en tu situación pierde al año en formularios, citas e instrucciones confusas — sin guía.'
-                  : 'What people in your situation lose each year to forms, appointments, and confusing instructions — without a guide.',
+                  ? 'Lo que normalmente tendrías que dar a llenar formularios, ir y venir entre oficinas, y descifrar instrucciones que parecen escritas en otro idioma. Personas en tu misma situación lo viven todos los años.'
+                  : "What you'd normally give up to fill out forms, run between offices, and decode instructions that feel like they're written in another language. People in your same situation live this every year.",
               },
               {
                 color: PILL_COLORS.poverty,
-                title: isEs ? 'Costo del impuesto de pobreza' : 'Poverty premium tax',
+                title: isEs ? 'Horas extra trabajando' : 'Extra hours working',
                 body: isEs
-                  ? 'Las horas extra que tu comunidad trabaja para cubrir el costo de hacer las cosas "a las malas" — comisiones, trabajo perdido, ayuda pagada que debería ser gratis.'
-                  : 'Extra hours your community works just to cover the cost of doing things "the hard way" — fees, missed work, paid help that should be free.',
+                  ? 'Cuando no sabes a dónde ir, terminas pagando de más — en multas, en ayuda que cobra, en cosas que pudiste haber recibido gratis. Esto es el tiempo que tendrías que trabajar para cubrir esos costos.'
+                  : "When you don't know where to turn, you end up paying more — fees, paid help, things you could've gotten free if you knew the right place. This is how many extra hours you'd have to work to cover those costs.",
               },
               {
                 color: PILL_COLORS.isolation,
-                title: isEs ? 'Tiempo perdido por aislamiento' : 'Time lost to isolation',
+                title: isEs
+                  ? 'Horas sintiéndote solo en el sistema'
+                  : 'Hours feeling alone in the system',
                 body: isEs
-                  ? 'Las horas al año en que el sistema separa a los latinos de los espacios comunitarios y la información confiable.'
-                  : 'Hours per year the system separates Latinos from trusted community spaces and information.',
+                  ? 'No tener una comunidad que te explique cómo funciona todo cuesta tiempo — y a veces, salud mental. Estas horas representan ese vacío que sentimos cuando nadie nos guía.'
+                  : "Not having a community that knows the ropes costs time — and sometimes, peace of mind. These hours stand for that feeling of being on your own in a place that wasn't built for you.",
               },
             ].map(item => (
               <li key={item.title} className="flex items-start gap-3">
@@ -346,9 +350,7 @@ export const ImpactPage = () => {
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                  <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
-                    {item.body}
-                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
                 </div>
               </li>
             ))}
@@ -357,12 +359,12 @@ export const ImpactPage = () => {
           {/* Closing — the emotional payoff. Anchors saved hours to family
              time so the gratitude framing lands harder than a generic "thx". */}
           <p
-            className="mt-6 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm italic leading-relaxed text-foreground"
+            className="mt-7 rounded-2xl border border-primary/30 bg-primary/10 p-5 text-sm leading-relaxed text-foreground"
             style={{ fontFamily: 'var(--font-brand)' }}
           >
             {isEs
-              ? '— Cada hora que recuperas es una hora más con tu familia. Gracias por confiarnos tu tiempo.'
-              : '— Every hour you reclaim is an hour back with your family. Thank you for trusting us with your time.'}
+              ? 'Cada hora aquí es una hora que te devolvemos. Para que la pases con tu familia, en tu cocina, escuchando música, o simplemente respirando. Gracias por dejarnos caminar contigo. ❤️'
+              : "Every hour here is an hour we're handing back to you. To spend with your family, in your kitchen, listening to music, or just breathing. Thank you for letting us walk with you. ❤️"}
           </p>
         </section>
       ) : null}

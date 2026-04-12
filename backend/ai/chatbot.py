@@ -207,33 +207,32 @@ def chat(
                           resources from the database automatically.
 
     Returns:
-        Groq's reply as a plain string, or an error string on failure.
+        Groq's reply as a plain string. Raises on upstream failure so the
+        FastAPI handler can convert it to an HTTP 500 instead of leaking
+        the error string into the chat UI as if it were a real reply.
     """
     if auto_fetch and resource_context is None:
         resource_context = get_relevant_resources(message, simple_archetype)
 
-    try:
-        response = _CLIENT.chat.completions.create(
-            model=_MODEL,
-            messages=(
-                [
-                    {
-                        "role": "system",
-                        "content": build_system_prompt(
-                            simple_archetype, resource_context
-                        ),
-                    }
-                ]
-                + [
-                    {"role": entry["role"], "content": entry["content"]}
-                    for entry in format_history(history)
-                ]
-                + [{"role": "user", "content": message}]
-            ),
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"[Corazón encountered an error: {e}]"
+    response = _CLIENT.chat.completions.create(
+        model=_MODEL,
+        messages=(
+            [
+                {
+                    "role": "system",
+                    "content": build_system_prompt(
+                        simple_archetype, resource_context
+                    ),
+                }
+            ]
+            + [
+                {"role": entry["role"], "content": entry["content"]}
+                for entry in format_history(history)
+            ]
+            + [{"role": "user", "content": message}]
+        ),
+    )
+    return response.choices[0].message.content
 
 
 def start_conversation(

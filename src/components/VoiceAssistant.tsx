@@ -1,7 +1,8 @@
-import { Mic, SendHorizontal, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Mic, MicOff, SendHorizontal, Volume2, VolumeX, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppContext } from '@/context/AppContext'
-import { sendVoiceChatMessage } from '@/lib/mockApi'
+import { sendChatMessage } from '@/lib/chatApi'
+import { speak, stopSpeaking } from '@/lib/elevenlabs'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types/app'
 
@@ -10,6 +11,17 @@ export const VoiceAssistant = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [isResponding, setIsResponding] = useState(false)
+  const [errorText, setErrorText] = useState<string | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [ttsEnabled, setTtsEnabled] = useState(true)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+
+  // Stop any in-flight TTS audio when the dialog is closed.
+  useEffect(() => {
+    if (!isOpen) {
+      stopSpeaking()
+    }
+  }, [isOpen])
 
   const visibleHistory = useMemo(() => {
     if (!user) {
@@ -35,13 +47,96 @@ export const VoiceAssistant = () => {
     addChatMessage(userMessage)
     setMessage('')
     setIsResponding(true)
+    setErrorText(null)
 
     try {
-      const response = await sendVoiceChatMessage(trimmed, language)
-      addChatMessage(response)
+      const responseText = await sendChatMessage(
+        trimmed,
+        language,
+        chatHistory,
+        user?.profile
+          ? {
+              goals: user.profile.goals,
+              occupation: user.profile.occupations?.[0],
+              immigration_status: user.profile.immigrationStatus,
+            }
+          : undefined
+      )
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: responseText,
+        createdAt: new Date().toISOString(),
+      }
+      addChatMessage(assistantMessage)
+      if (ttsEnabled) {
+        void speak(responseText)
+      }
+    } catch (err) {
+      console.error('Chat API error:', err)
+      setErrorText(
+        language === 'es'
+          ? 'No pude conectar con el asistente. Intenta de nuevo en un momento.'
+          : "Couldn't reach the assistant. Try again in a moment."
+      )
     } finally {
       setIsResponding(false)
     }
+  }
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch {
+        /* noop */
+      }
+      recognitionRef.current = null
+    }
+    setIsListening(false)
+  }
+
+  const startListening = () => {
+    if (isListening) {
+      stopListening()
+      return
+    }
+
+    const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!Ctor) {
+      setErrorText(
+        language === 'es'
+          ? 'Tu navegador no soporta entrada por voz.'
+          : "Your browser doesn't support voice input."
+      )
+      return
+    }
+
+    const recognition = new Ctor()
+    recognition.lang = language === 'es' ? 'es-MX' : 'en-US'
+    recognition.interimResults = false
+    recognition.continuous = false
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = event => {
+      const transcript = event.results[0]?.[0]?.transcript || ''
+      if (transcript) {
+        setMessage(transcript)
+      }
+    }
+    recognition.onend = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+    recognition.onerror = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    setErrorText(null)
+    setIsListening(true)
+    recognition.start()
   }
 
   return (
@@ -75,14 +170,45 @@ export const VoiceAssistant = () => {
                 : 'Informational guidance with a community-first lens.'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsOpen(false)}
-            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background transition-colors duration-200 hover:bg-primary/10"
-            aria-label={language === 'es' ? 'Cerrar asistente' : 'Close assistant'}
-          >
-            <X className="size-5" aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (ttsEnabled) stopSpeaking()
+                setTtsEnabled(prev => !prev)
+              }}
+              className={cn(
+                'inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors duration-200',
+                ttsEnabled
+                  ? 'border-border bg-background text-foreground hover:bg-primary/10'
+                  : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/40'
+              )}
+              aria-label={
+                ttsEnabled
+                  ? language === 'es'
+                    ? 'Silenciar voz'
+                    : 'Mute voice'
+                  : language === 'es'
+                    ? 'Activar voz'
+                    : 'Enable voice'
+              }
+              aria-pressed={ttsEnabled}
+            >
+              {ttsEnabled ? (
+                <Volume2 className="size-5" aria-hidden="true" />
+              ) : (
+                <VolumeX className="size-5" aria-hidden="true" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background transition-colors duration-200 hover:bg-primary/10"
+              aria-label={language === 'es' ? 'Cerrar asistente' : 'Close assistant'}
+            >
+              <X className="size-5" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <div className="mb-4 max-h-72 space-y-3 overflow-y-auto rounded-2xl border border-border/60 bg-background/70 p-3">
@@ -118,6 +244,12 @@ export const VoiceAssistant = () => {
           ) : null}
         </div>
 
+        {errorText ? (
+          <div className="mb-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+            <p className="text-xs text-destructive">{errorText}</p>
+          </div>
+        ) : null}
+
         {!user ? (
           <p className="mb-3 rounded-xl border border-primary/30 bg-primary/10 p-3 text-xs text-muted-foreground">
             {language === 'es'
@@ -148,6 +280,35 @@ export const VoiceAssistant = () => {
             }
             className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
           />
+          <button
+            type="button"
+            onClick={startListening}
+            className={cn(
+              'relative inline-flex h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl border transition-colors duration-200',
+              isListening
+                ? 'border-destructive bg-destructive/10 text-destructive'
+                : 'border-border bg-background text-muted-foreground hover:bg-muted/40'
+            )}
+            aria-label={
+              isListening
+                ? language === 'es'
+                  ? 'Detener grabación'
+                  : 'Stop listening'
+                : language === 'es'
+                  ? 'Hablar'
+                  : 'Speak'
+            }
+            aria-pressed={isListening}
+          >
+            {isListening ? (
+              <>
+                <span className="absolute inset-0 animate-ping rounded-xl border-2 border-destructive/60" />
+                <MicOff className="relative size-4" aria-hidden="true" />
+              </>
+            ) : (
+              <Mic className="size-4" aria-hidden="true" />
+            )}
+          </button>
           <button
             type="button"
             onClick={() => {

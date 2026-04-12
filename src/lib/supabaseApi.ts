@@ -6,21 +6,22 @@ function sanitizeSearch(input: string): string {
   return input.replace(/[%(),.*\\]/g, ' ').trim()
 }
 
-// Map Supabase opportunity_category enum → frontend ResourceCategory
-const CATEGORY_MAP: Record<string, ResourceCategory> = {
-  health: 'healthcare',
-  mental_health: 'healthcare',
-  legal: 'legal',
-  housing: 'community',
-  food_bank: 'community',
-  event: 'community',
-  scholarship: 'education',
-  job: 'business',
-  language: 'language_learning',
-}
+// DB categories map 1:1 to frontend categories now
+const VALID_CATEGORIES: ResourceCategory[] = [
+  'legal',
+  'health',
+  'mental_health',
+  'housing',
+  'food_bank',
+  'scholarship',
+  'job',
+  'event',
+  'language',
+]
 
 function mapCategory(raw: string): ResourceCategory {
-  return CATEGORY_MAP[raw] || 'community'
+  if (VALID_CATEGORIES.includes(raw as ResourceCategory)) return raw as ResourceCategory
+  return 'health' // safe default
 }
 
 // Category-based Unsplash images so cards aren't blank
@@ -224,19 +225,18 @@ interface ResourceQuery {
   search?: string
   category?: ResourceCategory | 'all'
   sort?: SortOption
+  latinoOnly?: boolean
 }
 
 export async function fetchResources(query: ResourceQuery): Promise<Resource[]> {
   let q = supabase.from('active_opportunities').select('*')
 
   if (query.category && query.category !== 'all') {
-    const dbCategories = Object.entries(CATEGORY_MAP)
-      .filter(([, frontendCat]) => frontendCat === query.category)
-      .map(([dbCat]) => dbCat)
+    q = q.eq('category', query.category)
+  }
 
-    if (dbCategories.length > 0) {
-      q = q.in('category', dbCategories)
-    }
+  if (query.latinoOnly) {
+    q = q.contains('tags', ['latino-specific'])
   }
 
   if (query.search?.trim()) {
@@ -264,13 +264,7 @@ export async function fetchCommunityOrganizations(
   let q = supabase.from('active_opportunities').select('*')
 
   if (category && category !== 'all') {
-    const dbCategories = Object.entries(CATEGORY_MAP)
-      .filter(([, frontendCat]) => frontendCat === category)
-      .map(([dbCat]) => dbCat)
-
-    if (dbCategories.length > 0) {
-      q = q.in('category', dbCategories)
-    }
+    q = q.eq('category', category)
   }
 
   const { data, error } = await q.order('title').limit(60)

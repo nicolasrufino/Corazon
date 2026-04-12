@@ -5,7 +5,6 @@ import { LayoutShell } from '@/components/LayoutShell'
 import { VoiceAssistant } from '@/components/VoiceAssistant'
 import { useAppContext } from '@/context/AppContext'
 import { AuthPage } from '@/pages/AuthPage'
-import { CommunityPage } from '@/pages/CommunityPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DiscoveryPage } from '@/pages/DiscoveryPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
@@ -20,7 +19,6 @@ import { ProfilePage } from '@/pages/ProfilePage'
   /forgot-password → Password reset email request
   /onboarding    → Profile setup (requires auth, redirects to /auth if not)
   /dashboard     → Resource dashboard (requires auth + onboarding)
-  /community     → Community finder (requires auth + onboarding)
   /discovery     → Pinterest-style explore feed (requires auth + onboarding)
 ──────────────────────────────────────────────*/
 
@@ -134,14 +132,6 @@ const AppFrame = () => {
           element={
             <ProtectedRoute>
               <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/community"
-          element={
-            <ProtectedRoute>
-              <CommunityPage />
             </ProtectedRoute>
           }
         />

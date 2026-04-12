@@ -19,15 +19,15 @@ import { cn } from '@/lib/utils'
 import type { Resource, ResourceCategory } from '@/types/app'
 
 const categoryIcons: Record<ResourceCategory, typeof ShieldCheck> = {
+  health: Sparkles,
+  mental_health: AlertCircle,
   legal: ShieldCheck,
-  healthcare: Sparkles,
-  immigration: Compass,
-  education: ChartNoAxesCombined,
-  community: MapPin,
-  social_life: Sparkles,
-  financial_aid: AlertCircle,
-  language_learning: ChartNoAxesCombined,
-  business: Sparkles,
+  housing: MapPin,
+  food_bank: Compass,
+  scholarship: ChartNoAxesCombined,
+  job: Sparkles,
+  event: MapPin,
+  language: ChartNoAxesCombined,
 }
 
 export const DashboardPage = () => {
@@ -37,6 +37,7 @@ export const DashboardPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<ResourceCategory | 'all'>('all')
   const [sort, setSort] = useState<SortOption>('relevance')
+  const [latinoOnly, setLatinoOnly] = useState(false)
   const [resources, setResources] = useState<Resource[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -60,6 +61,7 @@ export const DashboardPage = () => {
           search: debouncedSearch,
           category: activeCategory,
           sort,
+          latinoOnly,
         })
         if (isMounted) {
           setResources(result)
@@ -76,7 +78,7 @@ export const DashboardPage = () => {
     return () => {
       isMounted = false
     }
-  }, [debouncedSearch, activeCategory, sort])
+  }, [debouncedSearch, activeCategory, sort, latinoOnly])
 
   const metrics = useMemo(
     () => [
@@ -194,6 +196,19 @@ export const DashboardPage = () => {
             })}
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setLatinoOnly(!latinoOnly)}
+          className={cn(
+            'h-9 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors',
+            latinoOnly
+              ? 'border-emerald-500 bg-emerald-500/20 text-emerald-200'
+              : 'border-border hover:bg-emerald-500/10'
+          )}
+        >
+          {language === 'es' ? 'Solo para latinos' : 'Latino-focused only'}
+        </button>
       </section>
 
       {!user ? (
@@ -269,6 +284,24 @@ export const DashboardPage = () => {
             </div>
           </div>
         )}
+      </section>
+
+      {/* Bottom search bar — prominent, full width */}
+      <section className="rounded-2xl border border-border/50 bg-card/70 p-4">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            placeholder={
+              language === 'es'
+                ? 'Buscar recursos, organizaciones, servicios...'
+                : 'Search resources, organizations, services...'
+            }
+            className="h-14 w-full rounded-xl border border-input bg-background pl-12 pr-4 text-base outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
       </section>
     </div>
   )

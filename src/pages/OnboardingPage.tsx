@@ -9,7 +9,6 @@ import type {
   Occupation,
   OnboardingProfile,
   ResourceCategory,
-  UiLanguagePreference,
 } from '@/types/app'
 
 /* ─── Per-step accent color from the Coraz\u00f3n logo letters ─── */
@@ -18,7 +17,6 @@ const STEP_COLORS: Record<number, { accent: string; accentMuted: string; border:
   2: { accent: '#dc2626', accentMuted: 'rgba(220,38,38,0.15)', border: 'rgba(220,38,38,0.35)' },
   3: { accent: '#00aa63', accentMuted: 'rgba(0,170,99,0.15)', border: 'rgba(0,170,99,0.35)' },
   4: { accent: '#1777d7', accentMuted: 'rgba(23,119,215,0.15)', border: 'rgba(23,119,215,0.35)' },
-  5: { accent: '#ffd300', accentMuted: 'rgba(255,211,0,0.15)', border: 'rgba(255,211,0,0.35)' },
 }
 
 /* ─── Country data ─── */
@@ -139,49 +137,24 @@ const OCCUPATION_OPTIONS: Array<{ value: Occupation; labelEs: string; labelEn: s
 
 const GOAL_OPTIONS: Array<{ value: ResourceCategory; labelEs: string; labelEn: string }> = [
   {
-    value: 'healthcare',
+    value: 'health',
     labelEs: 'Encontrar un doctor o cl\u00ednica',
     labelEn: 'Find a doctor or clinic',
   },
+  { value: 'mental_health', labelEs: 'Apoyo en salud mental', labelEn: 'Mental health support' },
   { value: 'legal', labelEs: 'Obtener ayuda legal', labelEn: 'Get legal help' },
-  {
-    value: 'immigration',
-    labelEs: 'Navegar mi situaci\u00f3n migratoria',
-    labelEn: 'Navigate my immigration situation',
-  },
-  {
-    value: 'community',
-    labelEs: 'Conectar con mi comunidad',
-    labelEn: 'Connect with my community',
-  },
-  {
-    value: 'business',
-    labelEs: 'Empezar o crecer un negocio',
-    labelEn: 'Start or grow a business',
-  },
-  {
-    value: 'education',
-    labelEs: 'Encontrar becas o educaci\u00f3n',
-    labelEn: 'Find education or scholarships',
-  },
-  { value: 'language_learning', labelEs: 'Aprender ingl\u00e9s', labelEn: 'Learn English' },
-  {
-    value: 'financial_aid',
-    labelEs: 'Conseguir ayuda financiera',
-    labelEn: 'Get financial help',
-  },
-  {
-    value: 'social_life',
-    labelEs: 'Conocer gente y encontrar eventos',
-    labelEn: 'Meet people and find events',
-  },
+  { value: 'housing', labelEs: 'Encontrar vivienda', labelEn: 'Find housing' },
+  { value: 'food_bank', labelEs: 'Acceder a alimentos', labelEn: 'Access food resources' },
+  { value: 'scholarship', labelEs: 'Encontrar becas', labelEn: 'Find scholarships' },
+  { value: 'job', labelEs: 'Encontrar trabajo', labelEn: 'Find a job' },
+  { value: 'event', labelEs: 'Conocer gente y eventos', labelEn: 'Meet people and find events' },
+  { value: 'language', labelEs: 'Aprender ingl\u00e9s', labelEn: 'Learn English' },
 ]
 
 /* ─── Step config ─── */
-// Order: 1=Language, 2=Country, 3=Immigration, 4=Occupation, 5=Goals
+// Order: 1=Country, 2=Immigration, 3=Occupation, 4=Goals
 
 const STEP_TITLES: Array<{ es: string; en: string }> = [
-  { es: 'Idioma de la app', en: 'App language' },
   { es: '\u00bfDe d\u00f3nde eres?', en: 'Where are you from?' },
   { es: 'Tu situaci\u00f3n migratoria', en: 'Your immigration status' },
   { es: '\u00bfA qu\u00e9 te dedicas?', en: 'What do you do?' },
@@ -189,10 +162,6 @@ const STEP_TITLES: Array<{ es: string; en: string }> = [
 ]
 
 const STEP_SUBTITLES: Array<{ es: string; en: string }> = [
-  {
-    es: 'Elige en qu\u00e9 idioma quieres usar Coraz\u00f3n.',
-    en: 'Choose which language you want to use Coraz\u00f3n in.',
-  },
   {
     es: 'Esto nos ayuda a mostrarte recursos de tu comunidad.',
     en: 'This helps us show you resources from your community.',
@@ -211,12 +180,12 @@ const STEP_SUBTITLES: Array<{ es: string; en: string }> = [
   },
 ]
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 4
 
 /* ─── Component ─── */
 
 export const OnboardingPage = () => {
-  const { completeOnboarding, language, setLanguage, user } = useAppContext()
+  const { completeOnboarding, language, user } = useAppContext()
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [countryOfOrigin, setCountryOfOrigin] = useState('')
@@ -225,7 +194,6 @@ export const OnboardingPage = () => {
   const [highlightIndex, setHighlightIndex] = useState(0)
   const [immigrationStatus, setImmigrationStatus] = useState<ImmigrationStatus | ''>('')
   const [visaType, setVisaType] = useState('')
-  const [preferredLanguage, setPreferredLanguage] = useState<UiLanguagePreference>('spanish')
   const [occupation, setOccupation] = useState<Occupation | ''>('')
   const [otherOccupation, setOtherOccupation] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -280,19 +248,14 @@ export const OnboardingPage = () => {
     setHighlightIndex(0)
   }
 
-  const handleLanguageSelect = (lang: UiLanguagePreference) => {
-    setPreferredLanguage(lang)
-    setLanguage(lang === 'spanish' ? 'es' : 'en')
-  }
-
   const finishOnboarding = async () => {
     const profile: OnboardingProfile = {
       countryOfOrigin: countryOfOrigin || 'Not specified',
       immigrationStatus: immigrationStatus || 'prefer_not_to_say',
       visaType: immigrationStatus === 'visa_holder' ? visaType || 'Not specified' : undefined,
-      preferredLanguage,
+      preferredLanguage: language === 'es' ? 'spanish' : 'english',
       occupations: occupation ? [occupation] : ['other'],
-      goals: goals.length > 0 ? goals : ['community'],
+      goals: goals.length > 0 ? goals : ['health'],
     }
     await completeOnboarding(profile)
     navigate('/dashboard')
@@ -369,43 +332,8 @@ export const OnboardingPage = () => {
 
       {/* Step content */}
       <div className="mt-6 space-y-4">
-        {/* Step 1: Language */}
+        {/* Step 1: Country */}
         {step === 1 && (
-          <div>
-            <p className="mb-3 text-sm font-medium">
-              {language === 'es'
-                ? '\u00bfEn qu\u00e9 idioma quieres usar la app?'
-                : 'What language do you want to use the app in?'}
-            </p>
-            <div className="flex gap-3">
-              {[
-                { value: 'spanish' as const, label: 'Espa\u00f1ol' },
-                { value: 'english' as const, label: 'English' },
-              ].map(option => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleLanguageSelect(option.value)}
-                  className="h-12 flex-1 cursor-pointer rounded-xl border px-4 text-sm font-medium transition-all duration-200"
-                  style={
-                    preferredLanguage === option.value
-                      ? {
-                          background: colors.accent,
-                          borderColor: colors.accent,
-                          color: '#000',
-                        }
-                      : { borderColor: 'var(--border)' }
-                  }
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Country */}
-        {step === 2 && (
           <div className="relative" ref={dropdownRef}>
             <label htmlFor="country-search" className="mb-2 block text-sm font-medium">
               {language === 'es'
@@ -493,8 +421,8 @@ export const OnboardingPage = () => {
           </div>
         )}
 
-        {/* Step 3: Immigration status */}
-        {step === 3 && (
+        {/* Step 2: Immigration status */}
+        {step === 2 && (
           <div className="space-y-4">
             <div
               className="flex items-start gap-3 rounded-xl p-4"
@@ -577,8 +505,8 @@ export const OnboardingPage = () => {
           </div>
         )}
 
-        {/* Step 4: Occupation — single select */}
-        {step === 4 && (
+        {/* Step 3: Occupation — single select */}
+        {step === 3 && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {OCCUPATION_OPTIONS.map(option => (
@@ -618,8 +546,8 @@ export const OnboardingPage = () => {
           </div>
         )}
 
-        {/* Step 5: Goals — multi select */}
-        {step === 5 && (
+        {/* Step 4: Goals — multi select */}
+        {step === 4 && (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {GOAL_OPTIONS.map(goal => {
               const isSelected = goals.includes(goal.value)

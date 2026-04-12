@@ -1,15 +1,15 @@
 import type { CommunityOrganization, Resource } from '@/types/app'
 
 export const resourceCategories = [
+  { key: 'health', labelEs: 'Salud', labelEn: 'Health' },
+  { key: 'mental_health', labelEs: 'Salud mental', labelEn: 'Mental Health' },
   { key: 'legal', labelEs: 'Legal', labelEn: 'Legal Aid' },
-  { key: 'healthcare', labelEs: 'Salud', labelEn: 'Healthcare' },
-  { key: 'immigration', labelEs: 'Inmigración', labelEn: 'Immigration' },
-  { key: 'education', labelEs: 'Educación', labelEn: 'Education' },
-  { key: 'community', labelEs: 'Comunidad', labelEn: 'Community' },
-  { key: 'social_life', labelEs: 'Vida social', labelEn: 'Social Life' },
-  { key: 'financial_aid', labelEs: 'Ayuda financiera', labelEn: 'Financial Aid' },
-  { key: 'language_learning', labelEs: 'Aprender inglés', labelEn: 'Language Learning' },
-  { key: 'business', labelEs: 'Negocios', labelEn: 'Business' },
+  { key: 'housing', labelEs: 'Vivienda', labelEn: 'Housing' },
+  { key: 'food_bank', labelEs: 'Alimentos', labelEn: 'Food' },
+  { key: 'scholarship', labelEs: 'Becas', labelEn: 'Scholarships' },
+  { key: 'job', labelEs: 'Trabajo', labelEn: 'Jobs' },
+  { key: 'event', labelEs: 'Eventos', labelEn: 'Events' },
+  { key: 'language', labelEs: 'Idiomas', labelEn: 'Language' },
 ] as const
 
 export const mockResources: Resource[] = [
@@ -35,7 +35,7 @@ export const mockResources: Resource[] = [
   {
     id: 'res-2',
     name: 'Salud Para Todos Community Health',
-    category: 'healthcare',
+    category: 'health',
     description:
       'Atención primaria, vacunas y apoyo prenatal con tarifas según ingresos y personal hispanohablante.',
     tags: ['Open evenings', 'Walk-ins', 'Pediatric care'],
@@ -54,7 +54,7 @@ export const mockResources: Resource[] = [
   {
     id: 'res-3',
     name: 'Puentes Workforce & ESL Hub',
-    category: 'language_learning',
+    category: 'language',
     description:
       'Clases de inglés, talleres de entrevistas y conexión laboral para recién llegados.',
     tags: ['Evening classes', 'Job placement', 'Bilingual staff'],
@@ -73,7 +73,7 @@ export const mockResources: Resource[] = [
   {
     id: 'res-4',
     name: 'Casa Latina Financial Support Desk',
-    category: 'financial_aid',
+    category: 'food_bank',
     description:
       'Asistencia para renta, alimentos y programas de emergencia con orientación segura y privada.',
     tags: ['Emergency aid', 'Confidential', 'Local grants'],
@@ -92,7 +92,7 @@ export const mockResources: Resource[] = [
   {
     id: 'res-5',
     name: 'Raíces Immigration Family Center',
-    category: 'immigration',
+    category: 'legal',
     description:
       'Orientación migratoria en lenguaje sencillo con rutas de apoyo comunitario verificadas.',
     tags: ['Know-your-rights', 'Workshops', 'Referrals'],
@@ -114,7 +114,7 @@ export const mockCommunityOrganizations: CommunityOrganization[] = [
   {
     id: 'org-1',
     name: 'Centro Comunitario El Camino',
-    category: 'community',
+    category: 'event',
     address: '2215 S Kedzie Ave, Chicago, IL',
     phone: '(773) 555-0202',
     languages: ['Español', 'English'],
@@ -138,7 +138,7 @@ export const mockCommunityOrganizations: CommunityOrganization[] = [
   {
     id: 'org-3',
     name: 'Mujeres Adelante Wellness Collective',
-    category: 'healthcare',
+    category: 'health',
     address: '4500 S Ashland Ave, Chicago, IL',
     phone: '(773) 555-3389',
     languages: ['Español'],
@@ -150,7 +150,7 @@ export const mockCommunityOrganizations: CommunityOrganization[] = [
   {
     id: 'org-4',
     name: 'Futuro Joven Academy',
-    category: 'education',
+    category: 'scholarship',
     address: '3012 W 47th St, Chicago, IL',
     phone: '(872) 555-8140',
     languages: ['Español', 'English'],
@@ -162,7 +162,7 @@ export const mockCommunityOrganizations: CommunityOrganization[] = [
   {
     id: 'org-5',
     name: 'La Plaza Small Business Circle',
-    category: 'business',
+    category: 'job',
     address: '1122 W 18th St, Chicago, IL',
     phone: '(312) 555-6201',
     languages: ['Español', 'English'],

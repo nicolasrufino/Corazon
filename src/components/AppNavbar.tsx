@@ -35,7 +35,6 @@ export default function AppNavbar() {
   const navLinks = isAuthenticated
     ? [
         { en: 'Resources', es: 'Recursos', href: '/dashboard' },
-        { en: 'Community', es: 'Comunidad', href: '/community' },
         { en: 'Discover', es: 'Descubre', href: '/discovery' },
       ]
     : []

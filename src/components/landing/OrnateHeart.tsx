@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 interface OrnateHeartProps {
   size?: number | string
   color?: string
@@ -6,15 +8,38 @@ interface OrnateHeartProps {
 }
 
 /**
- * Decorative ornate heart inspired by Latin American folk art.
- * Drawn as an inline SVG so it inherits color and scales crisply.
+ * Sacred-heart inspired mark: a solid filled heart with a radiating
+ * sunburst of rays behind it and a flame/leaves on top. No cross.
+ *
+ * Vibrancy comes from an internal vertical gradient (hot pink → coral → orange)
+ * plus a brighter-than-source highlight stop. The `color` prop controls the
+ * midtone; highlights and shadows are derived from it.
  */
 export default function OrnateHeart({
   size = '1em',
-  color = '#f94e4f',
+  color = '#ff2e50',
   className,
   style,
 }: OrnateHeartProps) {
+  const uid = useId().replace(/:/g, '')
+  const gradId = `heart-grad-${uid}`
+  const rayGradId = `heart-ray-grad-${uid}`
+
+  // Rays radiating out from roughly the heart center.
+  // Alternating long/short for a hand-drawn feel.
+  const rays = Array.from({ length: 28 }, (_, i) => {
+    const angle = (i / 28) * Math.PI * 2 - Math.PI / 2
+    const inner = 38
+    const outer = i % 2 === 0 ? 50 : 45
+    const cx = 50
+    const cy = 58
+    const x1 = cx + Math.cos(angle) * inner
+    const y1 = cy + Math.sin(angle) * inner
+    const x2 = cx + Math.cos(angle) * outer
+    const y2 = cy + Math.sin(angle) * outer
+    return { x1, y1, x2, y2, key: i }
+  })
+
   return (
     <svg
       viewBox="0 0 100 100"
@@ -22,59 +47,62 @@ export default function OrnateHeart({
       height={size}
       className={className}
       style={style}
-      fill="none"
-      stroke={color}
-      strokeWidth="3.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Outer heart outline */}
-      <path
-        d="M50 88 C 28 72, 10 56, 10 36 C 10 22, 22 12, 34 12 C 42 12, 48 17, 50 24 C 52 17, 58 12, 66 12 C 78 12, 90 22, 90 36 C 90 56, 72 72, 50 88 Z"
-        fill="none"
-      />
+      <defs>
+        {/* Main heart gradient — hot pink at top → coral mid → orange bottom */}
+        <linearGradient id={gradId} x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="#ff4d8a" />
+          <stop offset="45%" stopColor={color} />
+          <stop offset="100%" stopColor="#ff6a1a" />
+        </linearGradient>
 
-      {/* Central vertical divider / stem */}
-      <path d="M50 24 L50 82" strokeWidth="2.4" />
+        {/* Ray gradient — fades outward for soft radial burst */}
+        <radialGradient id={rayGradId} cx="50%" cy="58%" r="50%">
+          <stop offset="0%" stopColor="#ffb347" stopOpacity="1" />
+          <stop offset="60%" stopColor={color} stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#ff6a1a" stopOpacity="0.7" />
+        </radialGradient>
+      </defs>
 
-      {/* Central teardrop / flame */}
+      {/* Radiating sunburst rays (drawn first so heart sits on top) */}
+      <g stroke={`url(#${rayGradId})`} strokeWidth="1.8" strokeLinecap="round">
+        {rays.map(r => (
+          <line key={r.key} x1={r.x1} y1={r.y1} x2={r.x2} y2={r.y2} />
+        ))}
+      </g>
+
+      {/* Flame / leaves on top of the heart */}
+      <g fill={`url(#${gradId})`} stroke={color} strokeWidth="1.2" strokeLinejoin="round">
+        <path d="M50 16 C 48 22, 47 28, 50 34 C 53 28, 52 22, 50 16 Z" />
+        <path d="M44 22 C 40 26, 39 31, 42 34 C 46 32, 47 27, 44 22 Z" />
+        <path d="M56 22 C 60 26, 61 31, 58 34 C 54 32, 53 27, 56 22 Z" />
+      </g>
+
+      {/* Solid heart body with vibrant gradient */}
       <path
-        d="M50 40 C 46 46, 44 52, 44 58 C 44 64, 47 68, 50 70 C 53 68, 56 64, 56 58 C 56 52, 54 46, 50 40 Z"
-        fill={color}
+        d="M50 86
+           C 28 72, 14 58, 14 44
+           C 14 34, 22 28, 30 28
+           C 38 28, 46 33, 50 40
+           C 54 33, 62 28, 70 28
+           C 78 28, 86 34, 86 44
+           C 86 58, 72 72, 50 86 Z"
+        fill={`url(#${gradId})`}
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
       />
 
-      {/* Inner teardrop highlight */}
-      <circle cx="50" cy="50" r="1.4" fill="#fff" stroke="none" />
-
-      {/* Left tulip/leaf cluster */}
-      <path
-        d="M22 34 C 26 30, 32 30, 36 34 M22 40 C 26 36, 32 36, 36 40 M24 46 C 28 42, 32 42, 36 46"
-        strokeWidth="2.6"
+      {/* Specular highlight on the heart — tiny white glint for extra pop */}
+      <ellipse
+        cx="38"
+        cy="44"
+        rx="7"
+        ry="4"
+        fill="rgba(255,255,255,0.35)"
+        transform="rotate(-25 38 44)"
       />
-
-      {/* Right tulip/leaf cluster (mirror) */}
-      <path
-        d="M64 34 C 68 30, 74 30, 78 34 M64 40 C 68 36, 74 36, 78 40 M64 46 C 68 42, 72 42, 76 46"
-        strokeWidth="2.6"
-      />
-
-      {/* Lower petal fronds — left */}
-      <path d="M32 58 C 30 64, 32 70, 36 74 M28 62 C 28 68, 30 72, 34 76" strokeWidth="2.4" />
-
-      {/* Lower petal fronds — right */}
-      <path d="M68 58 C 70 64, 68 70, 64 74 M72 62 C 72 68, 70 72, 66 76" strokeWidth="2.4" />
-
-      {/* Decorative dots */}
-      <circle cx="30" cy="52" r="1.4" fill={color} stroke="none" />
-      <circle cx="70" cy="52" r="1.4" fill={color} stroke="none" />
-      <circle cx="38" cy="66" r="1.2" fill={color} stroke="none" />
-      <circle cx="62" cy="66" r="1.2" fill={color} stroke="none" />
-
-      {/* Small dot below heart */}
-      <circle cx="50" cy="94" r="1.8" fill={color} stroke="none" />
     </svg>
   )
 }

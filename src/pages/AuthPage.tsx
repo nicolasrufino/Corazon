@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AuthSidePanel } from '@/components/AuthSidePanel'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 
@@ -88,31 +89,7 @@ export const AuthPage = () => {
 
   return (
     <div className="mx-auto grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl border border-border/60 bg-card/80 lg:grid-cols-2">
-      <section className="relative flex flex-col justify-between gap-6 bg-primary/15 p-6 sm:p-8">
-        <div className="relative z-10">
-          <p
-            className="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-            style={{ fontFamily: 'var(--font-brand)' }}
-          >
-            Corazón
-          </p>
-          <h1 className="mt-4 text-3xl sm:text-4xl">
-            {language === 'es' ? 'Tu red de apoyo confiable' : 'Your trusted support network'}
-          </h1>
-          <ul className="mt-6 space-y-3 text-sm text-foreground/90">
-            <li>
-              •{' '}
-              {language === 'es'
-                ? 'Directorio bilingüe verificado'
-                : 'Verified bilingual directory'}
-            </li>
-            <li>• {language === 'es' ? 'Analizador de documentos' : 'Document analyzer'}</li>
-            <li>
-              • {language === 'es' ? 'Asistente de voz comunitario' : 'Community voice assistant'}
-            </li>
-          </ul>
-        </div>
-      </section>
+      <AuthSidePanel />
 
       <section className="p-6 sm:p-8">
         <div className="flex gap-2 rounded-full bg-background p-1">
@@ -224,6 +201,18 @@ export const AuthPage = () => {
                   ? 'Entrar a Corazón'
                   : 'Enter Corazón'}
           </Button>
+
+          {!isSignUp ? (
+            <div className="flex justify-center pt-1">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-white underline decoration-white underline-offset-4 transition-opacity hover:opacity-80"
+              >
+                {language === 'es' ? '¿Olvidaste tu contraseña?' : 'Forgot Password?'}
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

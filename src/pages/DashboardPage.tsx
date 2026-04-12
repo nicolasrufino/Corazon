@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ResourceCard } from '@/components/ResourceCard'
 import { Button } from '@/components/ui/button'
@@ -34,10 +34,21 @@ export const DashboardPage = () => {
   const { language, savedResourceIds, user } = useAppContext()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<ResourceCategory | 'all'>('all')
   const [sort, setSort] = useState<SortOption>('relevance')
   const [resources, setResources] = useState<Resource[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Debounce search input — 300ms
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [search])
 
   useEffect(() => {
     let isMounted = true
@@ -45,7 +56,11 @@ export const DashboardPage = () => {
     const loadResources = async () => {
       setIsLoading(true)
       try {
-        const result = await fetchResources({ search, category: activeCategory, sort })
+        const result = await fetchResources({
+          search: debouncedSearch,
+          category: activeCategory,
+          sort,
+        })
         if (isMounted) {
           setResources(result)
         }
@@ -61,7 +76,7 @@ export const DashboardPage = () => {
     return () => {
       isMounted = false
     }
-  }, [search, activeCategory, sort])
+  }, [debouncedSearch, activeCategory, sort])
 
   const metrics = useMemo(
     () => [

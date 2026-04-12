@@ -6,3 +6,7 @@ httpx
 python-multipart
 openai
 groq
+joblib
+numpy
+pandas
+scikit-learn

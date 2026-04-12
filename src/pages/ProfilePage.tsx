@@ -1,4 +1,13 @@
-import { Bookmark, Check, Heart, Pencil, Trash2, User as UserIcon, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Bookmark,
+  Check,
+  Heart,
+  Pencil,
+  Trash2,
+  User as UserIcon,
+  X,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -175,7 +184,8 @@ function timeAgo(dateStr: string, isEs: boolean): string {
 }
 
 export const ProfilePage = () => {
-  const { language, user, signOut, completeOnboarding } = useAppContext()
+  const { language, user, signOut, completeOnboarding, deleteUserData, deleteUserAccount } =
+    useAppContext()
   const navigate = useNavigate()
   const isEs = language === 'es'
 
@@ -190,6 +200,14 @@ export const ProfilePage = () => {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<OnboardingProfile | null>(null)
   const [saving, setSaving] = useState(false)
+
+  // Danger zone — two-step confirm so an accidental click can't wipe
+  // the user's account. `confirmingAction` tracks which red button is
+  // in its "are you sure?" state; dangerBusy blocks double-clicks
+  // during the in-flight delete.
+  const [confirmingAction, setConfirmingAction] = useState<'data' | 'account' | null>(null)
+  const [dangerBusy, setDangerBusy] = useState(false)
+  const [dangerError, setDangerError] = useState<string | null>(null)
 
   const startEdit = () => {
     if (!user?.profile) return
@@ -265,6 +283,43 @@ export const ProfilePage = () => {
   const handleDeletePost = async (postId: string) => {
     const ok = await deletePost(postId)
     if (ok) setPosts(prev => prev.filter(p => p.id !== postId))
+  }
+
+  const handleDeleteUserData = async () => {
+    setDangerBusy(true)
+    setDangerError(null)
+    const ok = await deleteUserData()
+    setDangerBusy(false)
+    if (!ok) {
+      setDangerError(
+        isEs
+          ? 'No pudimos eliminar todo. Revisa tu conexión e intenta de nuevo.'
+          : "We couldn't delete everything. Check your connection and try again."
+      )
+      return
+    }
+    setConfirmingAction(null)
+    // Profile was reset to onboardingCompleted=false — send the user
+    // to /onboarding so the ProtectedRoute doesn't flash dashboard
+    // UI before redirecting.
+    navigate('/onboarding')
+  }
+
+  const handleDeleteAccount = async () => {
+    setDangerBusy(true)
+    setDangerError(null)
+    const ok = await deleteUserAccount()
+    setDangerBusy(false)
+    if (!ok) {
+      setDangerError(
+        isEs
+          ? 'No pudimos eliminar tu cuenta. Intenta de nuevo en un momento.'
+          : "We couldn't delete your account. Please try again in a moment."
+      )
+      return
+    }
+    setConfirmingAction(null)
+    navigate('/')
   }
 
   if (!user) return null
@@ -684,6 +739,111 @@ export const ProfilePage = () => {
       >
         {isEs ? 'Cerrar sesión' : 'Sign out'}
       </Button>
+
+      {/* Danger zone — irreversible (data) or nearly so (account).
+         Two-step confirm on each button so an accidental click can't
+         wipe anyone's account. */}
+      <section className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />
+          <div>
+            <h3 className="text-base font-semibold text-destructive">
+              {isEs ? 'Zona de peligro' : 'Danger zone'}
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {isEs
+                ? 'Estas acciones no se pueden deshacer. Eliminar tus datos borrará tus publicaciones, likes, guardados y preferencias. Eliminar tu cuenta hace lo mismo y te cierra la sesión.'
+                : "These actions can't be undone. Deleting your data wipes your posts, likes, saves, and preferences. Deleting your account does the same and signs you out."}
+            </p>
+          </div>
+        </div>
+
+        {dangerError && (
+          <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+            {dangerError}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {confirmingAction === 'data' ? (
+            <>
+              <Button
+                type="button"
+                className="h-11 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/85"
+                onClick={handleDeleteUserData}
+                disabled={dangerBusy}
+              >
+                {dangerBusy
+                  ? isEs
+                    ? 'Eliminando...'
+                    : 'Deleting...'
+                  : isEs
+                    ? 'Sí, eliminar mis datos'
+                    : 'Yes, delete my data'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 cursor-pointer"
+                onClick={() => setConfirmingAction(null)}
+                disabled={dangerBusy}
+              >
+                {isEs ? 'Cancelar' : 'Cancel'}
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 cursor-pointer border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirmingAction('data')}
+              disabled={!!confirmingAction || dangerBusy}
+            >
+              <Trash2 className="size-4" />
+              {isEs ? 'Eliminar mis datos' : 'Delete my data'}
+            </Button>
+          )}
+
+          {confirmingAction === 'account' ? (
+            <>
+              <Button
+                type="button"
+                className="h-11 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/85"
+                onClick={handleDeleteAccount}
+                disabled={dangerBusy}
+              >
+                {dangerBusy
+                  ? isEs
+                    ? 'Eliminando...'
+                    : 'Deleting...'
+                  : isEs
+                    ? 'Sí, eliminar mi cuenta'
+                    : 'Yes, delete my account'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 cursor-pointer"
+                onClick={() => setConfirmingAction(null)}
+                disabled={dangerBusy}
+              >
+                {isEs ? 'Cancelar' : 'Cancel'}
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 cursor-pointer border-destructive/60 bg-destructive/10 text-destructive hover:bg-destructive/20"
+              onClick={() => setConfirmingAction('account')}
+              disabled={!!confirmingAction || dangerBusy}
+            >
+              <Trash2 className="size-4" />
+              {isEs ? 'Eliminar mi cuenta' : 'Delete my account'}
+            </Button>
+          )}
+        </div>
+      </section>
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { CheckCircle2, Clock3, Languages, Phone, ShieldAlert } from 'lucide-reac
 import { useEffect, useState } from 'react'
 import { useAppContext } from '@/context/AppContext'
 import { resourceCategories } from '@/data/mockData'
-import { fetchCommunityOrganizations } from '@/lib/mockApi'
+import { fetchCommunityOrganizations } from '@/lib/supabaseApi'
 import { cn } from '@/lib/utils'
 import type { CommunityOrganization, ResourceCategory } from '@/types/app'
 

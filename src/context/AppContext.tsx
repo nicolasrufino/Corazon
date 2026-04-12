@@ -29,6 +29,7 @@ interface AppContextValue {
     password: string,
     preferredAppLanguage: AppLanguage
   ) => Promise<string | null>
+  resetPassword: (email: string) => Promise<string | null>
   completeOnboarding: (profile: OnboardingProfile) => Promise<void>
   signOut: () => Promise<void>
   toggleSavedResource: (resource: Resource) => void
@@ -146,6 +147,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return null
   }
 
+  const resetPassword = async (email: string): Promise<string | null> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth`,
+    })
+    if (error) return error.message
+    return null
+  }
+
   const completeOnboarding = async (profile: OnboardingProfile) => {
     if (!user) return
 
@@ -204,6 +213,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       chatHistory,
       signIn,
       startSignUp,
+      resetPassword,
       completeOnboarding,
       signOut,
       toggleSavedResource,

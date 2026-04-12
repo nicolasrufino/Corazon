@@ -295,6 +295,77 @@ export const ImpactPage = () => {
           </div>
         )}
       </section>
+
+      {/* Plain-language explanations of each bar — render only once data
+         is loaded so the page doesn't show definitions for empty bars. */}
+      {!loading && !error && impact && timeSaved && isolation ? (
+        <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">
+          <h2 className="text-xl font-semibold sm:text-2xl">
+            {isEs ? '¿Qué significan estos números?' : 'What do these numbers mean?'}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isEs ? 'Una guía rápida — sin tecnicismos.' : 'A quick guide — no jargon.'}
+          </p>
+
+          <ul className="mt-5 space-y-4">
+            {[
+              {
+                color: PILL_COLORS.saved,
+                title: isEs ? 'Tiempo ahorrado' : 'Time saved',
+                body: isEs
+                  ? 'Las horas que Corazón te ayudó a recuperar al conectarte con el recurso correcto a la primera. Sin rebotes, sin laberintos telefónicos.'
+                  : 'Hours Corazón helped you reclaim by connecting you with the right resource on the first try. No bouncing between agencies, no dead-end phone trees.',
+              },
+              {
+                color: PILL_COLORS.nav,
+                title: isEs ? 'Tiempo perdido en burocracia' : 'Time wasted on bureaucracy',
+                body: isEs
+                  ? 'Lo que la gente en tu situación pierde al año en formularios, citas e instrucciones confusas — sin guía.'
+                  : 'What people in your situation lose each year to forms, appointments, and confusing instructions — without a guide.',
+              },
+              {
+                color: PILL_COLORS.poverty,
+                title: isEs ? 'Costo del impuesto de pobreza' : 'Poverty premium tax',
+                body: isEs
+                  ? 'Las horas extra que tu comunidad trabaja para cubrir el costo de hacer las cosas "a las malas" — comisiones, trabajo perdido, ayuda pagada que debería ser gratis.'
+                  : 'Extra hours your community works just to cover the cost of doing things "the hard way" — fees, missed work, paid help that should be free.',
+              },
+              {
+                color: PILL_COLORS.isolation,
+                title: isEs ? 'Tiempo perdido por aislamiento' : 'Time lost to isolation',
+                body: isEs
+                  ? 'Las horas al año en que el sistema separa a los latinos de los espacios comunitarios y la información confiable.'
+                  : 'Hours per year the system separates Latinos from trusted community spaces and information.',
+              },
+            ].map(item => (
+              <li key={item.title} className="flex items-start gap-3">
+                <span
+                  aria-hidden="true"
+                  className="mt-1.5 size-3 shrink-0 rounded-full"
+                  style={{ background: item.color }}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                    {item.body}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Closing — the emotional payoff. Anchors saved hours to family
+             time so the gratitude framing lands harder than a generic "thx". */}
+          <p
+            className="mt-6 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm italic leading-relaxed text-foreground"
+            style={{ fontFamily: 'var(--font-brand)' }}
+          >
+            {isEs
+              ? '— Cada hora que recuperas es una hora más con tu familia. Gracias por confiarnos tu tiempo.'
+              : '— Every hour you reclaim is an hour back with your family. Thank you for trusting us with your time.'}
+          </p>
+        </section>
+      ) : null}
     </div>
   )
 }

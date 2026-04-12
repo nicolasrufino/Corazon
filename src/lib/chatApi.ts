@@ -30,7 +30,6 @@ if (!config.apiUrl) {
   // Surfaces the misconfiguration loudly in the console at app boot
   // instead of silently posting to a relative URL that hits Vercel
   // itself with a 404.
-
   console.warn(
     '[chatApi] VITE_API_URL is not set. /api/ai/chat calls will fail. ' +
       'Set it in .env (e.g. https://corazon-production-bd07.up.railway.app).'

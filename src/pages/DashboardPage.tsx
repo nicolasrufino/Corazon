@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  ArrowUpRight,
   ChartNoAxesCombined,
   Compass,
   Filter,
@@ -14,6 +15,7 @@ import { ResourceCard } from '@/components/ResourceCard'
 import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
 import { resourceCategories } from '@/data/mockData'
+import { buildAiProfile, recommendResources, type RecommendedResource } from '@/lib/aiApi'
 import { fetchResources, type SortOption } from '@/lib/supabaseApi'
 import { cn } from '@/lib/utils'
 import type { Resource, ResourceCategory } from '@/types/app'
@@ -39,7 +41,34 @@ export const DashboardPage = () => {
   const [sort, setSort] = useState<SortOption>('relevance')
   const [resources, setResources] = useState<Resource[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [recommended, setRecommended] = useState<RecommendedResource[]>([])
+  const [recommendLoading, setRecommendLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // AI-powered "Recommended for you" — fetched once when the user lands
+  // on the page. Uses the user's onboarding goals as a stand-in
+  // interactions log so the recommend endpoint has signal to score
+  // against. Silently no-ops for guests.
+  useEffect(() => {
+    if (!user?.profile) return
+    let cancelled = false
+    setRecommendLoading(true)
+    const aiProfile = buildAiProfile(user.profile)
+    recommendResources(aiProfile, user.profile.goals as string[], 5)
+      .then(res => {
+        if (!cancelled) setRecommended(res.resources || [])
+      })
+      .catch(err => {
+        console.warn('recommendResources failed:', err)
+        if (!cancelled) setRecommended([])
+      })
+      .finally(() => {
+        if (!cancelled) setRecommendLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   // Debounce search input — 300ms
   useEffect(() => {
@@ -125,6 +154,92 @@ export const DashboardPage = () => {
           ))}
         </div>
       </section>
+
+      {/* AI-powered recommended resources — uses /api/ai/recommend */}
+      {user?.profile && (recommendLoading || recommended.length > 0) ? (
+        <section className="rounded-3xl border border-primary/30 bg-primary/5 p-5 sm:p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                <Sparkles className="size-3.5" aria-hidden="true" />
+                {language === 'es' ? 'Recomendado para ti' : 'Recommended for you'}
+              </p>
+              <h2 className="mt-1 text-xl sm:text-2xl">
+                {language === 'es'
+                  ? 'Estos recursos coinciden con tu perfil'
+                  : 'These resources match your profile'}
+              </h2>
+            </div>
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              {language === 'es' ? 'Modelo de IA de Corazón' : 'Powered by Corazón AI'}
+            </span>
+          </div>
+
+          {recommendLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-16 animate-pulse rounded-xl bg-muted/40" />
+              ))}
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {recommended.map((rec, i) => {
+                const name = rec.title || rec.name || rec.organization || `Recurso ${i + 1}`
+                const desc = rec.description || ''
+                const category = rec.category || (rec.categories && rec.categories[0]) || ''
+                const url = rec.url || ''
+                const inner = (
+                  <article className="flex items-start gap-3">
+                    <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                      <Sparkles className="size-4" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+                        {category ? (
+                          <span className="shrink-0 rounded-full bg-background/60 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                            {category}
+                          </span>
+                        ) : null}
+                      </div>
+                      {desc ? (
+                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                          {desc}
+                        </p>
+                      ) : null}
+                    </div>
+                    {url ? (
+                      <ArrowUpRight
+                        className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                  </article>
+                )
+
+                return (
+                  <li key={rec.id || `${name}-${i}`}>
+                    {url ? (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group block rounded-xl border border-border/50 bg-background/60 p-3 transition-colors hover:border-primary/50 hover:bg-background/80"
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+                        {inner}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
+      ) : null}
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 rounded-2xl border border-border/50 bg-card/70 p-4 sm:flex-row sm:items-center">

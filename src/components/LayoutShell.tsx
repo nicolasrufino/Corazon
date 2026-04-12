@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { BarChart3, Compass, FileText, Home, MapPinned } from 'lucide-react'
+import { BarChart3, Compass, FileText, Home, MapPinned, MessageCircle } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import AppNavbar from '@/components/AppNavbar'
 import { useAppContext } from '@/context/AppContext'
@@ -16,6 +16,12 @@ const navigation = [
   { to: '/analyzer', icon: FileText, labelEs: 'Analizador', labelEn: 'Analyzer' },
   { to: '/impact', icon: BarChart3, labelEs: 'Impacto', labelEn: 'Impact' },
 ]
+
+const openChatAssistant = () => {
+  // Dispatched at window scope; VoiceAssistant listens for this event
+  // and opens its dialog. Avoids lifting state into AppContext.
+  window.dispatchEvent(new CustomEvent('corazon:open-chat'))
+}
 
 export const LayoutShell = ({ children }: LayoutShellProps) => {
   const { language } = useAppContext()
@@ -52,6 +58,17 @@ export const LayoutShell = ({ children }: LayoutShellProps) => {
                   {language === 'es' ? item.labelEs : item.labelEn}
                 </NavLink>
               ))}
+
+              {/* Chat — opens the floating Corazón assistant via a
+                 custom window event listened to by VoiceAssistant */}
+              <button
+                type="button"
+                onClick={openChatAssistant}
+                className="inline-flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition-all duration-200 hover:bg-primary/15"
+              >
+                <MessageCircle className="size-4" aria-hidden="true" />
+                {language === 'es' ? 'Chat' : 'Chat'}
+              </button>
             </nav>
 
             <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">

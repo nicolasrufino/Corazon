@@ -265,7 +265,7 @@ export const OnboardingPage = () => {
       immigrationStatus: immigrationStatus || undefined,
       visaType: immigrationStatus === 'visa_holder' ? visaType || undefined : undefined,
       preferredLanguage,
-      occupation: occupation === 'other' ? otherOccupation || 'other' : occupation || undefined,
+      occupation: occupation || undefined,
       goals,
     }
     await completeOnboarding(profile)

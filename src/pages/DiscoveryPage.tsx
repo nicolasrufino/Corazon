@@ -1,262 +1,266 @@
-import { Bookmark, Search, Sparkles } from 'lucide-react'
+import { Heart, MessageCircle, Plus, Send, User as UserIcon, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { useAppContext } from '@/context/AppContext'
+import { createPost, fetchPosts, toggleLike, type Post, type PostCategory } from '@/lib/postsApi'
+import { cn } from '@/lib/utils'
 
-/*──────────────────────────────────────────────
-  Placeholder Discovery / Explore feed.
-
-  Pinterest-style masonry of mixed-aspect cards. Each card is a gradient
-  placeholder for now — once we wire up profiles + content, swap the
-  inner gradient for an <img> and let `break-inside-avoid` keep doing
-  the layout work.
-──────────────────────────────────────────────*/
-
-interface Pin {
-  id: number
-  // CSS aspect-ratio so cards have varied heights like a real masonry feed
-  aspect: string
-  // Linear-gradient string for the placeholder fill
-  gradient: string
-  title: string
-  category: string
-}
-
-const palette = {
-  orange: '#ff8100',
-  red: '#dc2626',
-  green: '#00aa63',
-  blue: '#1777d7',
-  yellow: '#ffd300',
-  pink: '#ffb5e2',
-  amber: '#ff8a1f',
-  emerald: '#34d399',
-  pearl: '#f7f2e8',
-  citrine: '#ffd300',
-  aquamarine: '#70b0a6',
-}
-
-const pins: Pin[] = [
-  {
-    id: 1,
-    aspect: '3 / 4',
-    gradient: `linear-gradient(135deg, ${palette.orange}, ${palette.red})`,
-    title: 'Family recipes',
-    category: 'Food',
-  },
-  {
-    id: 2,
-    aspect: '1 / 1',
-    gradient: `linear-gradient(135deg, ${palette.blue}, ${palette.aquamarine})`,
-    title: 'College essay tips',
-    category: 'Education',
-  },
-  {
-    id: 3,
-    aspect: '4 / 5',
-    gradient: `linear-gradient(135deg, ${palette.green}, ${palette.emerald})`,
-    title: 'Free legal aid',
-    category: 'Legal',
-  },
-  {
-    id: 4,
-    aspect: '2 / 3',
-    gradient: `linear-gradient(135deg, ${palette.pink}, ${palette.red})`,
-    title: 'Mujeres en STEM',
-    category: 'Career',
-  },
-  {
-    id: 5,
-    aspect: '4 / 3',
-    gradient: `linear-gradient(135deg, ${palette.yellow}, ${palette.orange})`,
-    title: 'Beca opportunities',
-    category: 'Scholarships',
-  },
-  {
-    id: 6,
-    aspect: '3 / 4',
-    gradient: `linear-gradient(135deg, ${palette.amber}, ${palette.yellow})`,
-    title: 'Salsa night Chicago',
-    category: 'Events',
-  },
-  {
-    id: 7,
-    aspect: '1 / 1',
-    gradient: `linear-gradient(135deg, ${palette.aquamarine}, ${palette.blue})`,
-    title: 'Mental health en Español',
-    category: 'Wellness',
-  },
-  {
-    id: 8,
-    aspect: '2 / 3',
-    gradient: `linear-gradient(135deg, ${palette.red}, ${palette.pink})`,
-    title: 'First-gen guide',
-    category: 'Education',
-  },
-  {
-    id: 9,
-    aspect: '4 / 5',
-    gradient: `linear-gradient(135deg, ${palette.emerald}, ${palette.aquamarine})`,
-    title: 'Latino-owned cafés',
-    category: 'Local',
-  },
-  {
-    id: 10,
-    aspect: '3 / 4',
-    gradient: `linear-gradient(135deg, ${palette.orange}, ${palette.pink})`,
-    title: 'Heritage month playlist',
-    category: 'Culture',
-  },
-  {
-    id: 11,
-    aspect: '1 / 1',
-    gradient: `linear-gradient(135deg, ${palette.yellow}, ${palette.green})`,
-    title: 'Tax help bilingüe',
-    category: 'Finance',
-  },
-  {
-    id: 12,
-    aspect: '4 / 3',
-    gradient: `linear-gradient(135deg, ${palette.blue}, ${palette.pink})`,
-    title: 'Quinceañera DIYs',
-    category: 'Family',
-  },
-  {
-    id: 13,
-    aspect: '2 / 3',
-    gradient: `linear-gradient(135deg, ${palette.green}, ${palette.yellow})`,
-    title: 'Voto bilingüe',
-    category: 'Civics',
-  },
-  {
-    id: 14,
-    aspect: '3 / 4',
-    gradient: `linear-gradient(135deg, ${palette.pink}, ${palette.amber})`,
-    title: 'Latina founders',
-    category: 'Career',
-  },
-  {
-    id: 15,
-    aspect: '4 / 5',
-    gradient: `linear-gradient(135deg, ${palette.red}, ${palette.orange})`,
-    title: 'Comida rápida',
-    category: 'Food',
-  },
-  {
-    id: 16,
-    aspect: '1 / 1',
-    gradient: `linear-gradient(135deg, ${palette.aquamarine}, ${palette.green})`,
-    title: 'Yoga en parque',
-    category: 'Wellness',
-  },
-  {
-    id: 17,
-    aspect: '3 / 4',
-    gradient: `linear-gradient(135deg, ${palette.amber}, ${palette.red})`,
-    title: 'Apartment hunting',
-    category: 'Housing',
-  },
-  {
-    id: 18,
-    aspect: '2 / 3',
-    gradient: `linear-gradient(135deg, ${palette.blue}, ${palette.green})`,
-    title: 'Resume templates',
-    category: 'Career',
-  },
-  {
-    id: 19,
-    aspect: '4 / 3',
-    gradient: `linear-gradient(135deg, ${palette.pink}, ${palette.blue})`,
-    title: 'Pueblo cuentos',
-    category: 'Culture',
-  },
-  {
-    id: 20,
-    aspect: '3 / 4',
-    gradient: `linear-gradient(135deg, ${palette.orange}, ${palette.yellow})`,
-    title: 'Driver license guide',
-    category: 'Civics',
-  },
+const CATEGORIES: Array<{ value: PostCategory | 'all'; labelEs: string; labelEn: string }> = [
+  { value: 'all', labelEs: 'Todo', labelEn: 'All' },
+  { value: 'general', labelEs: 'General', labelEn: 'General' },
+  { value: 'question', labelEs: 'Preguntas', labelEn: 'Questions' },
+  { value: 'resource', labelEs: 'Recursos', labelEn: 'Resources' },
+  { value: 'event', labelEs: 'Eventos', labelEn: 'Events' },
+  { value: 'story', labelEs: 'Historias', labelEn: 'Stories' },
 ]
 
+const POST_CATEGORIES: Array<{ value: PostCategory; labelEs: string; labelEn: string }> = [
+  { value: 'general', labelEs: 'General', labelEn: 'General' },
+  { value: 'question', labelEs: 'Pregunta', labelEn: 'Question' },
+  { value: 'resource', labelEs: 'Recurso', labelEn: 'Resource' },
+  { value: 'event', labelEs: 'Evento', labelEn: 'Event' },
+  { value: 'story', labelEs: 'Historia', labelEn: 'Story' },
+]
+
+function timeAgo(dateStr: string, isEs: boolean): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return isEs ? 'ahora' : 'now'
+  if (mins < 60) return `${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d`
+  return `${Math.floor(days / 7)}w`
+}
+
 export const DiscoveryPage = () => {
-  const { language } = useAppContext()
+  const { language, user } = useAppContext()
   const isEs = language === 'es'
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [category, setCategory] = useState<PostCategory | 'all'>('all')
+  const [composing, setComposing] = useState(false)
+  const [newContent, setNewContent] = useState('')
+  const [newCategory, setNewCategory] = useState<PostCategory>('general')
+  const [submitting, setSubmitting] = useState(false)
+
+  const loadPosts = async () => {
+    setLoading(true)
+    const data = await fetchPosts(category)
+    setPosts(data)
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    void loadPosts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category])
+
+  const handleSubmit = async () => {
+    if (!newContent.trim()) return
+    setSubmitting(true)
+    const post = await createPost(newContent.trim(), newCategory)
+    if (post) {
+      setPosts(prev => [post, ...prev])
+      setNewContent('')
+      setComposing(false)
+    }
+    setSubmitting(false)
+  }
+
+  const handleLike = async (postId: string) => {
+    const liked = await toggleLike(postId)
+    setPosts(prev =>
+      prev.map(p =>
+        p.id === postId
+          ? { ...p, liked_by_me: liked, likes_count: p.likes_count + (liked ? 1 : -1) }
+          : p
+      )
+    )
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <section className="rounded-3xl border border-border/50 bg-card/70 p-5 sm:p-7">
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/90">
-              {isEs ? 'Próximamente' : 'Coming soon'}
-            </p>
-            <h1 className="mt-2 text-3xl sm:text-4xl">{isEs ? 'Descubre' : 'Discovery'}</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <h1 className="text-3xl sm:text-4xl">{isEs ? 'Descubre' : 'Discover'}</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {isEs
-                ? 'Inspiración bilingüe de la comunidad: recetas, becas, eventos y guías compartidas por otros latinos.'
-                : 'A bilingual feed of inspiration from the community — recipes, scholarships, events, and guides shared by other Latinos.'}
+                ? 'Comparte y conecta con la comunidad. Preguntas, recursos, eventos e historias.'
+                : 'Share and connect with the community. Questions, resources, events, and stories.'}
             </p>
           </div>
-
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary">
-            <Sparkles className="size-3.5" aria-hidden="true" />
-            {isEs ? 'Vista previa' : 'Placeholder'}
-          </span>
+          <Button
+            type="button"
+            className="h-11 cursor-pointer gap-2 text-black"
+            style={{ background: '#ff8100' }}
+            onClick={() => setComposing(true)}
+          >
+            <Plus className="size-4" />
+            {isEs ? 'Publicar' : 'Post'}
+          </Button>
         </div>
 
-        <div className="mt-6">
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              disabled
-              placeholder={
-                isEs ? 'Buscar ideas, eventos, recetas...' : 'Search ideas, events, recipes...'
-              }
-              className="h-11 w-full max-w-xl cursor-not-allowed rounded-xl border border-input bg-background px-10 text-sm text-muted-foreground outline-none"
-            />
-          </div>
+        {/* Category filters */}
+        <div className="mt-5 flex flex-wrap gap-2">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.value}
+              type="button"
+              onClick={() => setCategory(cat.value)}
+              className={cn(
+                'h-9 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors',
+                category === cat.value
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border hover:bg-primary/10'
+              )}
+            >
+              {isEs ? cat.labelEs : cat.labelEn}
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* Pinterest-style masonry feed */}
-      <section className="columns-2 gap-3 sm:columns-3 sm:gap-4 lg:columns-4 xl:columns-5">
-        {pins.map(pin => (
-          <article
-            key={pin.id}
-            className="mb-3 break-inside-avoid sm:mb-4 group relative cursor-pointer"
-          >
-            <div
-              className="relative w-full overflow-hidden rounded-2xl border border-white/5 transition-transform duration-300 group-hover:scale-[1.015]"
-              style={{
-                aspectRatio: pin.aspect,
-                background: pin.gradient,
-              }}
+      {/* Compose modal */}
+      {composing && (
+        <section className="rounded-2xl border border-border/50 bg-card/80 p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                <UserIcon className="size-4" />
+              </div>
+              <span className="text-sm font-medium">{user?.username || 'User'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setComposing(false)}
+              className="cursor-pointer text-muted-foreground hover:text-foreground"
             >
-              {/* Hover overlay */}
-              <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <div className="flex w-full items-end justify-between p-4">
-                  <div className="max-w-[75%]">
-                    <p className="text-xs font-medium uppercase tracking-wider text-white/70">
-                      {pin.category}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-white">{pin.title}</p>
-                  </div>
-                  <button
-                    type="button"
-                    className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-110"
-                    aria-label={isEs ? 'Guardar' : 'Save'}
-                  >
-                    <Bookmark className="size-4" aria-hidden="true" />
-                  </button>
+              <X className="size-5" />
+            </button>
+          </div>
+
+          <textarea
+            value={newContent}
+            onChange={e => setNewContent(e.target.value)}
+            maxLength={500}
+            rows={4}
+            className="mt-4 w-full resize-none rounded-xl border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            placeholder={
+              isEs ? 'Comparte algo con la comunidad...' : 'Share something with the community...'
+            }
+          />
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {POST_CATEGORIES.map(cat => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setNewCategory(cat.value)}
+                  className={cn(
+                    'h-8 cursor-pointer rounded-full border px-3 text-xs font-medium transition-colors',
+                    newCategory === cat.value
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border hover:bg-primary/10'
+                  )}
+                >
+                  {isEs ? cat.labelEs : cat.labelEn}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">{newContent.length}/500</span>
+              <Button
+                type="button"
+                className="h-9 cursor-pointer gap-2 text-black"
+                style={{ background: '#ff8100' }}
+                onClick={handleSubmit}
+                disabled={submitting || !newContent.trim()}
+              >
+                <Send className="size-3.5" />
+                {submitting ? (isEs ? 'Publicando...' : 'Posting...') : isEs ? 'Publicar' : 'Post'}
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Feed */}
+      {loading ? (
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted/40" />
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="rounded-2xl border border-border/50 bg-card/70 p-8 text-center">
+          <MessageCircle className="mx-auto size-10 text-muted-foreground/40" />
+          <p className="mt-3 text-sm text-muted-foreground">
+            {isEs
+              ? 'No hay publicaciones todav\u00eda. Se el primero en compartir algo.'
+              : 'No posts yet. Be the first to share something.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {posts.map(post => (
+            <article
+              key={post.id}
+              className="rounded-2xl border border-border/50 bg-card/70 p-5 transition-colors hover:border-border"
+            >
+              {/* Post header */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                  <UserIcon className="size-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{post.username}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {timeAgo(post.created_at, isEs)}
+                    <span className="mx-1.5">&middot;</span>
+                    {post.category}
+                  </p>
                 </div>
               </div>
-            </div>
-          </article>
-        ))}
-      </section>
+
+              {/* Content */}
+              <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
+
+              {/* Image */}
+              {post.image_url && (
+                <div className="mt-3 overflow-hidden rounded-xl">
+                  <img
+                    src={post.image_url}
+                    alt=""
+                    className="w-full object-cover"
+                    style={{ maxHeight: 400 }}
+                  />
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="mt-4 flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => handleLike(post.id)}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-1.5 text-sm transition-colors',
+                    post.liked_by_me ? 'text-red-400' : 'text-muted-foreground hover:text-red-400'
+                  )}
+                >
+                  <Heart className="size-4" fill={post.liked_by_me ? 'currentColor' : 'none'} />
+                  {post.likes_count > 0 && post.likes_count}
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
